@@ -12,10 +12,10 @@
     </div>
 
     @if (activeTab === 'players') {
-      <!-- ДОБАВЛЕННЫЙ БЛОК С КНОПКОЙ НА ПЕРВОЙ ВКЛАДКЕ -->
+      <!-- Кнопка загрузки реального K/D для ПК -->
       <div class="controls" style="margin-bottom: 10px;">
-        <button class="fetch-btn" (click)="fetchRealKd()">
-          Найти реальные ники
+        <button class="fetch-btn" (click)="fetchRealKd()" [disabled]="realKdLoading">
+          {{ realKdLoading ? (realKdProgress || 'Загрузка...') : (realKdHasFetched ? 'Обновить реальные ники' : 'Найти реальные ники') }}
         </button>
       </div>
 
@@ -25,13 +25,11 @@
         </div>
       }
       @else {
-        @if (!isAnonymousGame) {
-          <div class="controls controls-end">
-            <button class="fetch-btn" (click)="fetchAlliances()" [disabled]="allianceLoading">
-              {{ allianceLoading ? 'Загрузка...' : (allianceFetched ? 'Обновить кланы' : 'Загрузить кланы') }}
-            </button>
-          </div>
-        }
+        <div class="controls controls-end">
+          <button class="fetch-btn" (click)="fetchAlliances()" [disabled]="allianceLoading">
+            {{ allianceLoading ? 'Загрузка...' : (allianceFetched ? 'Обновить кланы' : 'Загрузить кланы') }}
+          </button>
+        </div>
 
         <div class="opponent-list">
           <div class="opponent-row header-row with-alliance">
@@ -62,10 +60,134 @@
       }
     }
     @else if (activeTab === 'map') {
-      <!-- (тут ваш блок Detailed K/D без изменений) -->
-    </div>
+      <div class="controls">
+        <button class="fetch-btn" (click)="fetchAllWars()" [disabled]="isLoading">
+          {{ isLoading ? loadingProgress : (hasFetched ? 'Обновить' : 'Загрузить все войны') }}
+        </button>
+
+        <div class="country-select-wrapper">
+          <app-searchable-select
+            [options]="countryOptions"
+            [value]="selectedCountryId"
+            (valueChange)="onCountryChange($event)"
+            placeholder="Выберите страну..."
+            [disabled]="isLoading || countryOptions.length === 0">
+          </app-searchable-select>
+        </div>
+      </div>
+
+      @if (isLoading) {
+        <div class="loading-state">
+          <p>Изучаем архив газет...</p>
+          <p>{{ loadingProgress }}</p>
+        </div>
+      }
+      @else if (!hasFetched || countryOptions.length === 0) {
+        <div class="empty-state">
+          В газетах еще не найдены сводки о боевых потерях.
+        </div>
+      }
+      @else if (!selectedCountryId) {
+        <div class="empty-state">
+          Выберите страну выше, чтобы просмотреть её статистику Убийств/Потерь.
+        </div>
+      }
+      @else {
+        <div class="summary-bar">
+          <div class="summary-item kills">
+            <span class="summary-label">Убийства</span>
+            <span class="summary-value">{{ totalKills | number }}</span>
+          </div>
+          <div class="summary-item deaths">
+            <span class="summary-label">Потери</span>
+            <span class="summary-value">{{ totalDeaths | number }}</span>
+          </div>
+          <div class="summary-item ratio">
+            <span class="summary-label">К/Д</span>
+            <span class="summary-value">{{ overallRatio }}</span>
+          </div>
+        </div>
+
+        <div class="opponent-list">
+          <div class="opponent-row header-row">
+            <span class="flag-icon"></span>
+            <span class="opponent-name">Противник</span>
+            <span class="stat sortable" [class.active]="mapSortColumn === 'kills'" (click)="sortMapBy('kills')">Убийства{{ sortArrow('map', 'kills') }}</span>
+            <span class="stat sortable" [class.active]="mapSortColumn === 'deaths'" (click)="sortMapBy('deaths')">Потери{{ sortArrow('map', 'deaths') }}</span>
+            <span class="stat sortable" [class.active]="mapSortColumn === 'ratio'" (click)="sortMapBy('ratio')">К/Д{{ sortArrow('map', 'ratio') }}</span>
+          </div>
+          @for (o of opponents; track o.opponentId) {
+            <div class="opponent-row">
+              <img [src]="o.flagUrl" class="flag-icon" onerror="this.style.display='none'">
+              <span class="opponent-name">{{ o.opponentName }}</span>
+              <span class="stat kills">{{ o.kills | number }}</span>
+              <span class="stat deaths">{{ o.deaths | number }}</span>
+              <span class="stat ratio">{{ formatRatio(o.kills, o.deaths) }}</span>
+            </div>
+          }
+        </div>
+      }
+    }
     @else if (activeTab === 'real' && canViewRealKd) {
-      <!-- (тут ваш блок Real K/D без изменений) -->
+      <div class="controls">
+        <button class="fetch-btn" (click)="fetchRealKd()" [disabled]="realKdLoading">
+          {{ realKdLoading ? (realKdProgress || 'Загрузка...') : (realKdHasFetched ? 'Обновить' : 'Загрузить реальный К/Д') }}
+        </button>
+
+        <input
+          type="text"
+          class="real-kd-search"
+          placeholder="Поиск игрока или страны..."
+          [(ngModel)]="realKdSearch"
+          (ngModelChange)="applyRealKdFilter()"
+          [disabled]="!realKdHasFetched || realKdLoading"
+        />
+      </div>
+
+      @if (realKdLoading) {
+        <div class="loading-state">
+          <p>Загрузка боевой статистики из API игры...</p>
+          <p>{{ realKdProgress }}</p>
+        </div>
+      }
+      @else if (!realKdHasFetched) {
+        <div class="empty-state">
+          Нажмите «Загрузить реальный К/Д», чтобы загрузить общую боевую статистику игроков.
+        </div>
+      }
+      @else if (realKdDisplayed.length === 0) {
+        <div class="empty-state">
+          Нет игроков, подходящих под текущий поиск.
+        </div>
+      }
+      @else {
+        <div class="opponent-list">
+          <div class="opponent-row header-row with-alliance">
+            <span class="flag-icon"></span>
+            <span class="opponent-name">Игрок</span>
+            <span class="opponent-alliance sortable" [class.active]="realSortColumn === 'alliance'" (click)="sortRealBy('alliance')">Клан{{ sortArrow('real', 'alliance') }}</span>
+            <span class="stat sortable" [class.active]="realSortColumn === 'kills'" (click)="sortRealBy('kills')">Убийства{{ sortArrow('real', 'kills') }}</span>
+            <span class="stat sortable" [class.active]="realSortColumn === 'deaths'" (click)="sortRealBy('deaths')">Потери{{ sortArrow('real', 'deaths') }}</span>
+            <span class="stat sortable" [class.active]="realSortColumn === 'ratio'" (click)="sortRealBy('ratio')">К/Д{{ sortArrow('real', 'ratio') }}</span>
+          </div>
+          @for (row of realKdDisplayed; track row.siteUserId) {
+            <div class="opponent-row with-alliance">
+              <img [src]="row.flagUrl" class="flag-icon" onerror="this.style.display='none'">
+              <span class="opponent-name">{{ row.name }} <span class="nation-hint">({{ row.nation }})</span></span>
+              <span class="opponent-alliance">
+                @if (allianceUrl(row.allianceId); as url) {
+                  <a [href]="url" target="_blank" rel="noopener noreferrer">{{ row.alliance }}</a>
+                } @else {
+                  {{ row.alliance ?? '—' }}
+                }
+              </span>
+              <span class="stat kills">{{ row.kills | number }}</span>
+              <span class="stat deaths">{{ row.deaths | number }}</span>
+              <span class="stat ratio">{{ formatRatio(row.kills, row.deaths) }}</span>
+            </div>
+          }
+        </div>
+      }
     }
 
   </div>
@@ -82,10 +204,10 @@
     </div>
 
     @if (activeTab === 'players') {
-      <!-- ДОБАВЛЕННЫЙ БЛОК С КНОПКОЙ ДЛЯ МОБИЛЬНОЙ ВЕРСИИ -->
+      <!-- Кнопка загрузки реального K/D для мобилки -->
       <div class="mobile-controls" style="margin-top: 10px;">
-        <button class="fetch-btn" (click)="fetchRealKd(); $event.stopPropagation()">
-          Найти реальные ники
+        <button class="fetch-btn" (click)="fetchRealKd(); $event.stopPropagation()" [disabled]="realKdLoading">
+          {{ realKdLoading ? (realKdProgress || 'Загрузка...') : (realKdHasFetched ? 'Обновить реальные ники' : 'Найти реальные ники') }}
         </button>
       </div>
 
@@ -96,17 +218,13 @@
       }
       @else {
         <div class="mobile-controls">
-          @if (!isAnonymousGame) {
-            <button class="fetch-btn" (click)="fetchAlliances(); $event.stopPropagation()" [disabled]="allianceLoading">
-              {{ allianceLoading ? 'Загрузка...' : (allianceFetched ? 'Обновить кланы' : 'Загрузить кланы') }}
-            </button>
-          }
+          <button class="fetch-btn" (click)="fetchAlliances(); $event.stopPropagation()" [disabled]="allianceLoading">
+            {{ allianceLoading ? 'Загрузка...' : (allianceFetched ? 'Обновить кланы' : 'Загрузить кланы') }}
+          </button>
           <button type="button" class="sort-btn" (click)="toggleSortPanel(); $event.stopPropagation()">Сортировка</button>
         </div>
-        <!-- (остальной мобильный код списка игроков...) -->
       }
     }
-    <!-- (остальные вкладки для мобильной версии) -->
   </div>
   }
   }
