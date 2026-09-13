@@ -13,7 +13,7 @@ export class MapInfoComponent implements OnInit {
 
   @Output() closeDialog = new EventEmitter<void>();
 
-  // Вкладки: 'players' (это Map K/D) или 'map' (это Detailed K/D)
+  // Вкладки: 'players', 'map', или 'real'
   activeTab: string = 'players';
 
   // --- Списки и состояния ---
@@ -33,6 +33,17 @@ export class MapInfoComponent implements OnInit {
   allianceLoading: boolean = false;
   allianceFetched: boolean = false;
 
+  // --- Переменные для «Реального K/D» (real) ---
+  realKdLoading: boolean = false;
+  realKdHasFetched: boolean = false;
+  realKdProgress: string = '';
+  realKdSearch: string = '';
+  realKdDisplayed: any[] = [];
+  
+  realKdData: any[] = []; // Исходные данные реального K/D
+  realSortColumn: string = 'kills';
+  realSortDirection: 'asc' | 'desc' = 'desc';
+
   // --- Сортировки ---
   playersSortColumn: string = 'kills';
   playersSortDirection: 'asc' | 'desc' = 'desc';
@@ -49,7 +60,7 @@ export class MapInfoComponent implements OnInit {
     this.closeDialog.emit();
   }
 
-  // Переключение между вкладками «Map K/D» и «Detailed K/D»
+  // Переключение между вкладками
   setActiveTab(tab: string): void {
     this.activeTab = tab;
     this.sortPanelOpen = false;
@@ -82,6 +93,9 @@ export class MapInfoComponent implements OnInit {
     } else if (tab === 'map') { 
       activeCol = this.mapSortColumn; 
       dir = this.mapSortDirection; 
+    } else if (tab === 'real') { 
+      activeCol = this.realSortColumn; 
+      dir = this.realSortDirection; 
     }
 
     if (activeCol !== column) return '';
@@ -96,27 +110,67 @@ export class MapInfoComponent implements OnInit {
     }, 1000);
   }
 
-  // Кнопка «Refresh» во второй вкладке (Detailed K/D)
+  // Кнопка загрузки во второй вкладке (Detailed K/D)
   fetchAllWars(): void {
     this.isLoading = true;
     this.loadingProgress = 'Загрузка отчетов о боевых действиях...';
 
-    // ⚠️ Сюда подключается ваш сервис для получения детальной статистики
-    // Сейчас здесь стоит тестовый пример, чтобы таблица заполнилась:
     setTimeout(() => {
       this.opponents = [
         {
-          name: 'Тестовый Оппонент',
-          nation: 'Франция',
+          opponentId: 1,
+          opponentName: 'Тестовый Оппонент',
           kills: 120,
-          deaths: 50,
-          kd: '2.40'
+          deaths: 50
         }
       ];
       this.isLoading = false;
       this.hasFetched = true;
       this.loadingProgress = '';
     }, 1000);
+  }
+
+  // --- Метод для кнопки «Найти реальные ники» ---
+  fetchRealKd(): void {
+    this.realKdLoading = true;
+    this.realKdProgress = 'Поиск реальных ников игроков...';
+
+    // ⚠️ Здесь вы подключаете ваш реальный сервис для получения данных
+    setTimeout(() => {
+      this.realKdData = [
+        {
+          siteUserId: 1,
+          name: 'Пример Игрока',
+          nation: 'Германия',
+          alliance: 'Альянс 1',
+          allianceId: 101,
+          coalition: 'Коалиция А',
+          level: 45,
+          kills: 500,
+          deaths: 200,
+          power: 'Сильный',
+          powerClass: 'high'
+        }
+      ];
+      this.realKdDisplayed = [...this.realKdData];
+      this.realKdLoading = false;
+      this.realKdHasFetched = true;
+      this.realKdProgress = '';
+    }, 1000);
+  }
+
+  // Фильтрация для реального K/D по строке поиска
+  applyRealKdFilter(): void {
+    if (!this.realKdSearch.trim()) {
+      this.realKdDisplayed = [...this.realKdData];
+      return;
+    }
+    const query = this.realKdSearch.toLowerCase();
+    this.realKdDisplayed = this.realKdData.filter(row => 
+      (row.name && row.name.toLowerCase().includes(query)) ||
+      (row.nation && row.nation.toLowerCase().includes(query)) ||
+      (row.alliance && row.alliance.toLowerCase().includes(query))
+    );
   }
 
   onCountryChange(countryId: any): void {
@@ -139,5 +193,15 @@ export class MapInfoComponent implements OnInit {
       this.mapSortColumn = column;
       this.mapSortDirection = 'desc';
     }
+  }
+
+  sortRealBy(column: string): void {
+    if (this.realSortColumn === column) {
+      this.realSortDirection = this.realSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.realSortColumn = column;
+      this.realSortDirection = 'desc';
+    }
+    // Сюда можно добавить сортировку массива realKdDisplayed при необходимости
   }
 }
