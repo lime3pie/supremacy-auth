@@ -26,8 +26,8 @@ app.post('/api/login', (req, res) => {
         return res.status(401).json({ success: false, message: "Неверный логин или пароль" });
     }
 
-    // Проверяем, админ ли это
-    const role = (username === 'admin') ? 'admin' : 'user';
+    // Определяем роль (если в базе админ или прописано в userRoles)
+    const role = (username === 'admin' || userRoles[username] === 'admin') ? 'admin' : 'user';
 
     res.json({ 
         success: true, 
@@ -38,8 +38,12 @@ app.post('/api/login', (req, res) => {
 
 // 2. Эндпоинт для получения списка всех пользователей (только для админа)
 app.get('/api/users', (req, res) => {
-    // В простейшем варианте передаем список логинов (кроме самого админа, если нужно)
-    const userList = Object.keys(usersDB).filter(u => u !== 'admin');
+    const userList = Object.keys(usersDB)
+        .filter(u => u !== 'admin')
+        .map(u => ({
+            username: u,
+            role: userRoles[u] || 'user'
+        }));
     res.json({ success: true, users: userList });
 });
 
