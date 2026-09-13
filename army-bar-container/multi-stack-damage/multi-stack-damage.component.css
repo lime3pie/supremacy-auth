@@ -1,0 +1,42 @@
+:host {
+  display: block;
+  width: 100%;
+  font-family: "Segoe UI", sans-serif;
+  letter-spacing: normal;
+}
+
+.msd-block {
+  margin-top: 4px;
+}
+
+.msd-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  letter-spacing: normal;
+  white-space: nowrap;
+}
+
+.msd-label {
+  color: #b7b7b7;
+  min-width: 42px;
+  text-align: right;
+}
+
+.msd-val {
+  font-weight: bold;
+  color: #cfa665;
+}
+
+.msd-val.def {
+  color: #9fc9e0;
+}
+
+.msd-meta {
+  margin-top: 2px;
+  text-align: center;
+  font-size: 11px;
+  color: #888;
+}

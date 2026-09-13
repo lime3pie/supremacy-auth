@@ -1,0 +1,15 @@
+@if (visible) {
+  <div class="msd-block">
+    <div class="msd-row">
+      <span class="msd-label">Normal</span>
+      <span class="msd-val atk" title="Combined attack">⚡ {{ normalAtk | number:'1.0-1' }}</span>
+      <span class="msd-val def" title="Combined defence">🛡 {{ normalDef | number:'1.0-1' }}</span>
+    </div>
+    <div class="msd-row">
+      <span class="msd-label">Range</span>
+      <span class="msd-val atk" title="Combined attack">⚡ {{ rangeAtk | number:'1.0-1' }}</span>
+      <span class="msd-val def" title="Combined defence">🛡 {{ rangeDef | number:'1.0-1' }}</span>
+    </div>
+    <div class="msd-meta">{{ armyCount }} stacks &middot; {{ totalUnits | number:'1.0-0' }} units</div>
+  </div>
+}

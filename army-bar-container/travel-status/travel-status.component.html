@@ -1,0 +1,103 @@
+@if (visible) {
+  <button class="travel-btn" (click)="onClick($event)" title="View Travel Details">
+    Travel Info
+  </button>
+}
+
+<app-dialog 
+  [show]="showDialog" 
+  [minimized]="isMinimized"
+  title="Travel Commands" 
+  (close)="closeDialog()"
+>
+  <div class="travel-content">
+    
+    <!-- Arrival Information Section -->
+    @if (finalArrivalTime || fiveKmAwayTime) {
+      <div class="arrival-info">
+        @if (finalArrivalTime) {
+          <div class="arrival-item">
+            <span class="arrival-label">Final Arrival:</span>
+            <span class="arrival-time">{{ formatTime(finalArrivalTime) }}</span>
+            <span class="arrival-date">{{ formatDate(finalArrivalTime) }}</span>
+            @if (finalArrivalDuration) {
+              <span class="arrival-duration">{{ formatDuration(finalArrivalDuration) }}</span>
+            }
+          </div>
+        }
+        @if (fiveKmAwayTime) {
+          <div class="arrival-item">
+            <span class="arrival-label">5km from Target:</span>
+            <span class="arrival-time">{{ formatTime(fiveKmAwayTime) }}</span>
+            <span class="arrival-date">{{ formatDate(fiveKmAwayTime) }}</span>
+            @if (fiveKmAwayDuration !== null) {
+              <span class="arrival-duration">{{ formatDuration(fiveKmAwayDuration) }}</span>
+            }
+          </div>
+        }
+      </div>
+    }
+    
+    <div class="toolbar">
+        <button class="tool-btn" (click)="visualizeAll()">Visualize All</button>
+        <button class="tool-btn clean" (click)="clearDrawings()">Clear Map</button>
+    </div>
+
+    @if (commandList.length === 0) {
+      <div class="empty-state">No active movement commands found.</div>
+    } @else {
+      <table class="travel-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Route</th>
+            <th class="right-align">Dist</th>
+            <th class="right-align">Duration</th>
+            <th class="right-align">ETA</th>
+            <th class="center-align">Map</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cmd of commandList; track cmd.id) {
+            <tr>
+              <td class="id-col">{{ cmd.id }}</td>
+              <td class="loc-col">
+                <div class="loc-row">
+                  <span class="label">From:</span> 
+                  <span class="val">{{ cmd.origin }}</span>
+                </div>
+                <div class="loc-row">
+                  <span class="label">To:</span> 
+                  <span class="val">{{ cmd.destination }}</span>
+                </div>
+                @if(cmd.isFlying) { <div class="flying-tag">✈️ Air</div> }
+              </td>
+              <td class="num-col">{{ cmd.distance | number:'1.0-1' }}</td>
+              <td class="time-col">{{ formatDuration(cmd.durationSeconds) }}</td>
+              <td class="date-col">
+                <div class="time-main">{{ formatTime(cmd.arrivalRealTime) }}</div>
+                <div class="date-sub">{{ formatDate(cmd.arrivalRealTime) }}</div>
+              </td>
+              <td class="action-col">
+                <button class="vis-btn" (click)="visualizePath(cmd)" title="Draw this path on map">
+                    👁️
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+  <!-- MINIMIZED VIEW -->
+  <div minimized-content class="mini-content">
+    <div class="mini-msg">Path Visualized</div>
+    
+    <div class="mini-actions">
+      <button class="mini-btn expand" (click)="restoreDialog()">Expand</button>
+      <button class="mini-btn close" (click)="closeDialog()">Close</button>
+    </div>
+  </div>
+
+</app-dialog>

@@ -1,0 +1,80 @@
+<!-- File: /scripts/components/capital-finder/capital-finder.component.html -->
+
+<app-dialog [show]="showDialog" title="Capital Finder" (close)="close()">
+  <div class="cap-container">
+    <div class="controls">
+      <!-- Player Select (Flex: 1 takes remaining space) -->
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+        <label>Select Player:</label>
+        <app-searchable-select
+          [options]="playerOptions"
+          [(value)]="selectedPlayerId"
+          placeholder="Search Player..."
+          [disabled]="isLoading">
+        </app-searchable-select>
+      </div>
+
+      <!-- Method Select (Widened to 210px) -->
+      <div style="display: flex; flex-direction: column; gap: 4px; width: 210px;">
+        <label>Method:</label>
+        <select class="mode-select" [(ngModel)]="calcMode" [disabled]="isLoading">
+            <option value="Time">Travel Time (Roads)</option>
+            <option value="Distance">Direct (Euclidean)</option>
+        </select>
+      </div>
+
+      <button class="calc-btn" (click)="calculate()" [disabled]="isLoading || !selectedPlayerId">
+        {{ isLoading ? 'Calculating...' : 'Find Center' }}
+      </button>
+    </div>
+
+    <!-- Progress Bar Section -->
+    @if (isLoading) {
+      <div class="progress-section">
+        <div class="progress-text">{{ progressText }}</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" [style.width.%]="progressPercent"></div>
+        </div>
+      </div>
+    }
+
+    @if (results.length > 0 && !isLoading) {
+    <div class="results-list">
+      
+      <!-- Time Display -->
+      <div class="calc-time">Calculation finished in {{ calculationTime }} using {{ calcMode }} mode.</div>
+
+      <div class="header-row">
+        <span>Rank</span>
+        <span>Province</span>
+        <span [title]="calcMode === 'Time' ? 'Average travel time' : 'Average direct distance'">
+            {{ calcMode === 'Time' ? 'Avg Time' : 'Avg Dist' }}
+        </span>
+        <span [title]="calcMode === 'Time' ? 'Max travel time' : 'Max direct distance'">
+            {{ calcMode === 'Time' ? 'Max Time' : 'Max Dist' }}
+        </span>
+        <span>Action</span>
+      </div>
+
+      @for (res of results; track res.provinceID; let i = $index) {
+      <div class="result-row" [class.top-pick]="i === 0">
+        <span class="rank">#{{ i + 1 }}</span>
+        <span class="prov-name">
+          {{ res.provinceName }}
+          @if (res.unreachableCount > 0) {
+          <span class="warning" title="Cannot reach some provinces (Islands/Disconnected)">⚠️</span>
+          }
+        </span>
+        <span class="metric">{{ formatMetric(res.avgDistance) }}</span>
+        <span class="metric">{{ formatMetric(res.maxDistance) }}</span>
+        <button class="jump-btn" (click)="jumpTo(res.provinceID)">Show</button>
+      </div>
+      }
+    </div>
+    } @else if (!isLoading && selectedPlayerId && results.length === 0) {
+    <div class="info-msg">
+      Select a player and calculation method, then click Find Center.
+    </div>
+    }
+  </div>
+</app-dialog>

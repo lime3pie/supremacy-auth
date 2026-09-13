@@ -1,0 +1,33 @@
+<!-- File: /scripts/components/build-queue/build-queue.component.html -->
+
+<div class="queue-summary-container">
+  <span class="summary-label">Queue:</span>
+  
+  @if (items.length > 0) {
+    @for (item of items; track item.name + item.level) {
+      <div class="summary-item" [title]="item.name + (item.level ? ' Lvl ' + item.level : '')">
+        
+        <!-- Delete Button -->
+        <div class="delete-overlay" (click)="deleteItem($event, item)" title="Cancel all {{ item.name }}">
+          ×
+        </div>
+
+        <div class="icon-wrapper">
+          <!-- Main Building/Unit Icon -->
+          <img [src]="item.icon" [alt]="item.name" title="{{ item.name }}" class="main-icon" onerror="this.style.display='none'">
+
+          <!-- Level Overlay Icon -->
+          @if (!item.isUnit && item.level && item.levelIcon) {
+            <img [src]="item.levelIcon" alt="" class="level-icon" onerror="this.style.display='none'">
+          }
+        </div>
+        
+        <div class="count-wrapper">
+          <span class="count">{{ item.count }}</span>
+        </div>
+      </div>
+    }
+  } @else {
+    <span class="empty-queue">Empty</span>
+  }
+</div>

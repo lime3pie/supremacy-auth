@@ -1,0 +1,118 @@
+<!-- START OF FILE simulate-army.component.html -->
+
+<app-dialog
+  [title]="(editingTile ? 'Edit Stack — Team ' : 'Simulate Army — Team ') + team"
+  [show]="show"
+  [draggable]="true"
+  (close)="onClose()">
+
+  <div class="sim-army" [class.mobile]="isMobile">
+    <p class="sim-hint" *ngIf="seedSource === 'tile'">
+      Editing a stack already in the calculator. Saving updates it in place.
+    </p>
+    <p class="sim-hint" *ngIf="seedSource === 'selection'">
+      Loaded from your currently selected army. Edit counts/morale, remove units, or add more below.
+    </p>
+    <p class="sim-hint" *ngIf="seedSource === 'none'">
+      No army selected in-game — build a hypothetical stack from scratch below.
+    </p>
+
+    <div class="terrain-row">
+      <span class="terrain-label">Terrain:</span>
+      <label class="terrain-option">
+        <input type="radio" name="terrain-{{team}}" value="land" [(ngModel)]="terrain" /> Land
+      </label>
+      <label class="terrain-option">
+        <input type="radio" name="terrain-{{team}}" value="sea" [(ngModel)]="terrain" /> Sea
+      </label>
+    </div>
+
+    <div class="section-label">Hero <span class="section-hint">(max 1 per stack)</span></div>
+
+    <div class="rows-header" *ngIf="hero">
+      <span class="col-unit">Hero</span>
+      <span class="col-count">Level</span>
+      <span class="col-morale">Morale</span>
+      <span class="col-hp">HP</span>
+      <span class="col-remove"></span>
+    </div>
+
+    <div class="sim-row" *ngIf="hero">
+      <span class="col-unit">
+        <img [src]="hero.icon" class="unit-icon" />
+        {{ hero.name }}
+      </span>
+      <span class="col-count">
+        <input type="number" min="0" step="1" [(ngModel)]="hero.level" (ngModelChange)="clampHeroLevel()" />
+      </span>
+      <span class="col-morale">
+        <input type="number" min="0" max="100" step="0.01" [(ngModel)]="hero.moralePercent" (ngModelChange)="clampHeroMorale()" />%
+      </span>
+      <span class="col-hp">{{ previewHeroHp() }}{{ battle.usePercentageHP ? '%' : '' }}</span>
+      <span class="col-remove">
+        <button class="remove-btn" title="Remove hero" (click)="removeHero()">×</button>
+      </span>
+    </div>
+
+    <div class="empty-state" *ngIf="!hero">No hero — add one below.</div>
+
+    <div class="add-unit-row" *ngIf="!hero">
+      <app-searchable-select
+        class="add-unit-select"
+        [options]="availableHeroOptions"
+        [(value)]="selectedNewHeroId"
+        placeholder="Add a hero...">
+      </app-searchable-select>
+      <button class="action-btn add-unit-btn" [disabled]="selectedNewHeroId == null" (click)="addHeroRow()">Add</button>
+    </div>
+
+    <div class="section-label">Units</div>
+
+    <div class="rows-header" *ngIf="rows.length > 0">
+      <span class="col-unit">Unit</span>
+      <span class="col-count">Amount</span>
+      <span class="col-morale">Morale</span>
+      <span class="col-hp">HP</span>
+      <span class="col-remove"></span>
+    </div>
+
+    <div class="rows-list">
+      <div class="sim-row" *ngFor="let row of rows">
+        <span class="col-unit">
+          <img [src]="row.icon" class="unit-icon" />
+          {{ row.name }}
+        </span>
+        <span class="col-count">
+          <input type="number" min="0" step="1" [(ngModel)]="row.count" (ngModelChange)="clampCount(row)" />
+        </span>
+        <span class="col-morale">
+          <input type="number" min="0" max="100" step="0.01" [(ngModel)]="row.moralePercent" (ngModelChange)="clampMorale(row)" />%
+        </span>
+        <span class="col-hp">{{ previewHp(row) }}{{ battle.usePercentageHP ? '%' : '' }}</span>
+        <span class="col-remove">
+          <button class="remove-btn" title="Remove unit" (click)="removeRow(row.id)">×</button>
+        </span>
+      </div>
+
+      <div class="empty-state" *ngIf="rows.length === 0">
+        No units yet — add one below.
+      </div>
+    </div>
+
+    <div class="add-unit-row">
+      <app-searchable-select
+        class="add-unit-select"
+        [options]="availableUnitOptions"
+        [(value)]="selectedNewUnitId"
+        placeholder="Add a unit type...">
+      </app-searchable-select>
+      <button class="action-btn add-unit-btn" [disabled]="selectedNewUnitId == null" (click)="addUnitRow()">Add</button>
+    </div>
+  </div>
+
+  <div class="sim-footer" [class.mobile]="isMobile">
+    <button class="action-btn cancel-btn" (click)="onClose()">Cancel</button>
+    <button class="action-btn confirm-btn" [disabled]="!isValid" (click)="onConfirm()">{{ editingTile ? 'Save Changes' : 'Add Stack to Team ' + team }}</button>
+  </div>
+
+</app-dialog>

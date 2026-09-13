@@ -1,0 +1,13 @@
+
+.army_bar_left { width: 280px !important; }
+.army_bar_main_left { display: none !important; }
+
+.army_bar_morale {
+    display: flex !important;
+    justify-content: center !important; /* Centers the flag and progress bar inside this div */
+    align-items: center !important;     /* Aligns them vertically if heights differ */
+    width: 100% !important;             /* Ensures it spans the width to allow centering */
+    margin-left: 0 !important;          /* Removes any left margin */
+}
+
+.army_bar_country_flag_container { left: 80px !important; }

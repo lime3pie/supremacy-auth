@@ -1,0 +1,49 @@
+<app-dialog
+  [show]="showDialog"
+  title="Help"
+  (close)="close()"
+>
+  <div class="help-container">
+    <div class="instructions">
+      Need help, want to report a bug, or have a suggestion? Join the community or check out the homepage.
+    </div>
+
+    <a class="link-btn" [href]="homepageUrl" target="_blank" rel="noopener noreferrer">
+      🌐 Homepage
+    </a>
+
+    <div class="section">
+      <div class="section-title">Player Info</div>
+      <div class="info-row">
+        <span class="info-label">Extension Version:</span>
+        <span class="info-value">{{ extensionVersion }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Player ID:</span>
+        <span class="info-value">{{ playerId ?? "Unknown" }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Site User ID:</span>
+        <span class="info-value">{{ siteUserId ?? "Unknown" }}</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">API Log</div>
+      @if (apiLog.length > 0) {
+        <div class="log-list">
+          @for (entry of apiLog; track entry.time + entry.url) {
+            <div class="log-row" [class.log-row-error]="entry.status === 'error'">
+              <span class="log-time">{{ formatTime(entry.time) }}</span>
+              <span class="log-method">{{ entry.method }}</span>
+              <span class="log-source">{{ entry.source }}</span>
+              <span class="log-status">{{ entry.status === 'error' ? ('❌ ' + entry.detail) : '✅ OK' }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-msg">No API activity yet.</div>
+      }
+    </div>
+  </div>
+</app-dialog>

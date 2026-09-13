@@ -1,0 +1,35 @@
+:host {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.upcoming-score-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #ddd;
+  font-size: 12px;
+}
+
+.trend-arrow {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.trend-up {
+  color: #4caf50;
+}
+
+.trend-down {
+  color: #e53935;
+}
+
+.trend-same {
+  color: #888;
+}

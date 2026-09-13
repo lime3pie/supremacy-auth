@@ -1,0 +1,214 @@
+<!-- START OF FILE combat-calculator.component.html -->
+
+<app-dialog
+    [show]="visible"
+    [minimized]="isMinimized"
+    title="Combat Calculator"
+    [draggable]="true"
+    [showBackdrop]="false"
+    (close)="closeDialog()">
+
+    <!-- Every block below must stay gated behind `visible`, each with its OWN @if - ng-content
+         projects this into app-dialog's template regardless of ITS *ngIf="minimized"/"show", so
+         an ungated reference here would evaluate on every change-detection tick from the moment
+         this component is created, not just while the dialog is actually open. (battle's A/B are
+         always-defined Army instances so this specific case wasn't unsafe to evaluate early, but
+         gating keeps this component consistent with own-combat's and matches the original
+         behavior, which never rendered any of this before the dialog was opened.) Angular can't
+         route content to the right ng-content slot when an @if's root has more than one
+         projectable node, hence one @if per top-level projected element rather than one @if
+         wrapping all of them. -->
+    @if (visible && isMinimized && !isWaitingForArmySelection) {
+    <div header-actions class="minimized-actions">
+        <button class="add-btn" (click)="addArmy('A')" title="Add Attacking Army">
+            + A ({{ battle['A'].getTiles().length }})
+        </button>
+        <button class="add-btn" (click)="addArmy('B')" title="Add Defending Army">
+            + B ({{ battle['B'].getTiles().length }})
+        </button>
+    </div>
+    }
+    @if (visible && isMinimized && isWaitingForArmySelection) {
+    <div header-actions class="minimized-actions picking">
+        <span class="picking-msg">Tap an army to add to the {{ armySelectTeamLabel }}</span>
+        <button class="add-btn cancel-btn" (click)="cancelMobileAddArmy()">Cancel</button>
+    </div>
+    }
+    @if (visible && !isMinimized) {
+    <button header-actions class="header-action-btn" (click)="toggleHealth()" title="Use percentage">
+        @if (!battle.usePercentageHP){
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+            fill="#e8eaed">
+            <path
+                d="M300-520q-58 0-99-41t-41-99q0-58 41-99t99-41q58 0 99 41t41 99q0 58-41 99t-99 41Zm0-80q25 0 42.5-17.5T360-660q0-25-17.5-42.5T300-720q-25 0-42.5 17.5T240-660q0 25 17.5 42.5T300-600Zm360 440q-58 0-99-41t-41-99q0-58 41-99t99-41q58 0 99 41t41 99q0 58-41 99t-99 41Zm0-80q25 0 42.5-17.5T720-300q0-25-17.5-42.5T660-360q-25 0-42.5 17.5T600-300q0 25 17.5 42.5T660-240Zm-444 80-56-56 584-584 56 56-584 584Z" />
+        </svg>
+        } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+            fill="#e8eaed">
+            <path
+                d="M320-160v-160H160v-80h160v-160H160v-80h160v-160h80v160h160v-160h80v160h160v80H640v160h160v80H640v160h-80v-160H400v160h-80Zm80-240h160v-160H400v160Z" />
+        </svg>
+        }
+    </button>
+    }
+
+    @if (visible) {
+    <button header-actions class="header-action-btn" (click)="toggleMinimize()" [title]="isMinimized ? 'Restore' : 'Minimize'">
+        @if (!isMinimized) {
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        } @else {
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M17 13.4V16.4C17 17.5046 16.1046 18.4 15 18.4H8C6.89543 18.4 6 17.5046 6 16.4V9.4C6 8.29543 6.89543 7.4 8 7.4H11"
+                stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        }
+    </button>
+    }
+
+    @if (visible) {
+    <div class="combat-container" [class.mobile]="isMobile">
+
+        @if (isMobile) {
+        <div class="team-switch">
+            <div class="team-tab" [class.is-active]="activeTeam === 'A'" data-team="A" (click)="setActiveTeam('A')">
+                <span class="lbl">Attacking</span>
+                <span class="count">{{ battle['A'].getTiles().length }} stacks</span>
+            </div>
+            <div class="team-tab" [class.is-active]="activeTeam === 'B'" data-team="B" (click)="setActiveTeam('B')">
+                <span class="lbl">Defending</span>
+                <span class="count">{{ battle['B'].getTiles().length }} stacks</span>
+            </div>
+        </div>
+
+        @if (combiningTeam !== activeTeam) {
+        <div class="action-row">
+            <button class="chip add" (click)="addArmy(activeTeam)">+ Add Army</button>
+            <button class="chip sim" (click)="openSimulateArmy(activeTeam)">Simulate</button>
+            <button class="chip combine" (click)="startCombine(activeTeam)"
+                [disabled]="battle[activeTeam].getTiles().length < 2">Combine</button>
+        </div>
+        } @else {
+        <div class="selection-bar">
+            <span class="count-txt">{{ selectedToCombine.size }} selected</span>
+            <button class="sel-all" (click)="selectAllForCombine()">
+                {{ allSelectedForCombine ? 'Deselect All' : 'Select All' }}
+            </button>
+            <button class="sel-cancel" (click)="cancelCombine()">Cancel</button>
+            <button class="sel-ok" (click)="confirmCombine()" [disabled]="selectedToCombine.size < 2">Combine</button>
+        </div>
+        }
+
+        <div class="dialog-content mobile">
+            <div class="army-column">
+                @for (tile of battle[activeTeam].getTiles(); track $index;) {
+                <app-army-tile [tile]="tile" [targetOptions]="getTargetOptions(activeTeam)"
+                    [isCombining]="combiningTeam === activeTeam"
+                    [isSelectedForCombine]="selectedToCombine.has(tile.id) && combiningTeam === activeTeam"
+                    [canNotBeSelected]="tile.hero != undefined && isHeroSelected(activeTeam) != '-1' && isHeroSelected(activeTeam) != tile.id"
+                    [isMobile]="true"
+                    (toggleCombineSelect)="onToggleCombineSelect($event)"
+                    (remove)="removeArmyTile($event, activeTeam)"
+                    (edit)="editArmyTile($event, activeTeam)"
+                    (positionChange)="onTilePositionChange()">
+                </app-army-tile>
+                }
+            </div>
+        </div>
+        } @else {
+        <div class="teams-header">
+            <div class="team-header-col">
+                <button class="add-btn" (click)="addArmy('A')">Add Army</button>
+                <button class="add-btn simulate-btn" (click)="openSimulateArmy('A')">Simulate</button>
+                @if (combiningTeam !== 'A') {
+                <button class="action-btn combine-btn" (click)="startCombine('A')"
+                    [disabled]="battle['A'].getTiles().length < 2">Combine</button>
+                } @else {
+                <button class="action-btn ok-btn" (click)="confirmCombine()"
+                    [disabled]="selectedToCombine.size < 2">OK</button>
+                <button class="action-btn select-all-btn" (click)="selectAllForCombine()">
+                    {{ allSelectedForCombine ? 'Deselect All' : 'Select All' }}
+                </button>
+                <button class="action-btn cancel-btn" (click)="cancelCombine()">Cancel</button>
+                }
+                <h4 class="col-title">Attacking Army</h4>
+            </div>
+            <div class="vs-text">VS</div>
+            <div class="team-header-col right">
+                <h4 class="col-title">Defending Army</h4>
+                @if (combiningTeam !== 'B') {
+                <button class="action-btn combine-btn" (click)="startCombine('B')"
+                    [disabled]="battle['B'].getTiles().length < 2">Combine</button>
+                } @else {
+                <button class="action-btn ok-btn" (click)="confirmCombine()"
+                    [disabled]="selectedToCombine.size < 2">OK</button>
+                <button class="action-btn select-all-btn" (click)="selectAllForCombine()">
+                    {{ allSelectedForCombine ? 'Deselect All' : 'Select All' }}
+                </button>
+                <button class="action-btn cancel-btn" (click)="cancelCombine()">Cancel</button>
+                }
+                <button class="add-btn simulate-btn" (click)="openSimulateArmy('B')">Simulate</button>
+                <button class="add-btn" (click)="addArmy('B')">Add Army</button>
+            </div>
+        </div>
+
+        <div class="dialog-content">
+            <div class="army-column">
+                @for (tile of battle['A'].getTiles(); track $index;) {
+                <app-army-tile [tile]="tile" [targetOptions]="getTargetOptions('A')" [isCombining]="combiningTeam === 'A'"
+                    [isSelectedForCombine]="selectedToCombine.has(tile.id) && combiningTeam == 'A'"
+                    [canNotBeSelected]="tile.hero != undefined && isHeroSelected('A') != '-1' && isHeroSelected('A') != tile.id"
+                    (toggleCombineSelect)="onToggleCombineSelect($event)"
+                    (remove)="removeArmyTile($event, 'A')"
+                    (edit)="editArmyTile($event, 'A')"
+                    (positionChange)="onTilePositionChange()">
+                </app-army-tile>
+                }
+            </div>
+            <div class="army-column">
+                @for (tile of battle['B'].getTiles(); track $index;) {
+                <app-army-tile [tile]="tile" [targetOptions]="getTargetOptions('B')" [isCombining]="combiningTeam === 'B'"
+                    [isSelectedForCombine]="selectedToCombine.has(tile.id) && combiningTeam == 'B'"
+                    [canNotBeSelected]="tile.hero != undefined && isHeroSelected('B') != '-1' && isHeroSelected('B') != tile.id"
+                    (toggleCombineSelect)="onToggleCombineSelect($event)"
+                    (remove)="removeArmyTile($event, 'B')"
+                    (edit)="editArmyTile($event, 'B')"
+                    (positionChange)="onTilePositionChange()">
+                </app-army-tile>
+                }
+            </div>
+        </div>
+        }
+
+        <div class="dialog-footer">
+            <button class="action-btn validate-btn" (click)="validateCombat()" [disabled]="!isValid()">Validate Combat</button>
+            <button class="action-btn validate-btn" (click)="openInDxCalc()" [disabled]="!isValid()">Go to dxCalc</button>
+            @if (combatResult) {
+            <div class="result" [class.success]="combatResult.success" [class.error]="!combatResult.success">
+                @if (combatResult.success) {
+                <span>Army <b>{{ combatResult.team }}</b> Won in round <b>{{ combatResult.round }}</b></span>
+                } @else {
+                <span>{{ combatResult.message }}</span>
+                }
+            </div>
+            }
+            <button class="action-btn close-btn" (click)="closeDialog()">Close</button>
+        </div>
+
+        @if (simulatingTeam) {
+        <app-simulate-army
+            [team]="simulatingTeam"
+            [show]="!!simulatingTeam"
+            [editingTile]="editingTile"
+            (closed)="closeSimulateArmy()"
+            (addToTeam)="onSimulatedStackAdded($event)"
+            (tileUpdated)="onSimulatedStackUpdated($event)">
+        </app-simulate-army>
+        }
+    </div>
+    }
+</app-dialog>
+
+<app-battle-report *ngIf="showReport" [report]="battleReport" (closed)="showReport = false"></app-battle-report>
