@@ -1,5 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+
 const app = express();
 
 app.use(express.json());
@@ -114,23 +117,7 @@ app.post('/api/verify', (req, res) => {
     res.json({ success: true, active: false });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
-// Эндпоинт для защищенной загрузки скрипта мода
-app.post('/api/get-mod', (req, res) => {
-    const { username } = req.body;
-
-    // Проверяем, существует ли пользователь и активен ли он
-    if (!username || !usersDB[username]) {
-        return res.status(403).json({ success: false, message: "Access denied" });
-    }
-
-  const fs = require('fs');
-const path = require('path');
-
-// Эндпоинт для защищенной загрузки скрипта мода
+// 7. Эндпоинт для защищенной загрузки скрипта мода из файла mod.js
 app.post('/api/get-mod', (req, res) => {
     const { username } = req.body;
 
@@ -152,4 +139,9 @@ app.post('/api/get-mod', (req, res) => {
         console.error("Ошибка чтения файла мода:", err);
         res.status(500).json({ success: false, message: "Server error" });
     }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
