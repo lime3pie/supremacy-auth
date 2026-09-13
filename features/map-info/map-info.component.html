@@ -156,6 +156,77 @@
         </div>
       }
       @else {
+        <!-- ДЕСКТОПНАЯ ТАБЛИЦА ПРОФИЛЕЙ (как в разделе "Кто играет") -->
+        <div class="table-wrap">
+          <table class="roster stack">
+            <thead>
+              <tr>
+                <th>Игрок</th>
+                <th>Страна</th>
+                <th class="sortable" (click)="sortRealBy('alliance')">Клан{{ sortArrow('real', 'alliance') }}</th>
+                <th>Коалиция</th>
+                <th>Уровень</th>
+                <th class="sortable" (click)="sortRealBy('kills')">Kills{{ sortArrow('real', 'kills') }}</th>
+                <th class="sortable" (click)="sortRealBy('deaths')">Deaths{{ sortArrow('real', 'deaths') }}</th>
+                <th class="sortable" (click)="sortRealBy('ratio')">Кд{{ sortArrow('real', 'ratio') }}</th>
+                <th>Сила</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of realKdDisplayed; track row.siteUserId) {
+                <tr>
+                  <td data-label="Игрок">
+                    <img [src]="row.flagUrl" class="flag-icon-sm" onerror="this.style.display='none'">
+                    <!-- Ссылка на профиль игрока на вашем сайте -->
+                    <a class="nick" [href]="'/players/' + (row.internalId || row.siteUserId)" target="_blank">{{ row.name }}</a>
+                    @if (row.isEnemy) { <span class="badge clan-enemy">во врагах</span> }
+                    @if (row.isAlly) { <span class="badge clan-ally">в друзьях</span> }
+                  </td>
+                  <td data-label="Страна"><span class="nation-hint">{{ row.nation }}</span></td>
+                  <td data-label="Клан">
+                    @if (allianceUrl(row.allianceId); as url) {
+                      <a [href]="url" target="_blank" rel="noopener noreferrer">{{ row.alliance }}</a>
+                    } @else {
+                      {{ row.alliance ?? '—' }}
+                    }
+                  </td>
+                  <td class="muted" data-label="Коалиция">{{ row.coalition ?? '—' }}</td>
+                  <td class="muted nowrap" data-label="Уровень">{{ row.level ?? '—' }}</td>
+                  <td class="stat kills" data-label="Kills">{{ row.kills | number }}</td>
+                  <td class="stat deaths" data-label="Deaths">{{ row.deaths | number }}</td>
+                  <td class="stat ratio" data-label="Кд">{{ formatRatio(row.kills, row.deaths) }}</td>
+                  <td class="muted nowrap" data-label="Сила">
+                    @if (row.power) {
+                      <span class="swatch" [ngClass]="row.powerClass"></span> {{ row.power }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
+      @if (realKdLoading) {
+        <div class="loading-state">
+          <p>Fetching lifetime combat stats from the site API...</p>
+          <p>{{ realKdProgress }}</p>
+        </div>
+      }
+      @else if (!realKdHasFetched) {
+        <div class="empty-state">
+          Click "Fetch Real K/D" to load lifetime combat stats for every player on the map.
+        </div>
+      }
+      @else if (realKdDisplayed.length === 0) {
+        <div class="empty-state">
+          No players match the current search.
+        </div>
+      }
+      @else {
         <div class="opponent-list">
           <div class="opponent-row header-row with-alliance">
             <span class="flag-icon"></span>
