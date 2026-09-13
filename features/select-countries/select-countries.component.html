@@ -1,0 +1,99 @@
+<app-dialog 
+  [show]="showDialog" 
+  [minimized]="isMinimized"
+  title="Select Countries" 
+  (close)="close()"
+>
+  <div class="select-countries-container">
+    
+    <p class="description">
+      Draw a rectangle on the map to select countries, then bulk update their diplomatic relations.
+    </p>
+
+    <div class="filter-row">
+      <label class="filter-field">
+        <span>Country Type</span>
+        <select [(ngModel)]="filterCountryType" (ngModelChange)="onFilterChanged()">
+          <option *ngFor="let opt of countryTypeOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+        </select>
+      </label>
+
+      <label class="filter-field">
+        <span>Relation</span>
+        <div class="relation-filter-inputs">
+          <select [(ngModel)]="filterRelationOperator" (ngModelChange)="onFilterChanged()">
+            <option *ngFor="let op of relationOperators" [ngValue]="op">{{ op }}</option>
+          </select>
+          <select [(ngModel)]="filterRelationValue" (ngModelChange)="onFilterChanged()">
+            <option *ngFor="let opt of relationTypeOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
+      </label>
+    </div>
+
+    <div class="drawing-controls">
+      <button
+        class="draw-btn"
+        [class.selecting]="isSelecting"
+        (click)="toggleSelectionMode()"
+      >
+        <span class="icon">🖼️</span>
+        {{ isSelecting ? 'Drawing... (Click & Drag)' : 'Draw Selection Area' }}
+      </button>
+    </div>
+
+    <div class="stats-row">
+      <span>Selected Countries: <b>{{ selectedCountries.length }}</b></span>
+    </div>
+
+    <div class="countries-list" *ngIf="selectedCountries.length > 0">
+      <div class="countries-scroll">
+        <div class="country-item" *ngFor="let country of selectedCountries; let i = index">
+          <span class="country-name">{{ country.playerName }}</span>
+          <span class="country-id">(ID: {{ country.playerID }})</span>
+          <button class="remove-btn" (click)="removeCountry(i)" title="Remove from selection">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="relation-grid">
+      <button class="rel-btn embargo" (click)="setAllCountriesRelation(RelationType.TradeEmbargo)" [disabled]="selectedCountries.length === 0 || processing">
+        <span class="icon">🚫</span>
+        <span>Set Trade Embargo</span>
+        <span class="count">{{ countByRelationType(RelationType.TradeEmbargo) }}</span>
+      </button>
+      
+      <button class="rel-btn peace" (click)="setAllCountriesRelation(RelationType.Peace)" [disabled]="selectedCountries.length === 0 || processing">
+        <span class="icon">🏳️</span>
+        <span>Set Peace</span>
+        <span class="count">{{ countByRelationType(RelationType.Peace) }}</span>
+      </button>
+
+      <button class="rel-btn row" (click)="setAllCountriesRelation(RelationType.RightOfWay)" [disabled]="selectedCountries.length === 0 || processing">
+        <span class="icon">🚶</span>
+        <span>Set Right of Way</span>
+        <span class="count">{{ countByRelationType(RelationType.RightOfWay) }}</span>
+      </button>
+
+      <button class="rel-btn map" (click)="setAllCountriesRelation(RelationType.ShareMap)" [disabled]="selectedCountries.length === 0 || processing">
+        <span class="icon">🤝</span>
+        <span>Set Share Map</span>
+        <span class="count">{{ countByRelationType(RelationType.ShareMap) }}</span>
+      </button>
+      
+      <button class="rel-btn intel" (click)="setAllCountriesRelation(RelationType.ShareIntelligence)" [disabled]="selectedCountries.length === 0 || processing">
+        <span class="icon">🕵️</span>
+        <span>Set Share Intelligence</span>
+        <span class="count">{{ countByRelationType(RelationType.ShareIntelligence) }}</span>
+      </button>
+    </div>
+
+    <div *ngIf="processing" class="progress-section">
+      <div class="progress-status">{{ statusMessage }}</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar" [style.width.%]="progressPercentage"></div>
+      </div>
+      <div class="progress-text">{{ processedCount }} / {{ selectedCountries.length }}</div>
+    </div>
+  </div>
+</app-dialog>

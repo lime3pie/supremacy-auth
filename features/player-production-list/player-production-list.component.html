@@ -1,0 +1,180 @@
+<app-dialog
+  [show]="showListDialog"
+  [title]="viewMode === 'Units' ? 'Unit Production Overview' : 'Construction Overview'"
+  (close)="closeListDialog()"
+>
+  @if (!isMobile) {
+  <div class="player-list-container">
+
+    <!-- Filter Section -->
+    <div class="filter-header">
+      <input 
+        type="text" 
+        class="filter-input"
+        placeholder="Search User or Country..." 
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="applyFilters()"
+      />
+      
+      <!-- Mode Switcher -->
+      <select 
+        class="filter-select"
+        [(ngModel)]="viewMode" 
+        (ngModelChange)="applyFilters()"
+      >
+        <option value="Units">Producing Units</option>
+        <option value="Buildings">Constructing Buildings</option>
+      </select>
+    </div>
+
+    <!-- Loop over displayedPlayers -->
+    @for (player of displayedPlayers; track player.playerID) {
+      <div class="player-row">
+        
+        <div class="player-header">
+          <!-- Relations Icon -->
+          @let status = getRelationIcon(player.playerID);
+          <span class="relation-icon"
+                [style.color]="status.color"
+                (mouseenter)="showTooltip($event, status.name, 'top')"
+                (mouseleave)="hideTooltip()">
+            {{ status.icon }}
+          </span>
+
+          <span class="player-name">{{ player.player.name }}</span>
+          <span class="nation-separator">-</span>
+          <span class="nation-name">{{ player.player.nationName || 'Unknown Nation' }}</span>
+          <span class="spacer"></span>
+          
+          <span class="province-badge">
+            Provinces: {{ player.provinceCount }}
+          </span>
+
+          <span class="total-badge">
+             {{ getTotalCount(player) }} {{ viewMode === 'Units' ? 'Units' : 'Buildings' }}
+          </span>
+        </div>
+
+        <!-- Dynamic Deck -->
+        <div class="production-deck">
+          @for (item of getDisplayItems(player); track item.name + (item.level || '')) {
+            <div class="production-card" [class.is-unit]="viewMode === 'Units'">
+              
+              <!-- Level Badge -->
+              @if (!item.isUnit && item.level && item.level > 0 && shouldShowLevel(item.name)) {
+                <div class="level-badge">{{ toRoman(item.level) }}</div>
+              }
+
+              <div class="card-image-container" 
+                   (mouseenter)="showTooltip($event, item.name + (item.level ? ' (Lvl ' + item.level + ')' : ''), 'top')" 
+                   (mouseleave)="hideTooltip()">
+                @if (item.image) {
+                  <img [src]="item.image" alt="{{ item.name }}" onerror="this.style.display='none'"/>
+                } @else {
+                  <div class="no-image">{{ item.name }}</div>
+                }
+              </div>
+
+              <!-- Time display below image: Subtract elapsedSeconds from the snapshot time -->
+              <div class="card-time" title="Time until next completion">
+                {{ formatTime(item.minRemainingTime - elapsedSeconds) }}
+              </div>
+
+              <div class="card-info-strip">
+                <span class="count">{{ item.count }}</span>
+              </div>
+
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
+    <!-- Empty State Logic -->
+    @if (allPlayers.length === 0) {
+      <div class="empty-state">No production activity found on the map.</div>
+    } @else if (displayedPlayers.length === 0) {
+      <div class="empty-state">No players match the current filters.</div>
+    }
+
+  </div>
+  } @else {
+  <!-- ================= MOBILE LAYOUT ================= -->
+  <div class="mobile-production" (click)="closeMobileOverlays()">
+
+    <div class="segmented">
+      <button type="button" [class.active]="viewMode === 'Units'" (click)="setViewMode('Units')">Producing Units</button>
+      <button type="button" [class.active]="viewMode === 'Buildings'" (click)="setViewMode('Buildings')">Constructing Buildings</button>
+    </div>
+
+    <div class="search-row">
+      <input
+        type="text"
+        placeholder="Search user or country..."
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="applyFilters()"
+      />
+    </div>
+
+    <div class="live-row"><span class="live-dot"></span>Refreshed {{ elapsedSeconds | number:'1.0-0' }}s ago</div>
+
+    @for (player of displayedPlayers; track player.playerID) {
+      @let status = getRelationIcon(player.playerID);
+      <div class="player-card" [class.expanded]="isExpanded(player.playerID)">
+        <div class="player-head" (click)="toggleExpanded(player.playerID); $event.stopPropagation()">
+          <span class="relation-dot" [style.background]="status.color"></span>
+          <div class="player-id">
+            <div class="player-name">{{ player.player.name }}</div>
+            <div class="player-nation">{{ player.player.nationName || 'Unknown Nation' }}</div>
+          </div>
+          <span class="badge">{{ player.provinceCount }} provinces</span>
+          <span class="badge hp">{{ getTotalCount(player) }} {{ viewMode === 'Units' ? 'units' : 'buildings' }}</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+
+        @if (isExpanded(player.playerID)) {
+          <div class="deck">
+            @for (item of getDisplayItems(player); track item.name + (item.level || '')) {
+              <div class="unit-card" [class.is-unit]="viewMode === 'Units'" (click)="toggleUnitTip(player.playerID, item); $event.stopPropagation()">
+                @if (!item.isUnit && item.level && item.level > 0 && shouldShowLevel(item.name)) {
+                  <span class="unit-level">{{ toRoman(item.level) }}</span>
+                }
+                <div class="unit-image">
+                  @if (item.image) {
+                    <img [src]="item.image" alt="{{ item.name }}" onerror="this.style.display='none'"/>
+                  } @else {
+                    <div class="no-image">{{ item.name }}</div>
+                  }
+                </div>
+                <div class="time-pill">{{ formatTime(item.minRemainingTime - elapsedSeconds) }}</div>
+                <div class="unit-count">{{ item.count }}</div>
+
+                @if (isTipOpen(player.playerID, item)) {
+                  <div class="tap-tip"><b>{{ item.name }}{{ item.level ? ' (Lvl ' + item.level + ')' : '' }}</b><br>{{ formatTime(item.minRemainingTime - elapsedSeconds) }}</div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (allPlayers.length === 0) {
+      <div class="empty-state">No production activity found on the map.</div>
+    } @else if (displayedPlayers.length === 0) {
+      <div class="empty-state">No players match the current filters.</div>
+    }
+
+  </div>
+  }
+</app-dialog>
+
+<!-- Tooltip -->
+<div class="custom-tooltip" 
+     *ngIf="tooltipVisible" 
+     [style.top.px]="tooltipTop" 
+     [style.left.px]="tooltipLeft"
+     [ngClass]="tooltipClass">
+  {{ tooltipText }}
+</div>

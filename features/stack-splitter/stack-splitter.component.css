@@ -1,0 +1,564 @@
+.splitter-container {
+  width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: "Segoe UI", sans-serif;
+  color: #e0e0e0;
+}
+
+.instructions {
+  font-size: 0.9rem;
+  color: #aaa;
+  font-style: italic;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #252526;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #333;
+}
+
+.control-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-weight: bold;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.val {
+  color: #cfa665;
+  font-family: monospace;
+  font-size: 1rem;
+}
+
+.empty-msg {
+  color: #888;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.input-num {
+  background: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #cfa665;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 70px;
+  text-align: center;
+  font-family: monospace;
+  outline: none;
+}
+
+.input-num:focus {
+  border-color: #cfa665;
+}
+
+.input-num:disabled {
+  opacity: 0.5;
+}
+
+.action-btn {
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: #444;
+  border-color: #777;
+}
+
+.action-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.action-btn.primary {
+  background: #cfa665;
+  color: #1e1e1e;
+  border-color: #b38f54;
+}
+
+.action-btn.primary:hover:not(:disabled) {
+  background: #e0b776;
+}
+
+.action-btn.selecting {
+  background: #007acc;
+  color: white;
+  border-color: #0099ff;
+  animation: pulse 1.5s infinite;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 122, 204, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(0, 122, 204, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 122, 204, 0); }
+}
+
+.action-btn.small {
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  width: auto;
+  flex: none;
+}
+
+/* --- Divide popup --- */
+
+.divide-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #1e1e1e;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 8px;
+  margin: 2px 0 4px;
+}
+
+.divide-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.divide-actions .action-btn {
+  flex: 1;
+}
+
+/* --- Unit picker --- */
+
+.unit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #1e1e1e;
+}
+
+.unit-list::-webkit-scrollbar {
+  width: 6px;
+}
+.unit-list::-webkit-scrollbar-track {
+  background: #1e1e1e;
+  border-radius: 3px;
+}
+.unit-list::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 3px;
+}
+.unit-list::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+.unit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.unit-row.selected {
+  background: #2e2a20;
+  border-color: #4a3a25;
+}
+
+.unit-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.unit-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.unit-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #eee;
+  font-size: 0.85rem;
+}
+
+.unit-available {
+  color: #888;
+  font-size: 0.8rem;
+  font-family: monospace;
+  white-space: nowrap;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #ccc;
+  cursor: pointer;
+}
+
+/* --- Preview --- */
+
+.preview-group {
+  background: #1e1e1e;
+}
+
+.preview-list {
+  margin: 4px 0 0 0;
+  padding-left: 18px;
+  font-size: 0.85rem;
+  color: #cfa665;
+  font-family: monospace;
+}
+
+.damage-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.damage-table th,
+.damage-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #333;
+}
+
+.damage-table thead tr:first-child th {
+  border-bottom: none;
+  color: #888;
+  font-weight: normal;
+}
+
+.damage-table tbody td:first-child {
+  text-align: left;
+  color: #ccc;
+}
+
+.damage-table .total-row td {
+  border-top: 1px solid #555;
+  border-bottom: none;
+  font-weight: bold;
+  color: #cfa665;
+}
+
+.damage-table .total-row td:first-child {
+  color: #cfa665;
+}
+
+/* --- Planned stack list (reuses area-split-manager's target-list look) --- */
+
+.target-list {
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #1e1e1e;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.target-item {
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #2a2a2a;
+  color: #eee;
+}
+
+.target-item:last-child {
+  border-bottom: none;
+}
+
+.target-item.sent {
+  color: #4caf50;
+}
+
+.target-item.failed {
+  color: #ff5252;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.confirm-actions .action-btn {
+  flex: 1;
+}
+
+.status-bar {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #4caf50;
+  min-height: 1.2em;
+}
+
+/* Progress Bar */
+.progress-container {
+  width: 100%;
+  height: 16px;
+  background-color: #333;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid #444;
+  margin-bottom: 4px;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #4caf50;
+  width: 0%;
+  transition: width 0.2s ease-out;
+  background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+  background-size: 1rem 1rem;
+}
+
+.progress-text-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  z-index: 2;
+}
+
+/* Minimized View */
+.mini-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 140px;
+  text-align: center;
+}
+
+.mini-msg {
+  color: #cfa665;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.mini-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.mini-btn {
+  flex: 1;
+  border: 1px solid #555;
+  background: #2a2a2a;
+  color: #ccc;
+  font-size: 0.8rem;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.mini-btn:hover {
+  background: #333;
+  color: #fff;
+}
+
+.mini-progress-text {
+  color: #4caf50;
+  font-size: 0.8rem;
+}
+
+/* --- Mobile / tablet (isMobileClient) ---
+   app-dialog already docks as a full-width bottom sheet on mobile, so the fixed 420px
+   desktop width just needs to become fluid. Capped at 520px + centered so it doesn't
+   stretch edge-to-edge into an unreadably wide row on a tablet-size sheet. */
+.splitter-container.mobile {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  gap: 10px;
+}
+
+.splitter-container.mobile .unit-list {
+  max-height: 34vh;
+}
+
+/* 16px (1rem) min font-size on inputs avoids iOS Safari auto-zooming the page on focus;
+   otherwise sized the same as desktop - no min-height, these only ever hold a couple digits. */
+.splitter-container.mobile .input-num {
+  font-size: 1rem;
+  width: 48px;
+  padding: 4px 6px;
+}
+
+.splitter-container.mobile .action-btn {
+  padding: 12px 14px;
+  font-size: 0.85rem;
+}
+
+.splitter-container.mobile .action-btn.small {
+  padding: 8px 10px;
+  font-size: 0.75rem;
+}
+
+/* Split confirmation is the irreversible action - stack the two buttons full-width
+   instead of squeezing them side by side, so touch targets stay comfortably large. */
+.splitter-container.mobile .confirm-actions {
+  flex-direction: column;
+}
+
+.splitter-container.mobile .unit-row {
+  padding: 6px 8px;
+}
+
+.splitter-container.mobile .unit-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.splitter-container.mobile .unit-name {
+  font-size: 0.9rem;
+}
+
+.splitter-container.mobile .damage-table {
+  font-size: 0.72rem;
+}
+
+.splitter-container.mobile .damage-table th,
+.splitter-container.mobile .damage-table td {
+  padding: 4px 3px;
+}
+
+.splitter-container.mobile .target-list {
+  max-height: 30vh;
+}
+
+/* Touch targets: floor everything tappable at 44-48px, matching the mobile Combat
+   Calculator's chip buttons, since the desktop sizes below that are mouse-cursor sized. */
+.splitter-container.mobile .unit-row {
+  padding: 8px 10px;
+  min-height: 48px;
+}
+
+.splitter-container.mobile .unit-check {
+  min-height: 44px;
+}
+
+.splitter-container.mobile .unit-check input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #cfa665;
+}
+
+.splitter-container.mobile .input-num {
+  min-height: 44px;
+}
+
+.splitter-container.mobile .action-btn {
+  min-height: 46px;
+}
+
+.splitter-container.mobile .action-btn.small {
+  min-height: 40px;
+}
+
+.splitter-container.mobile .radio-label {
+  min-height: 40px;
+}
+
+.splitter-container.mobile .radio-label input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #cfa665;
+}
+
+/* Minimized bar (docked full-width via dialog.component.css) - title left,
+   Expand/Close (or Cancel) right, progress spans the full row below when executing. */
+.mini-content.mobile {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 8px;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+}
+
+.mini-content.mobile .mini-msg {
+  grid-column: 1;
+  grid-row: 1;
+  text-align: left;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-content.mobile .mini-actions {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.mini-content.mobile .mini-progress {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mini-content.mobile .mini-btn {
+  flex: none;
+  min-height: 44px;
+  padding: 0 16px;
+}

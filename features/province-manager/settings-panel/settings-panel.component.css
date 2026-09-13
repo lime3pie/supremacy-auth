@@ -1,0 +1,77 @@
+/* File: /scripts/features/province-manager/settings-panel/settings-panel.component.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap');
+
+/* Scoped on :host rather than :root (this renders inside the extension's Shadow DOM root), and
+   duplicated from province-manager.component.css rather than relying on DOM inheritance from a
+   sibling component's overlay - see that file's header comment for why. */
+:host {
+  --ink: #14181f;
+  --ink-3: #232b38;
+  --line: #313b4a;
+  --line-strong: #46536a;
+  --paper: #eae4d6;
+  --paper-dim: #a9a394;
+  --paper-faint: #6f6d66;
+  --brass: #c98a4b;
+  --shadow: 0 28px 70px rgba(0, 0, 0, 0.6);
+
+  /* Re-themes the shared <app-dialog> frame to match Province Manager's brass/ink console look -
+     see province-manager.component.css's :host block for the full rundown of what each of these
+     names controls (they're inherited by <app-dialog>, not declared directly on it). */
+  --dialog-bg: var(--ink);
+  --dialog-text: var(--paper);
+  --dialog-border: var(--line-strong);
+  --dialog-radius: 4px;
+  --dialog-shadow: var(--shadow);
+  --dialog-accent: var(--brass);
+  --dialog-scrollbar-track: var(--ink);
+  --dialog-scrollbar-thumb: var(--line-strong);
+  --dialog-scrollbar-thumb-hover: var(--paper-faint);
+
+  --dialog-padding: 0;
+  --dialog-header-padding: 18px 22px 14px;
+  --dialog-header-border: 1px solid var(--line);
+  --dialog-header-margin-bottom: 0;
+  --dialog-header-actions-gap: 14px;
+
+  --dialog-close-border: 1px solid var(--line);
+  --dialog-close-radius: 3px;
+  --dialog-close-padding: 6px 8px;
+  --dialog-close-font-size: 16px;
+  --dialog-close-color: var(--paper-dim);
+  --dialog-close-color-hover: var(--paper);
+  --dialog-close-border-color-hover: var(--line-strong);
+
+  --dialog-title-font-family: "Oswald", sans-serif;
+  --dialog-title-font-weight: 700;
+  --dialog-title-font-size: 21px;
+  --dialog-title-text-transform: uppercase;
+  --dialog-title-letter-spacing: 0.06em;
+}
+
+* { box-sizing: border-box; }
+
+.settings-body { padding: 8px 22px 20px; color: var(--paper); font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 14px 0; border-bottom: 1px solid var(--line);
+}
+.setting-row:last-child { border-bottom: none; }
+
+.setting-text { min-width: 0; }
+.setting-label { font-size: 13px; font-weight: 600; color: var(--paper); letter-spacing: 0.02em; }
+.setting-desc { margin-top: 3px; font-size: 11.5px; line-height: 1.4; color: var(--paper-faint); }
+
+.toggle {
+  flex-shrink: 0; position: relative; width: 40px; height: 22px; padding: 0;
+  background: var(--ink-3); border: 1px solid var(--line-strong); border-radius: 11px;
+  cursor: pointer; transition: background 0.15s ease;
+}
+.toggle .knob {
+  position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--paper-dim); transition: left 0.15s ease, background 0.15s ease;
+}
+.toggle.on { background: #3d5a3f; border-color: #4f7752; }
+.toggle.on .knob { left: 20px; background: var(--paper); }

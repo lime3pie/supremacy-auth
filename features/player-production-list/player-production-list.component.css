@@ -1,0 +1,499 @@
+.player-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+/* --- Filter Styles --- */
+.filter-header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 4px;
+  padding: 4px 2px;
+}
+
+.filter-input {
+  flex: 1;
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filter-input:focus {
+  border-color: #cfa665;
+}
+
+.filter-select {
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  min-width: 140px;
+}
+
+.filter-select:focus {
+  border-color: #cfa665;
+}
+
+.player-row {
+  background-color: #252526;
+  border: 1px solid #3e3e42;
+  border-radius: 6px;
+  padding: 10px;
+  transition: background-color 0.2s, border-color 0.2s;
+  cursor: default;
+}
+
+.player-row:hover {
+  background-color: #2d2d30;
+}
+
+/* --- Header Section --- */
+.player-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #3e3e42;
+  padding-bottom: 6px;
+}
+
+.relation-icon {
+  font-size: 1.2rem;
+  margin-right: 8px;
+  cursor: help;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-name {
+  font-weight: bold;
+  color: #f0f0f0;
+  font-size: 1rem;
+}
+
+.nation-separator {
+  margin: 0 6px;
+  color: #666;
+}
+
+.nation-name {
+  color: #aaa;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.province-badge {
+  color: #b0bec5; 
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-right: 12px;
+}
+
+.total-badge {
+  background: #333;
+  color: #888;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  border: 1px solid #444;
+}
+
+/* --- Deck Layout --- */
+.production-deck {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* --- Card Style --- */
+.production-card {
+  position: relative;
+  width: 60px;
+  height: 96px; /* Increased height to fit time */
+  background-color: #4a4a4a;
+  border: 2px solid #555;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.production-card.is-unit {
+    background-color: #5a6b70; 
+    border-color: #3a4b50;
+}
+.production-card {
+  position: relative; /* Essential for absolute positioning of badge */
+  width: 60px;
+  height: 96px; 
+  background-color: #4a4a4a;
+  border: 2px solid #555;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.production-card.is-unit {
+    background-color: #5a6b70; 
+    border-color: #3a4b50;
+}
+
+/* --- NEW: Level Badge Style (Matched from player-building-list) --- */
+.level-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #ffd700; /* Gold color */
+  font-family: "Times New Roman", Times, serif;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 1px 5px;
+  border: 1px solid #555;
+  border-radius: 3px;
+  z-index: 2;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+
+/* Image Container */
+.card-image-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  background-color: rgba(0,0,0,0.2);
+  min-height: 0; /* Important for flex child */
+}
+
+.card-image-container img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+}
+
+.no-image {
+  font-size: 0.7rem;
+  text-align: center;
+  color: #888;
+  padding: 2px;
+}
+
+/* Time Display */
+.card-time {
+  background-color: #222;
+  color: #ffd700; /* Gold/Yellow for time */
+  font-size: 10px;
+  text-align: center;
+  padding: 1px 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Info Strip */
+.card-info-strip {
+  background-color: #1a1a1a;
+  color: #fff;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  border-top: 1px solid rgba(0,0,0,0.5);
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.empty-state {
+  text-align: center;
+  color: #888;
+  padding: 20px;
+  font-style: italic;
+}
+
+/* --- Fixed Tooltip --- */
+.custom-tooltip {
+  position: fixed;
+  background: rgba(20, 25, 30, 0.95);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  border: 1px solid #555;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  z-index: 100000;
+}
+
+.custom-tooltip.tooltip-above {
+  transform: translate(-50%, -100%);
+}
+
+.custom-tooltip.tooltip-below {
+  transform: translate(-50%, 0);
+}
+
+/* ============================================================
+   Mobile layout (settings.hup.config.isMobileClient)
+   ============================================================ */
+
+.mobile-production {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.segmented {
+  display: flex;
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  border-radius: 9px;
+  padding: 3px;
+}
+
+.segmented button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 0.78rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 9px 4px;
+  border-radius: 7px;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.segmented button.active {
+  background-color: #cfa665;
+  color: #1a1a1a;
+}
+
+.mobile-production .search-row input {
+  width: 100%;
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  min-height: 40px;
+}
+
+.mobile-production .search-row input:focus {
+  border-color: #cfa665;
+}
+
+.live-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: #888;
+  padding: 0 2px;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4caf50;
+}
+
+.mobile-production .player-card {
+  background-color: #252526;
+  border: 1px solid #3e3e42;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.player-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 12px;
+  cursor: pointer;
+  min-height: 48px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.relation-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.player-id {
+  min-width: 0;
+  flex: 1;
+}
+
+.mobile-production .player-name {
+  font-size: 0.88rem;
+  font-weight: bold;
+  color: #f0f0f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-production .player-nation {
+  font-size: 0.75rem;
+  color: #888;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-production .badge {
+  font-size: 0.7rem;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: #333;
+  border: 1px solid #444;
+  color: #b0bec5;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mobile-production .badge.hp {
+  color: #ccc;
+}
+
+.chevron {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: #888;
+  transition: transform 0.18s ease;
+}
+
+.player-card.expanded .chevron {
+  transform: rotate(180deg);
+}
+
+.mobile-production .deck {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 2px 12px 13px;
+}
+
+.mobile-production .unit-card {
+  position: relative;
+  width: 66px;
+  background-color: #4a4a4a;
+  border: 2px solid #555;
+  border-radius: 8px;
+  padding: 7px 5px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-production .unit-card.is-unit {
+  background-color: #5a6b70;
+  border-color: #3a4b50;
+}
+
+.mobile-production .unit-image {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-production .unit-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mobile-production .no-image {
+  font-size: 0.6rem;
+  text-align: center;
+  color: #ccc;
+}
+
+.mobile-production .time-pill {
+  font-family: "Lucida Console", Monaco, monospace;
+  font-size: 0.62rem;
+  color: #ffd700;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+
+.mobile-production .unit-count {
+  font-family: "Lucida Console", Monaco, monospace;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.mobile-production .unit-level {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.62rem;
+  color: #ffd700;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 3px;
+  padding: 0 3px;
+  line-height: 1.4;
+}
+
+.mobile-production .tap-tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0d0c0a;
+  border: 1px solid #cfa665;
+  color: #fff;
+  font-size: 0.68rem;
+  line-height: 1.4;
+  padding: 6px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 20;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-production .tap-tip b {
+  color: #ffd700;
+}

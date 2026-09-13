@@ -1,0 +1,232 @@
+<app-dialog [show]="showDialog" [minimized]="checkingSpies" title="Spy Intelligence Reports" (close)="close()">
+  @if (showDialog){
+  <div class="spy-container">
+
+    <!-- Controls Header -->
+    <div class="controls">
+      <button class="fetch-btn" (click)="fetchAllReports()" [disabled]="isLoading">
+        {{ isLoading ? loadingProgress : 'Fetch All Reports' }}
+      </button>
+
+      <button class="check-spies-btn" (click)="checkEnemySpies()" [disabled]="isLoading || isCheckingSpies" title="Check if enemy spies are hiding on your provinces">
+        🕵️ {{ isCheckingSpies ? loadingProgress : 'Check Enemy Spies' }}
+      </button>
+
+      <!-- Searchable Country Selector -->
+      <div class="country-select-wrapper">
+        <app-searchable-select
+          [options]="countryOptions"
+          [(value)]="selectedCountryId"
+          (valueChange)="onCountryChange()"
+          placeholder="Select a Nation..."
+          [disabled]="isLoading || countryOptions.length === 0">
+        </app-searchable-select>
+      </div>
+
+      <!-- Day Selector -->
+      @if (selectedCountryId && availableDays.length > 0) {
+        <select class="day-select" [(ngModel)]="selectedDay" (change)="onDayChange()">
+          @for (day of availableDays; track day) {
+            <option [ngValue]="day">Day {{ day }}</option>
+          }
+        </select>
+      }
+    </div>
+
+    @if (isLoading) {
+      <div class="loading-state">
+        <p>Scanning intelligence files...</p>
+        <p>{{ loadingProgress }}</p>
+      </div>
+    } 
+    @else if (selectedIntel) {
+      <div class="report-content">
+        
+        <!-- Report Header -->
+        <div class="report-header">
+           <div class="header-main">
+             <img [src]="getFlagUrl(selectedIntel.flagId)" class="flag-icon-lg">
+             <div>
+               <div class="nation">{{ selectedIntel.nationName }}</div>
+               <div class="player">Player: {{ selectedIntel.playerName }}</div>
+             </div>
+           </div>
+           <span class="snapshot-info">Intelligence from Day {{ selectedIntel.snapshotDay }}</span>
+        </div>
+
+        <!-- Resources Grid -->
+        @if (selectedIntel.resources.length > 0) {
+          <div class="section-title">Resources</div>
+          <div class="resource-grid">
+            @for (res of selectedIntel.resources; track res.id) {
+              <div class="res-card">
+                <img [src]="res.icon" onerror="this.style.display='none'">
+                <span class="res-amount">{{ res.amount | number:'1.0-0' }}</span>
+                <span class="res-name">{{ res.name }}</span>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Relations (NEW) -->
+        @if (selectedIntel.relations.length > 0) {
+          <div class="section-title">Diplomatic Relations</div>
+          <div class="rel-grid">
+            @for (rel of selectedIntel.relations; track rel.targetId) {
+              <div class="rel-card" [style.border-left-color]="rel.status.color">
+                 <span class="rel-target">{{ rel.name }}</span>
+                 <span class="rel-status" [style.color]="rel.status.color">
+                    {{ rel.status.icon }} {{ rel.status.name }}
+                 </span>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Stock Market -->
+        @if (selectedIntel.stockOrders.length > 0) {
+          <div class="section-title">Stock Market Activity</div>
+          <div class="stock-list">
+            @for (order of selectedIntel.stockOrders; track $index) {
+              <div class="stock-item" [class.buy]="order.type === 'Buy'" [class.sell]="order.type === 'Sell'">
+                 <span class="order-type">{{ order.type }}</span>
+                 <span class="order-detail">{{ order.amount | number }} {{ order.resource }} @ {{ order.price }}</span>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Messages -->
+        @if (selectedIntel.interceptedMessages.length > 0) {
+          <div class="section-title">Intercepted Communications</div>
+          <div class="msg-list">
+            @for (msg of selectedIntel.interceptedMessages; track $index) {
+              <div class="msg-card">
+                <div class="msg-header">
+                  <div class="msg-meta">{{ msg.from }}</div>
+                  <div class="msg-subject">{{ msg.subject }}</div>
+                </div>
+                <div class="msg-body" [innerHTML]="msg.msg"></div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Spies -->
+        @if (selectedIntel.spiesDetected.length > 0) {
+          <div class="section-title">Enemy Spies Detected</div>
+          <div class="simple-list">
+             @for (spy of selectedIntel.spiesDetected; track $index) {
+               <div class="spy-item" title="Jump to province" (click)="jumpToProvince(spy.locationID)">
+                 <span>{{ spy.count }} spy in {{ spy.location }}</span>
+                 <span class="spy-owner">({{ spy.ownerNation }} - {{ spy.ownerPlayer }})</span>
+               </div>
+             }
+          </div>
+        }
+
+        <div class="cols-2">
+          <!-- Armies -->
+          <div class="col">
+            <div class="section-title">Revealed Armies ({{ selectedIntel.knownArmies.length }})</div>
+            <div class="army-list">
+               @for (army of selectedIntel.knownArmies; track $index) {
+                 <div class="army-item">
+                   <div class="army-icon">
+                     <img [src]="army.icon" onerror="this.style.display='none'">
+                   </div>
+                   <div class="army-details">
+                     <div class="army-loc">{{ army.location }}</div>
+                     <div class="army-comp">{{ army.name }}</div>
+                   </div>
+                 </div>
+               }
+               @if (selectedIntel.knownArmies.length === 0) {
+                 <div class="none-found">No armies revealed.</div>
+               }
+            </div>
+          </div>
+
+          <!-- Provinces -->
+          <div class="col">
+             <div class="section-title">Province Intel ({{ selectedIntel.knownProvinces.length }})</div>
+             <div class="prov-list">
+               @for (prov of selectedIntel.knownProvinces; track prov.name) {
+                 <div class="prov-item">
+                   <div class="prov-header">{{ prov.name }}</div>
+                   
+                   <!-- Upgrades -->
+                   <div class="prov-upgrades">
+                     @for (up of prov.upgrades; track up.name) {
+                       <img [src]="up.image" [title]="up.name + ' ' + up.level" class="upgrade-icon">
+                     }
+                   </div>
+
+                   <!-- Production Info -->
+                   @if (prov.production) {
+                     <div class="prov-production">
+                        <span class="label">Producing:</span>
+                        <div class="prod-details">
+                           @if (prov.production.icon) {
+                             <img [src]="prov.production.icon" class="prod-icon">
+                           }
+                           <div class="prod-text">
+                             <div class="prod-name">{{ prov.production.name }}</div>
+                             <div class="prod-time">Time remaining: {{ formatTime(prov.production.time) }}</div>
+                           </div>
+                        </div>
+                     </div>
+                   }
+                 </div>
+               }
+               @if (selectedIntel.knownProvinces.length === 0) {
+                 <div class="none-found">No provinces revealed.</div>
+               }
+             </div>
+          </div>
+        </div>
+
+      </div>
+    } 
+    @else {
+      <div class="empty-state">
+        Select a nation above to view intelligence reports.
+      </div>
+    }
+
+  </div>
+  }
+
+  <!-- MINIMIZED CONTENT: enemy spy check results -->
+  <div minimized-content class="spy-check-content">
+    <div class="spy-check-header">
+      <span>🕵️ Enemy Spies Found: {{ enemySpySightings.length }}</span>
+      <button class="mini-btn restore" (click)="closeSpyCheck()">Back to Report</button>
+    </div>
+
+    @if (enemySpyDays.length > 0) {
+      <select class="day-select spy-check-day-select" [(ngModel)]="selectedSpyDay" (change)="onSpyDayChange()">
+        @for (day of enemySpyDays; track day) {
+          <option [ngValue]="day">Day {{ day }}</option>
+        }
+      </select>
+    }
+
+    @if (enemySpySightings.length > 0) {
+      <div class="spy-check-list">
+        @for (s of enemySpySightings; track s.locationID + '-' + s.spyNation) {
+          <div class="spy-check-row">
+            <div class="spy-check-info">
+              <span class="spy-check-province">{{ s.provinceName }}</span>
+              <span class="spy-check-owner">{{ s.spyNation }} ({{ s.spyPlayer }}) &middot; Day {{ s.day }}</span>
+            </div>
+            <button class="icon-btn" title="Jump to province" (click)="jumpToProvince(s.locationID)">📍</button>
+          </div>
+        }
+      </div>
+      <div class="spy-check-hint">Click a province, then click anywhere on the map to interact (e.g. add spies).</div>
+    } @else {
+      <div class="empty-msg">No enemy spies detected on your provinces (based on reports fetched so far).</div>
+    }
+  </div>
+</app-dialog>

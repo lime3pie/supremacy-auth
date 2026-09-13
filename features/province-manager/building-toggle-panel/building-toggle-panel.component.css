@@ -1,0 +1,104 @@
+/* File: /scripts/features/province-manager/building-toggle-panel/building-toggle-panel.component.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap');
+
+/* Scoped on :host rather than :root (this renders inside the extension's Shadow DOM root), and
+   duplicated from province-manager.component.css rather than relying on DOM inheritance - see that
+   file's header comment for why. */
+:host {
+  --ink: #14181f;
+  --ink-2: #1b212b;
+  --ink-3: #232b38;
+  --line: #313b4a;
+  --line-strong: #46536a;
+  --paper: #eae4d6;
+  --paper-dim: #a9a394;
+  --paper-faint: #6f6d66;
+  --brass: #c98a4b;
+  --verdigris: #5fa8a3;
+  --verdigris-soft: rgba(95, 168, 163, 0.16);
+  --danger: #c1554a;
+  --shadow: 0 28px 70px rgba(0, 0, 0, 0.6);
+
+  --dialog-bg: var(--ink);
+  --dialog-text: var(--paper);
+  --dialog-border: var(--line-strong);
+  --dialog-radius: 4px;
+  --dialog-shadow: var(--shadow);
+  --dialog-accent: var(--brass);
+  --dialog-scrollbar-track: var(--ink);
+  --dialog-scrollbar-thumb: var(--line-strong);
+  --dialog-scrollbar-thumb-hover: var(--paper-faint);
+
+  --dialog-padding: 0;
+  --dialog-header-padding: 18px 22px 14px;
+  --dialog-header-border: 1px solid var(--line);
+  --dialog-header-margin-bottom: 0;
+
+  --dialog-close-border: 1px solid var(--line);
+  --dialog-close-radius: 3px;
+  --dialog-close-padding: 6px 8px;
+  --dialog-close-font-size: 16px;
+  --dialog-close-color: var(--paper-dim);
+  --dialog-close-color-hover: var(--paper);
+  --dialog-close-border-color-hover: var(--line-strong);
+
+  --dialog-title-font-family: "Oswald", sans-serif;
+  --dialog-title-font-weight: 700;
+  --dialog-title-font-size: 21px;
+  --dialog-title-text-transform: uppercase;
+  --dialog-title-letter-spacing: 0.06em;
+}
+
+* { box-sizing: border-box; }
+
+.console-sub { font-size: 11.5px; color: var(--paper-faint); margin-top: 3px; }
+
+.toggle-panel { max-width: 640px; }
+
+.toggle-list { max-height: 55vh; overflow: auto; padding: 6px 10px; }
+.toggle-list::-webkit-scrollbar { width: 9px; }
+.toggle-list::-webkit-scrollbar-track { background: var(--ink); }
+.toggle-list::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 5px; }
+
+.toggle-empty { padding: 26px 22px; font-size: 12px; color: var(--paper-faint); font-style: italic; text-align: center; }
+
+.tgl-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 10px; border-radius: 4px;
+  border-bottom: 1px solid var(--line); flex-wrap: wrap;
+}
+.tgl-row:last-child { border-bottom: none; }
+.tgl-row:hover { background: rgba(255,255,255,0.025); }
+
+.tgl-icon {
+  width: 38px; height: 38px; border-radius: 4px; background: var(--ink-3); border: 1px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;
+}
+.tgl-icon img { width: 76%; height: 76%; object-fit: contain; }
+
+.tgl-meta { min-width: 140px; flex: 1; }
+.tgl-name { font-weight: 700; font-size: 12.5px; color: var(--paper); }
+.tgl-status { margin-top: 2px; font-size: 11px; color: var(--paper-faint); }
+.tgl-enabled { color: var(--verdigris); }
+.tgl-disabled { color: var(--danger); }
+.tgl-sep { margin: 0 5px; }
+
+.tgl-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
+
+.tgl-btn {
+  height: 26px; padding: 0 10px; border-radius: 3px; cursor: pointer; font-family: "Oswald", sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap;
+}
+.tgl-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.tgl-btn-enable { background: transparent; border: 1px solid var(--verdigris); color: var(--verdigris); }
+.tgl-btn-enable:hover:not(:disabled) { background: var(--verdigris-soft); }
+.tgl-btn-disable { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+.tgl-btn-disable:hover:not(:disabled) { background: rgba(193, 85, 74, 0.14); }
+
+.toast {
+  position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 14px); background: var(--ink-2); border: 1px solid var(--brass);
+  color: var(--paper); padding: 9px 16px; border-radius: 3px; font-size: 12.5px; font-weight: 600; box-shadow: var(--shadow);
+  opacity: 0; pointer-events: none; transition: opacity 0.16s ease, transform 0.16s ease; z-index: 70;
+  font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }

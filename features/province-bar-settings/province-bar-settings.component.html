@@ -1,0 +1,28 @@
+<!-- File: /scripts/features/province-bar-settings/province-bar-settings.component.html -->
+
+<app-dialog
+  [show]="showDialog"
+  title="Province Bar Settings"
+  [minWidth]="360"
+  [preferredWidth]="420"
+  (close)="close()">
+
+  <div class="settings-body">
+    @if (availableComponents.length > 0) {
+      <div class="intro">Choose which of these province bar extras are shown. This only affects your own view.</div>
+      @for (component of availableComponents; track component.role) {
+        <div class="setting-row">
+          <div class="setting-text">
+            <div class="setting-label">{{ component.label }}</div>
+            <div class="setting-desc">{{ component.description }}</div>
+          </div>
+          <button class="toggle" [class.on]="isVisible(component)" role="switch" [attr.aria-checked]="isVisible(component)" (click)="toggle(component)">
+            <span class="knob"></span>
+          </button>
+        </div>
+      }
+    } @else {
+      <div class="empty-msg">You don't have access to any province bar extras yet - ask an admin to grant you one.</div>
+    }
+  </div>
+</app-dialog>

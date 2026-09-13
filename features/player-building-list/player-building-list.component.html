@@ -1,0 +1,113 @@
+<!-- Main Player Building List Dialog -->
+<app-dialog 
+  [show]="showListDialog" 
+  title="Buildings Overview"
+  (close)="closeListDialog()"
+>
+  <div class="player-list-container">
+    
+    <!-- Filter Section -->
+    <div class="filter-header">
+      <input
+        type="text"
+        class="filter-input"
+        placeholder="Search User or Country..."
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="applyFilters()"
+      />
+
+      <select
+        class="filter-select"
+        [(ngModel)]="relationFilter"
+        (ngModelChange)="applyFilters()"
+      >
+        <option value="All">All</option>
+        <option value="Friends">Friends & Allies</option>
+        <option value="Enemies">Enemies & Others</option>
+      </select>
+
+      <select
+        class="filter-select sort-select"
+        [(ngModel)]="sortBy"
+        (ngModelChange)="applyFilters()"
+      >
+        @for (opt of sortOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Loop over displayedPlayers (Filtered) -->
+    @for (player of displayedPlayers; track player.playerID) {
+      <div class="player-row">
+        
+        <div class="player-header">
+          <!-- Relations Icon Logic -->
+          @let status = getRelationIcon(player.playerID);
+          <span class="relation-icon"
+                [style.color]="status.color"
+                (mouseenter)="showTooltip($event, status.name, 'top')"
+                (mouseleave)="hideTooltip()">
+            {{ status.icon }}
+          </span>
+
+          <span class="player-name">{{ player.player.name }}</span>
+          <span class="nation-separator">-</span>
+          <span class="nation-name">{{ player.player.nationName || 'Unknown Nation' }}</span>
+          <span class="spacer"></span>
+          
+          <span class="province-badge">
+            Provinces: {{ player.provinceCount }}
+          </span>
+
+          <span class="total-badge">{{ player.totalBuildings }} Buildings</span>
+        </div>
+
+        <div class="building-deck">
+          @for (bldg of player.buildings; track bldg.name + bldg.level) {
+            <div class="building-card">
+              
+              <!-- UPDATED: Allow level 0 to show (damaged state) -->
+              @if (bldg.level >= 0 && shouldShowLevel(bldg.name)) {
+                <div class="level-badge">{{ toRoman(bldg.level) }}</div>
+              }
+
+              <div class="card-image-container" 
+                   (mouseenter)="showTooltip($event, bldg.name + (bldg.level > 0 ? ' (Lvl ' + bldg.level + ')' : ''), 'top')" 
+                   (mouseleave)="hideTooltip()">
+                @if (bldg.image) {
+                  <img [src]="bldg.image" alt="{{ bldg.name }}" onerror="this.style.display='none'"/>
+                } @else {
+                  <div class="no-image">{{ bldg.name }}</div>
+                }
+              </div>
+
+              <div class="card-info-strip">
+                <span class="count">{{ bldg.count }}</span>
+              </div>
+
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
+    <!-- Empty State Logic -->
+    @if (allPlayers.length === 0) {
+      <div class="empty-state">No players found.</div>
+    } @else if (displayedPlayers.length === 0) {
+      <div class="empty-state">No players match the current filters.</div>
+    }
+
+  </div>
+</app-dialog>
+
+<!-- Fixed Position Tooltip -->
+<div class="custom-tooltip" 
+     *ngIf="tooltipVisible" 
+     [style.top.px]="tooltipTop" 
+     [style.left.px]="tooltipLeft"
+     [ngClass]="tooltipClass">
+  {{ tooltipText }}
+</div>

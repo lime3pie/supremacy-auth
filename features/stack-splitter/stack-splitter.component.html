@@ -1,0 +1,235 @@
+<app-dialog
+  [show]="showDialog"
+  [minimized]="isMinimized"
+  title="Stack Splitter"
+  [draggable]="true"
+  [resizable]="true"
+  (close)="close()"
+>
+  <div class="splitter-container" [class.mobile]="isMobile">
+
+    <div class="instructions">
+      1. Select a stack in-game. <br>
+      2. Pick unit types + amount per new stack. <br>
+      3. Preview, then Delay Split (same spot, sleep) or Move Split (spread along one line, no sleep).
+    </div>
+
+    <!-- Source Stack Info -->
+    <div class="control-group">
+      <div class="control-row">
+        <span class="label">Source Stack:</span>
+        <span class="val">{{ sourceArmy ? ('#' + sourceArmy.armyNumber + ' (' + sourceArmy.size + ' units)') : 'None' }}</span>
+      </div>
+      <button class="action-btn" [class.selecting]="isWaitingForArmySelection" [disabled]="isExecuting" (click)="startReselect()">
+        {{ isWaitingForArmySelection ? 'Selecting... (click a stack)' : '🔄 Refresh Selection' }}
+      </button>
+    </div>
+
+    <!-- Unit Picker -->
+    @if (sourceArmy) {
+      <div class="control-group">
+        <div class="control-row">
+          <div class="label">Units to split per new stack:</div>
+          <button class="action-btn small" [disabled]="isExecuting || unitRows.length === 0" (click)="toggleDivideForm()">
+            ➗ Divide Stack Evenly
+          </button>
+        </div>
+
+        @if (showDivideForm) {
+          <div class="divide-popup">
+            <div class="control-row">
+              <span class="label">Split into equal stacks:</span>
+              <input type="number" class="input-num" min="2" [(ngModel)]="divideCount">
+            </div>
+            <div class="divide-actions">
+              <button class="action-btn" (click)="showDivideForm = false">Cancel</button>
+              <button class="action-btn primary" (click)="applyDivide()">Apply</button>
+            </div>
+          </div>
+        }
+
+        @if (unitRows.length === 0) {
+          <div class="empty-msg">No splittable units in this stack.</div>
+        }
+
+        <div class="unit-list">
+          @for (row of unitRows; track row.unitTypeID) {
+            <div class="unit-row" [class.selected]="row.selected">
+              <label class="unit-check">
+                <input type="checkbox" [(ngModel)]="row.selected" (ngModelChange)="onInputChanged()" [disabled]="isExecuting">
+                <img class="unit-icon" [src]="row.icon" alt="">
+                <span class="unit-name">{{ row.name }}</span>
+              </label>
+              <span class="unit-available">/ {{ row.available }}</span>
+              <input
+                type="number"
+                class="input-num"
+                min="1"
+                [max]="row.available"
+                [(ngModel)]="row.perStackAmount"
+                (change)="validateAmount(row)"
+                [disabled]="!row.selected || isExecuting"
+              >
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Stack Count Mode -->
+      <div class="control-group">
+        <div class="control-row">
+          <label class="radio-label">
+            <input type="radio" name="stackCountMode" value="all" [(ngModel)]="stackCountMode" (ngModelChange)="onInputChanged()" [disabled]="isExecuting">
+            All that are possible
+          </label>
+        </div>
+        <div class="control-row">
+          <label class="radio-label">
+            <input type="radio" name="stackCountMode" value="specific" [(ngModel)]="stackCountMode" (ngModelChange)="onInputChanged()" [disabled]="isExecuting">
+            Specific number:
+          </label>
+          <input
+            type="number"
+            class="input-num"
+            min="1"
+            [(ngModel)]="specificCount"
+            (change)="validateSpecificCount()"
+            [disabled]="stackCountMode !== 'specific' || isExecuting"
+          >
+        </div>
+        <div class="control-row">
+          <span class="label">Max possible:</span>
+          <span class="val">{{ maxNewStacks }}</span>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <button
+        class="action-btn"
+        [disabled]="isExecuting || selectedRows.length === 0"
+        (click)="preview()"
+      >
+        👁️ Preview Split
+      </button>
+
+      @if (previewReady) {
+        <div class="control-group preview-group">
+          <div class="label">Will create {{ plannedStacks.length }} new stack{{ plannedStacks.length === 1 ? '' : 's' }}, each with:</div>
+          <ul class="preview-list">
+            @for (row of selectedRows; track row.unitTypeID) {
+              <li>{{ row.perStackAmount }}x {{ row.name }}</li>
+            }
+          </ul>
+          <div class="label" style="margin-top: 6px;">Source stack will keep:</div>
+          <ul class="preview-list">
+            @for (r of remainderRows; track r.name) {
+              <li>{{ r.remaining }}x {{ r.name }}</li>
+            }
+          </ul>
+
+          <div class="label" style="margin-top: 8px;">Estimated combat strength (with morale):</div>
+          <table class="damage-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th colspan="2">Normal</th>
+                <th colspan="2">Range</th>
+              </tr>
+              <tr>
+                <th></th>
+                <th>⚡ Atk</th><th>🛡 Def</th>
+                <th>⚡ Atk</th><th>🛡 Def</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Each new stack</td>
+                <td>{{ newStackDamage?.normal?.attack }}</td>
+                <td>{{ newStackDamage?.normal?.defence }}</td>
+                <td>{{ newStackDamage?.range?.attack }}</td>
+                <td>{{ newStackDamage?.range?.defence }}</td>
+              </tr>
+              <tr>
+                <td>Source (remainder)</td>
+                <td>{{ mainStackDamage?.normal?.attack }}</td>
+                <td>{{ mainStackDamage?.normal?.defence }}</td>
+                <td>{{ mainStackDamage?.range?.attack }}</td>
+                <td>{{ mainStackDamage?.range?.defence }}</td>
+              </tr>
+              <tr class="total-row">
+                <td>Total (all stacks)</td>
+                <td>{{ totalDamage?.normal?.attack }}</td>
+                <td>{{ totalDamage?.normal?.defence }}</td>
+                <td>{{ totalDamage?.range?.attack }}</td>
+                <td>{{ totalDamage?.range?.defence }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <!-- Planned stacks / progress -->
+      @if (plannedStacks.length > 0) {
+        <div class="target-list">
+          @for (stack of plannedStacks; track stack.index) {
+            <div class="target-item" [class.sent]="stack.status === 'Sent'" [class.failed]="stack.status === 'Failed'">
+              <span>Stack {{ stack.index }}</span>
+              <span>{{ stack.status }}</span>
+            </div>
+          }
+        </div>
+      }
+
+      @if (isExecuting || sentCount > 0) {
+        <div class="progress-container">
+          <div class="progress-fill" [style.width.%]="progressPercentage"></div>
+          <div class="progress-text-overlay">{{ sentCount }} / {{ plannedStacks.length }}</div>
+        </div>
+      }
+
+      <div class="status-bar">{{ statusMessage }}</div>
+
+      <div class="confirm-actions">
+        <button
+          class="action-btn primary"
+          [disabled]="!previewReady || isExecuting"
+          (click)="confirmAndSplit('delay')"
+          title="Send every new stack to the same nearby point and put it to sleep there."
+        >
+          {{ isExecuting ? 'Sending Commands...' : '🕐 Delay Split' }}
+        </button>
+        <button
+          class="action-btn primary"
+          [disabled]="!previewReady || isExecuting"
+          (click)="confirmAndSplit('move')"
+          title="Send each new stack further along the same direction than the last, 2km past the previous one."
+        >
+          {{ isExecuting ? 'Sending Commands...' : '🎯 Move Split' }}
+        </button>
+      </div>
+    }
+
+  </div>
+
+  <!-- Minimized View -->
+  <div minimized-content class="mini-content" [class.mobile]="isMobile">
+    <div class="mini-msg">{{ isWaitingForArmySelection ? 'Click a stack in-game...' : 'Stack Splitter' }}</div>
+    @if (isExecuting) {
+      <div class="mini-progress">
+        <div class="progress-container" style="height: 8px;">
+          <div class="progress-fill" [style.width.%]="progressPercentage"></div>
+        </div>
+        <div class="mini-progress-text">{{ sentCount }} / {{ plannedStacks.length }}</div>
+      </div>
+    }
+    <div class="mini-actions">
+      @if (isWaitingForArmySelection) {
+        <button class="mini-btn" (click)="startReselect()">Cancel</button>
+      } @else {
+        <button class="mini-btn" (click)="isMinimized = false">Expand</button>
+        <button class="mini-btn" (click)="close()">Close</button>
+      }
+    </div>
+  </div>
+
+</app-dialog>

@@ -1,0 +1,47 @@
+<app-dialog
+  [show]="showDialog"
+  [showBackdrop]="false"
+  [minimized]="isMinimized"
+  position="top-left"
+  title="Unit Range Tools"
+  (close)="close()"
+>
+  <button header-actions *ngIf="!isMinimized" class="minimize-btn" [class.mobile]="isMobile" title="Minimize" (click)="isMinimized = true">➖</button>
+
+  <div class="range-container" [class.mobile]="isMobile">
+
+    <div class="controls-header">
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search units..." class="search-input">
+      <button class="clear-btn" (click)="clearRanges()">Clear Map</button>
+    </div>
+
+    <div class="unit-list">
+      @for (u of filteredUnits; track u.unitTypeID) {
+        <div class="unit-row">
+          <div class="unit-info">
+            <img [src]="getUnitIcon(u.unitType)" class="unit-icon">
+            <span class="unit-name">{{ u.unitName }}</span>
+          </div>
+
+          <div class="button-group">
+            <button class="range-btn vision-detail" (click)="handleVisionDetailClick(u.viewRange.vision, u.viewRange.detail)">
+              Vision + Detail
+            </button>
+
+            @if (u.attackRange > 0) {
+              <button class="range-btn attack" (click)="handleAttackClick(u.attackRange)">
+                Attack ({{ u.attackRange }}k)
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- This content only shows in the bottom-right corner when minimized (docked full-width on mobile) -->
+  <div minimized-content class="minimized-info" [class.mobile]="isMobile">
+    <div class="minimized-msg">Click map to place range circle...</div>
+    <button class="mini-cancel" (click)="isMinimized = false">Cancel</button>
+  </div>
+</app-dialog>

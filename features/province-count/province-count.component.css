@@ -1,0 +1,286 @@
+/* File: /scripts/components/province-count/province-count.component.css */
+
+.resource-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+/* --- Filter Styles --- */
+.filter-header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 4px;
+  padding: 4px 2px;
+  position: sticky;
+  top: 0;
+  background-color: #222;
+  z-index: 10;
+  border-bottom: 1px solid #3e3e42;
+}
+
+.filter-input {
+  flex: 1;
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filter-input:focus {
+  border-color: #cfa665;
+}
+
+.filter-select {
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  min-width: 140px;
+}
+
+.filter-select:focus {
+  border-color: #cfa665;
+}
+
+.player-row {
+  background-color: #252526;
+  border: 1px solid #3e3e42;
+  border-radius: 6px;
+  padding: 10px;
+  transition: background-color 0.2s, border-color 0.2s;
+  cursor: default;
+}
+
+.player-row:hover {
+  background-color: #2d2d30;
+}
+
+/* --- Header Section --- */
+.player-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #3e3e42;
+  padding-bottom: 6px;
+}
+
+.relation-icon {
+  font-size: 1.2rem;
+  margin-right: 8px;
+  cursor: help;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-name {
+  font-weight: bold;
+  color: #f0f0f0;
+  font-size: 1rem;
+}
+
+.nation-separator {
+  margin: 0 6px;
+  color: #666;
+}
+
+.nation-name {
+  color: #aaa;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.province-badge {
+  color: #b0bec5;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.type-badge {
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-right: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: help;
+}
+
+.type-badge.type-single {
+  color: #dff3e6;
+  background-color: rgba(158, 194, 168, 0.15);
+}
+
+.type-badge.type-double {
+  color: #dceeff;
+  background-color: rgba(127, 184, 255, 0.15);
+}
+
+/* --- Deck Layout --- */
+.resource-deck {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.resource-group {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.group-cards {
+  display: flex;
+  gap: 6px;
+}
+
+.group-bracket {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.bracket-bar {
+  width: 100%;
+  height: 7px;
+  border-bottom: 2px solid currentColor;
+  border-left: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  box-sizing: border-box;
+  position: relative;
+  margin-bottom: 9px;
+  color: rgba(207, 166, 101, 0.4);
+}
+
+.bracket-bar::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 9px;
+  background-color: currentColor;
+}
+
+.bracket-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #cfa665;
+}
+
+/* Per-group bracket colors */
+.group-food .bracket-bar    { color: rgba(207, 166, 101, 0.5); }
+.group-food .bracket-label  { color: #f6e8c8; }
+
+.group-materials .bracket-bar    { color: rgba(158, 194, 168, 0.5); }
+.group-materials .bracket-label  { color: #dff3e6; }
+
+.group-energy .bracket-bar    { color: rgba(127, 184, 255, 0.5); }
+.group-energy .bracket-label  { color: #dceeff; }
+
+/* --- Resource Card Style --- */
+.resource-card {
+  position: relative;
+  width: 75px;
+  height: 74px;
+  background-color: #3a3a3a;
+  border: 1px solid #555;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Image Container */
+.card-image-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #2c2c2c;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.card-image-container img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+/* Info Strip - Side-by-Side Layout (single/double counts) */
+.card-info-strip {
+  background-color: #222;
+  color: #fff;
+  height: 32px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: bold;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  line-height: 1.2;
+}
+
+.card-info-strip .val-single {
+  font-size: 13px;
+  color: #dff3e6;
+}
+
+.card-info-strip .val-double {
+  font-size: 13px;
+  color: #dceeff;
+}
+
+.empty-state {
+  text-align: center;
+  color: #888;
+  padding: 20px;
+  font-style: italic;
+}
+
+/* --- Fixed Tooltip --- */
+.custom-tooltip {
+  position: fixed;
+  background: rgba(20, 25, 30, 0.95);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  border: 1px solid #555;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  z-index: 100000;
+}
+
+.custom-tooltip.tooltip-above {
+  transform: translate(-50%, -100%);
+}
+
+.custom-tooltip.tooltip-below {
+  transform: translate(-50%, 0);
+}

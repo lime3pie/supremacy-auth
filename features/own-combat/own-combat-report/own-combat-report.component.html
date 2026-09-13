@@ -1,0 +1,119 @@
+<!-- File: /scripts/components/own-combat/own-combat-report/own-combat-report.component.html -->
+
+<div class="report-overlay" (click)="onClose()">
+  <div class="report-dialog" (click)="$event.stopPropagation()">
+    
+    @if (currentTurn) {
+    <div class="report-header">
+      <h2>Battle Report: Turn {{ currentTurn.turnNumber }} / {{ report.totalTurns - 1 }}</h2>
+      @if (currentTurn.turnNumber === 0) {
+        <div class="report-outcome" style="color: #aaa;">Initial State - No Combat Yet</div>
+      } @else {
+        <div class="report-outcome" [ngClass]="getWinnerClass()">
+          {{ getWinnerText() }}
+        </div>
+      }
+    </div>
+    <div class="report-content">
+      
+      <!-- Attacker A Column -->
+      <div class="team-section attacker">
+        <h3>
+          Attacker A
+          <span class="damage-dealt">Dealt: {{ currentTurn.attackerDamageDealt | number:'1.0-1' }} Dmg</span>
+        </h3>
+
+        <div class="section-title">Remaining Forces</div>
+        <div class="unit-list">
+          @for (unit of currentTurn.attackerState.units; track unit.name) {
+            <div class="unit-item">
+              <div><span class="unit-count">{{ unit.count }}x</span> <span class="unit-name">{{ unit.name }}</span></div>
+              <div class="unit-hp">{{ unit.totalHp | number:'1.0-1' }} HP</div>
+            </div>
+          }
+        </div>
+
+        <div [style.visibility]="currentTurn.turnNumber > 0 ? 'visible' : 'hidden'">
+          <div class="section-title">Casualties This Turn</div>
+          <div class="casualty-list">
+              @for (c of currentTurn.attackerCasualties.casualties; track c.name) {
+              <div class="casualty-item">
+                <div class="casualty-header">
+                  <span>{{ c.name }}</span>
+                  <span class="died-count">Died: {{ c.died }}</span>
+                </div>
+                <div class="casualty-details">
+                  Took {{ c.hpLost | number:'1.0-1' }} damage.
+                </div>
+              </div>
+              }
+              @if (currentTurn.attackerCasualties.casualties.length === 0) {
+                  <div style="font-size: 0.8rem; color: #666; font-style: italic;">No losses.</div>
+              }
+          </div>
+        </div>
+      </div>
+
+      <!-- Defender B Column -->
+      <div class="team-section defender">
+        <h3>
+          Defender B
+          <span class="damage-dealt">Dealt: {{ currentTurn.defenderDamageDealt | number:'1.0-1' }} Dmg</span>
+        </h3>
+
+        <div class="section-title">Remaining Forces</div>
+        <div class="unit-list">
+          @for (unit of currentTurn.defenderState.units; track unit.name) {
+            <div class="unit-item">
+              <div><span class="unit-count">{{ unit.count }}x</span> <span class="unit-name">{{ unit.name }}</span></div>
+              <div class="unit-hp">{{ unit.totalHp | number:'1.0-1' }} HP</div>
+            </div>
+          }
+        </div>
+
+        <div [style.visibility]="currentTurn.turnNumber > 0 ? 'visible' : 'hidden'">
+          <div class="section-title">Casualties This Turn</div>
+          <div class="casualty-list">
+              @for (c of currentTurn.defenderCasualties.casualties; track c.name) {
+              <div class="casualty-item">
+                <div class="casualty-header">
+                  <span>{{ c.name }}</span>
+                  <span class="died-count">Died: {{ c.died }}</span>
+                </div>
+                <div class="casualty-details">
+                  Took {{ c.hpLost | number:'1.0-1' }} damage.
+                </div>
+              </div>
+              }
+              @if (currentTurn.defenderCasualties.casualties.length === 0) {
+                  <div style="font-size: 0.8rem; color: #666; font-style: italic;">No losses.</div>
+              }
+          </div>
+        </div>
+      </div>
+
+    </div>
+    }
+
+    <div class="report-footer">
+      <div class="turn-selector">
+          <button class="nav-btn" (click)="jumpTurns(-10)" [disabled]="currentTurnIndex < 10">&lt;&lt;</button>
+          <button class="nav-btn" (click)="prevTurn()" [disabled]="currentTurnIndex === 0">&lt;</button>
+          
+          @for (turnNum of visibleTurns; track turnNum) {
+            <div class="turn-page" 
+                 [class.active]="turnNum === currentTurnIndex"
+                 (click)="goToTurn(turnNum)">
+                 {{ turnNum }}
+            </div>
+          }
+
+          <button class="nav-btn" (click)="nextTurn()" [disabled]="currentTurnIndex >= report.totalTurns - 1">&gt;</button>
+          <button class="nav-btn" (click)="jumpTurns(10)" [disabled]="currentTurnIndex > report.totalTurns - 11">&gt;&gt;</button>
+      </div>
+
+      <button class="close-btn" (click)="onClose()">Close</button>
+    </div>
+
+  </div>
+</div>

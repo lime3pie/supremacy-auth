@@ -1,0 +1,209 @@
+<!-- File: /scripts/components/player-resources/player-resources.component.html -->
+
+<app-dialog 
+  [show]="showDialog" 
+  title="Hourly Resource Economy"
+  (close)="closeDialog()"
+  [draggable]="true"
+  [showBackdrop]="false"
+  
+>
+  <div class="resource-list-container">
+    
+    <!-- Filter Section -->
+    <div class="filter-header">
+      <input 
+        type="text" 
+        class="filter-input"
+        placeholder="Search User or Country..." 
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="applyFilters()"
+      />
+      
+      <!-- Relation Filter -->
+      <select 
+        class="filter-select"
+        [(ngModel)]="relationFilter" 
+        (ngModelChange)="applyFilters()"
+      >
+        <option value="All">All Players</option>
+        <option value="Friends">Friends & Allies</option>
+        <option value="Enemies">Enemies & Others</option>
+      </select>
+
+      <!-- View Mode Selector -->
+      <select 
+        class="filter-select view-mode"
+        [(ngModel)]="viewMode" 
+        (ngModelChange)="applyFilters()"
+      >
+        <option value="Base">1. Base Resources</option>
+        <option value="BuildingUpkeep">2. Building Upkeep</option>
+        <option value="UnitUpkeep">3. Unit Upkeep</option>
+        <option value="ProvinceUpkeep">4. Province Upkeep</option>
+        <option value="Income">5. Income</option>
+      </select>
+    </div>
+
+    <!-- Loop over displayedPlayers -->
+    @for (player of displayedPlayers; track player.playerID) {
+      <div class="player-row">
+        
+        <div class="player-header">
+          <!-- Relations Icon -->
+          @let status = getRelationIcon(player.playerID);
+          <span class="relation-icon"
+                [style.color]="status.color"
+                (mouseenter)="showTooltip($event, status.name, 'top')"
+                (mouseleave)="hideTooltip()">
+            {{ status.icon }}
+          </span>
+
+          <span class="player-name">{{ player.player.name }}</span>
+          <span class="nation-separator">-</span>
+          <span class="nation-name">{{ player.player.nationName || 'Unknown Nation' }}</span>
+          <span class="spacer"></span>
+          
+          <span class="province-badge">
+            Provinces: {{ player.provinceCount }}
+          </span>
+
+          <!-- Total Badge: Displays Mode Name + Hourly Total -->
+          <span class="total-badge" [style.color]="isNegative(getTotalDisplay(player).hourly) ? '#ff5252' : '#cfa665'">
+             <div class="total-label">{{ getModeLabel() }}</div>
+             <div class="total-values">
+               <span class="val-hourly">{{ getTotalDisplay(player).hourly | number:'1.0-1' }}/h</span>
+             </div>
+          </span>
+        </div>
+
+        <!-- Resource Deck (bracketed groups) -->
+        @let grouped = getGroupedResources(player);
+        <div class="resource-deck">
+
+          <!-- Food: grain (0) + fish (1) -->
+          @if (hasVisibleResources(grouped.food)) {
+          <div class="resource-group group-food">
+            <div class="group-cards">
+              @for (res of grouped.food; track res.id) {
+                @let vals = getDisplayValues(res);
+                @if (vals.hourly !== 0) {
+                  <div class="resource-card">
+                    <div class="card-image-container"
+                         (mouseenter)="showTooltip($event, res.name, 'top')"
+                         (mouseleave)="hideTooltip()">
+                      <img [src]="res.image" [alt]="res.name" onerror="this.style.display='none'"/>
+                    </div>
+                    <div class="card-info-strip">
+                      <span class="val-hourly" [style.color]="isNegative(vals.hourly) ? '#ff7777' : '#fff'">{{ vals.hourly | number:'1.0-1' }}/h</span>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+            <div class="group-bracket">
+              <div class="bracket-bar"></div>
+              <span class="bracket-label">FOOD</span>
+              <span class="bracket-total" [style.color]="isNegative(grouped.totals.food.hourly) ? '#ff5252' : ''">{{ grouped.totals.food.hourly | number:'1.0-1' }}/h</span>
+            </div>
+          </div>
+          }
+
+          <!-- Materials: iron (2) + wood (3) -->
+          @if (hasVisibleResources(grouped.materials)) {
+          <div class="resource-group group-materials">
+            <div class="group-cards">
+              @for (res of grouped.materials; track res.id) {
+                @let vals = getDisplayValues(res);
+                @if (vals.hourly !== 0) {
+                  <div class="resource-card">
+                    <div class="card-image-container"
+                         (mouseenter)="showTooltip($event, res.name, 'top')"
+                         (mouseleave)="hideTooltip()">
+                      <img [src]="res.image" [alt]="res.name" onerror="this.style.display='none'"/>
+                    </div>
+                    <div class="card-info-strip">
+                      <span class="val-hourly" [style.color]="isNegative(vals.hourly) ? '#ff7777' : '#fff'">{{ vals.hourly | number:'1.0-1' }}/h</span>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+            <div class="group-bracket">
+              <div class="bracket-bar"></div>
+              <span class="bracket-label">MATERIALS</span>
+              <span class="bracket-total" [style.color]="isNegative(grouped.totals.materials.hourly) ? '#ff5252' : ''">{{ grouped.totals.materials.hourly | number:'1.0-1' }}/h</span>
+            </div>
+          </div>
+          }
+
+          <!-- Energy: coal (4) + oil (5) + gas (6) -->
+          @if (hasVisibleResources(grouped.energy)) {
+          <div class="resource-group group-energy">
+            <div class="group-cards">
+              @for (res of grouped.energy; track res.id) {
+                @let vals = getDisplayValues(res);
+                @if (vals.hourly !== 0) {
+                  <div class="resource-card">
+                    <div class="card-image-container"
+                         (mouseenter)="showTooltip($event, res.name, 'top')"
+                         (mouseleave)="hideTooltip()">
+                      <img [src]="res.image" [alt]="res.name" onerror="this.style.display='none'"/>
+                    </div>
+                    <div class="card-info-strip">
+                      <span class="val-hourly" [style.color]="isNegative(vals.hourly) ? '#ff7777' : '#fff'">{{ vals.hourly | number:'1.0-1' }}/h</span>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+            <div class="group-bracket">
+              <div class="bracket-bar"></div>
+              <span class="bracket-label">ENERGY</span>
+              <span class="bracket-total" [style.color]="isNegative(grouped.totals.energy.hourly) ? '#ff5252' : ''">{{ grouped.totals.energy.hourly | number:'1.0-1' }}/h</span>
+            </div>
+          </div>
+          }
+
+          <!-- Standalone resources (coins/currency, not in groups 0-6) -->
+          @for (res of player.resources; track res.id) {
+            @if (![0, 1, 2, 3, 4, 5, 6].includes(res.id)) {
+              @let vals = getDisplayValues(res);
+              @if (vals.hourly !== 0) {
+                <div class="resource-card">
+                  <div class="card-image-container"
+                       (mouseenter)="showTooltip($event, res.name, 'top')"
+                       (mouseleave)="hideTooltip()">
+                    <img [src]="res.image" [alt]="res.name" onerror="this.style.display='none'"/>
+                  </div>
+                  <div class="card-info-strip">
+                    <span class="val-hourly" [style.color]="isNegative(vals.hourly) ? '#ff7777' : '#fff'">{{ vals.hourly | number:'1.0-1' }}/h</span>
+                  </div>
+                </div>
+              }
+            }
+          }
+
+        </div>
+
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (allPlayers.length === 0) {
+      <div class="empty-state">No resource data available on the map.</div>
+    } @else if (displayedPlayers.length === 0) {
+      <div class="empty-state">No players match the current filters.</div>
+    }
+
+  </div>
+</app-dialog>
+
+<!-- Tooltip -->
+<div class="custom-tooltip" 
+     *ngIf="tooltipVisible" 
+     [style.top.px]="tooltipTop" 
+     [style.left.px]="tooltipLeft"
+     [ngClass]="tooltipClass">
+  {{ tooltipText }}
+</div>

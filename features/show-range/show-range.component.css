@@ -1,0 +1,186 @@
+/* Header minimize button - sits next to app-dialog's own close (x) button */
+.minimize-btn {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  font-size: 16px;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.minimize-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.minimize-btn.mobile { width: 40px; height: 40px; font-size: 18px; }
+
+.range-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 480px;
+}
+
+.controls-header {
+  display: flex;
+  gap: 10px;
+}
+
+.search-input {
+  flex: 1;
+  background: #1a1a1a;
+  border: 1px solid #3b2b1f;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+.unit-list {
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.unit-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #252526;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #3e3e42;
+}
+
+.unit-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.unit-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.button-group {
+  display: flex;
+  gap: 6px;
+}
+
+.range-btn {
+  border: none;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+  color: white;
+  text-transform: uppercase;
+  font-weight: bold;
+  min-width: 80px;
+}
+
+.range-btn.vision-detail { 
+    background: linear-gradient(90deg, #007a7a 50%, #b8860b 50%);
+}
+.range-btn.attack { background: #a31515; }
+.range-btn:hover { filter: brightness(1.2); }
+
+.clear-btn {
+  background: #444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.minimized-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.mini-cancel {
+  background: #555;
+  color: #fff;
+  border: none;
+  padding: 3px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+/* --- Mobile / tablet (isMobileClient) ---
+   app-dialog already docks as a full-width bottom sheet on mobile, so the fixed 480px
+   desktop width just needs to become fluid. Capped at 520px + centered so it doesn't
+   stretch edge-to-edge into an unreadably wide row on a tablet-size sheet. */
+.range-container.mobile {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.range-container.mobile .unit-list {
+  max-height: 55vh;
+}
+
+/* 16px (1rem) min font-size avoids iOS Safari auto-zooming the page on input focus. */
+.range-container.mobile .search-input {
+  font-size: 1rem;
+  min-height: 44px;
+}
+
+.range-container.mobile .clear-btn {
+  min-height: 44px;
+  padding: 0 16px;
+}
+
+/* Desktop puts icon+name and both range buttons on one row - the buttons squeeze
+   under 40px next to the name on a phone. Stack identity above a full-width button row. */
+.range-container.mobile .unit-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.range-container.mobile .button-group {
+  width: 100%;
+}
+
+.range-container.mobile .range-btn {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  font-size: 11px;
+}
+
+/* Minimized bar (docked full-width via dialog.component.css) - message left (truncates
+   instead of wrapping), Cancel button right, both thumb-height. */
+.minimized-info.mobile {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+
+.minimized-info.mobile .minimized-msg {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.minimized-info.mobile .mini-cancel {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 16px;
+}

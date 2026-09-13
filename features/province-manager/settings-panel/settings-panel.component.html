@@ -1,0 +1,106 @@
+<!-- File: /scripts/features/province-manager/settings-panel/settings-panel.component.html -->
+
+<app-dialog
+  [show]="show"
+  title="Settings"
+  [showBackdrop]="true"
+  [resizable]="!isMobile"
+  [minWidth]="isMobile ? null : 360"
+  [minHeight]="isMobile ? null : 320"
+  [preferredWidth]="isMobile ? null : 440"
+  [preferredHeight]="isMobile ? null : 820"
+  [fillHeightMobile]="isMobile"
+  (close)="onClose()">
+
+  <div class="settings-body">
+    <div class="setting-row">
+      <div class="setting-text">
+        <div class="setting-label">Confirm before build/queue</div>
+        <div class="setting-desc">Ask "Are you sure?" before spending resources or queueing anything.</div>
+      </div>
+      <button class="toggle" [class.on]="confirmBeforeAction" role="switch" [attr.aria-checked]="confirmBeforeAction" (click)="toggleConfirmBeforeAction()">
+        <span class="knob"></span>
+      </button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-text">
+        <div class="setting-label">Close panel after build</div>
+        <div class="setting-desc">Automatically close the Build panel once a build order is sent. Queueing never closes it, so more items can be queued without reopening.</div>
+      </div>
+      <button class="toggle" [class.on]="closeMenuAfterAction" role="switch" [attr.aria-checked]="closeMenuAfterAction" (click)="toggleCloseMenuAfterAction()">
+        <span class="knob"></span>
+      </button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-text">
+        <div class="setting-label">Fast Access icon</div>
+        <div class="setting-desc">Add a Province Manager shortcut to the game's own menu bar, between Province Administration and Armies.</div>
+      </div>
+      <button class="toggle" [class.on]="fastAccessEnabled" role="switch" [attr.aria-checked]="fastAccessEnabled" (click)="toggleFastAccessEnabled()">
+        <span class="knob"></span>
+      </button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-text">
+        <div class="setting-label">Rosters rail starts collapsed</div>
+        <div class="setting-desc">Open Province Manager with the left Rosters rail minimized instead of expanded.</div>
+      </div>
+      <button class="toggle" [class.on]="rostersCollapsedByDefault" role="switch" [attr.aria-checked]="rostersCollapsedByDefault" (click)="toggleRostersCollapsedByDefault()">
+        <span class="knob"></span>
+      </button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-text">
+        <div class="setting-label">Auto-select from map on open</div>
+        <div class="setting-desc">Automatically select whatever provinces are currently selected on the map when Province Manager opens.</div>
+      </div>
+      <button class="toggle" [class.on]="autoSelectFromMapOnOpen" role="switch" [attr.aria-checked]="autoSelectFromMapOnOpen" (click)="toggleAutoSelectFromMapOnOpen()">
+        <span class="knob"></span>
+      </button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-text">
+        <div class="setting-label">Clear selection on close</div>
+        <div class="setting-desc">Clear the selected provinces when Province Manager closes, instead of keeping them selected for next time.</div>
+      </div>
+      <button class="toggle" [class.on]="clearSelectionOnClose" role="switch" [attr.aria-checked]="clearSelectionOnClose" (click)="toggleClearSelectionOnClose()">
+        <span class="knob"></span>
+      </button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-text">
+        <div class="setting-label">Mobile: Show resource amount</div>
+        <div class="setting-desc">Show each province's resource amount next to its icon on the mobile card, not just the icon.</div>
+      </div>
+      <button class="toggle" [class.on]="showResourceAmountOnMobile" role="switch" [attr.aria-checked]="showResourceAmountOnMobile" (click)="toggleShowResourceAmountOnMobile()">
+        <span class="knob"></span>
+      </button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-text">
+        <div class="setting-label">Mobile: Show silver</div>
+        <div class="setting-desc">Show a Silver icon on the mobile card. Its amount is shown too when "Mobile: Show resource amount" above is on.</div>
+      </div>
+      <button class="toggle" [class.on]="showSilverOnMobile" role="switch" [attr.aria-checked]="showSilverOnMobile" (click)="toggleShowSilverOnMobile()">
+        <span class="knob"></span>
+      </button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-text">
+        <div class="setting-label">Mobile: Confirm on cancel</div>
+        <div class="setting-desc">Ask "Are you sure?" before cancelling a construction/production job from the mobile Ledger's X button.</div>
+      </div>
+      <button class="toggle" [class.on]="mobileConfirmOnCancel" role="switch" [attr.aria-checked]="mobileConfirmOnCancel" (click)="toggleMobileConfirmOnCancel()">
+        <span class="knob"></span>
+      </button>
+    </div>
+  </div>
+</app-dialog>

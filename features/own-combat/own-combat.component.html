@@ -1,0 +1,120 @@
+<!-- START OF FILE own-combat.component.html -->
+
+<app-dialog
+    [show]="visible"
+    [minimized]="isMinimized"
+    title="Own Combat Calculator"
+    [draggable]="true"
+    (close)="closeDialog()">
+
+    <!-- combatHolder is only assigned once the dialog is first opened (see toggleDialog()), so
+         every block below must stay gated behind `visible` - ng-content projects this into
+         app-dialog's template regardless of ITS *ngIf="minimized"/"show", so an ungated reference
+         to combatHolder here would evaluate (and throw) on every change-detection tick from the
+         moment this component is created, not just while the dialog is actually open.
+         Each projected slot needs its OWN @if (rather than one @if wrapping all of them) -
+         Angular can't route content to the right ng-content slot when an @if's root has more
+         than one projectable node. -->
+    @if (visible && isMinimized) {
+    <div header-actions class="minimized-actions">
+        <button class="add-btn" (click)="addArmy('A')" title="Add Attacking Army">
+            + A ({{ combatHolder.A.stacks.length }})
+        </button>
+        <button class="add-btn" (click)="addArmy('B')" title="Add Defending Army">
+            + B ({{ combatHolder.B.stacks.length }})
+        </button>
+    </div>
+    }
+    @if (visible) {
+    <button header-actions class="header-action-btn" (click)="toggleMinimize()" [title]="isMinimized ? 'Restore' : 'Minimize'">
+        @if (!isMinimized) {
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 12H19" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        } @else {
+        <svg viewBox="0 0 24 24" fill="none"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        }
+    </button>
+    }
+
+    @if (visible) {
+    <div class="combat-container">
+        <div class="teams-header">
+            <app-own-combat-header
+                [team]="'A'"
+                teamLabel="Attacker A"
+                [totalHp]="attackerHp"
+                [stacksLength]="attackerCount"
+                [combining]="combiningTeam === 'A'"
+                [selectedCount]="selectedToCombine.size"
+                [combineDisabled]="attackerCount < 2"
+                [right]="false"
+                (add)="addArmy($event)"
+                (startCombine)="startCombine($event)"
+                (confirmCombine)="confirmCombine()"
+                (cancelCombine)="cancelCombine()">
+            </app-own-combat-header>
+            <div class="vs-text">VS</div>
+            <app-own-combat-header
+                [team]="'B'"
+                teamLabel="Defender B"
+                [totalHp]="defenderHp"
+                [stacksLength]="defenderCount"
+                [combining]="combiningTeam === 'B'"
+                [selectedCount]="selectedToCombine.size"
+                [combineDisabled]="defenderCount < 2"
+                [right]="true"
+                (add)="addArmy($event)"
+                (startCombine)="startCombine($event)"
+                (confirmCombine)="confirmCombine()"
+                (cancelCombine)="cancelCombine()">
+            </app-own-combat-header>
+        </div>
+
+        <div class="dialog-content">
+            <div class="army-column">
+                @for (stack of combatHolder.A.stacks; track stack.id) {
+                <app-own-combat-stack
+                    [stack]="stack"
+                    [targetOptions]="getTargetOptions('A')"
+                    [isCombining]="combiningTeam === 'A'"
+                    [isSelectedForCombine]="selectedToCombine.has(stack.id)"
+                    (toggleCombineSelect)="onToggleCombineSelect($event)"
+                    (remove)="removeArmy(stack.id, 'A')"
+                    (positionChange)="onStackPositionChange()">
+                </app-own-combat-stack>
+                }
+                @if(combatHolder.A.stacks.length === 0) {
+                    <div class="empty-msg">No attacking armies added.</div>
+                }
+            </div>
+            <div class="army-column">
+                @for (stack of combatHolder.B.stacks; track stack.id) {
+                <app-own-combat-stack
+                    [stack]="stack"
+                    [targetOptions]="getTargetOptions('B')"
+                    [isCombining]="combiningTeam === 'B'"
+                    [isSelectedForCombine]="selectedToCombine.has(stack.id)"
+                    (toggleCombineSelect)="onToggleCombineSelect($event)"
+                    (remove)="removeArmy(stack.id, 'B')"
+                    (positionChange)="onStackPositionChange()">
+                </app-own-combat-stack>
+                }
+                @if(combatHolder.B.stacks.length === 0) {
+                    <div class="empty-msg">No defending armies added.</div>
+                }
+            </div>
+        </div>
+
+        <div class="dialog-footer">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label for="maxRoundsInput" style="font-size: 0.8rem; color: #aaa;">Rounds:</label>
+                <input id="maxRoundsInput" type="number" [(ngModel)]="maxRounds" style="width: 60px; text-align: center;"/>
+            </div>
+            <button class="action-btn validate-btn" (click)="runCalculation()">⚔️ Run Simulation</button>
+        </div>
+    </div>
+    }
+</app-dialog>
+
+@if (showReport && finalReport) {
+    <app-own-combat-report [report]="finalReport" (close)="showReport = false"></app-own-combat-report>
+}

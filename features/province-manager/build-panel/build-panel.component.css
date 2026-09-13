@@ -1,0 +1,314 @@
+/* File: /scripts/features/province-manager/build-panel/build-panel.component.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap');
+
+/* Scoped on :host rather than :root (this renders inside the extension's Shadow DOM root), and
+   duplicated from province-manager.component.css rather than relying on DOM inheritance from a
+   sibling component's overlay - see that file's header comment for why. :host (not
+   .pm-build-overlay) specifically, so every element in this component's tree inherits them -
+   including .toast, which is a sibling AFTER .pm-build-overlay closes in the template, not a
+   descendant of it. */
+:host {
+  --backdrop: #0a0c10;
+  --ink: #14181f;
+  --ink-2: #1b212b;
+  --ink-3: #232b38;
+  --ink-4: #2b3546;
+  --line: #313b4a;
+  --line-strong: #46536a;
+  --paper: #eae4d6;
+  --paper-dim: #a9a394;
+  --paper-faint: #6f6d66;
+  --brass: #c98a4b;
+  --brass-soft: rgba(201, 138, 75, 0.16);
+  --brass-line: rgba(201, 138, 75, 0.4);
+  --verdigris: #5fa8a3;
+  --verdigris-soft: rgba(95, 168, 163, 0.16);
+  --danger: #c1554a;
+  --ok: #83a86e;
+  --morale-orange: #d1793f;
+  --focus: #7fb3d5;
+  --shadow: 0 28px 70px rgba(0, 0, 0, 0.6);
+  font-variant-numeric: tabular-nums;
+
+  /* Re-themes the shared <app-dialog> frame to match Province Manager's brass/ink console look -
+     see province-manager.component.css's :host block for the full rundown of what each of these
+     names controls (they're inherited by <app-dialog>, not declared directly on it). */
+  --dialog-bg: var(--ink);
+  --dialog-text: var(--paper);
+  --dialog-border: var(--line-strong);
+  --dialog-radius: 4px;
+  --dialog-shadow: var(--shadow);
+  --dialog-accent: var(--brass);
+  --dialog-scrollbar-track: var(--ink);
+  --dialog-scrollbar-thumb: var(--line-strong);
+  --dialog-scrollbar-thumb-hover: var(--paper-faint);
+
+  --dialog-padding: 0;
+  --dialog-header-padding: 18px 22px 14px;
+  --dialog-header-border: 1px solid var(--line);
+  --dialog-header-margin-bottom: 0;
+  --dialog-header-actions-gap: 14px;
+
+  --dialog-close-border: 1px solid var(--line);
+  --dialog-close-radius: 3px;
+  --dialog-close-padding: 6px 8px;
+  --dialog-close-font-size: 16px;
+  --dialog-close-color: var(--paper-dim);
+  --dialog-close-color-hover: var(--paper);
+  --dialog-close-border-color-hover: var(--line-strong);
+
+  --dialog-title-font-family: "Oswald", sans-serif;
+  --dialog-title-font-weight: 700;
+  --dialog-title-font-size: 21px;
+  --dialog-title-text-transform: uppercase;
+  --dialog-title-letter-spacing: 0.06em;
+}
+
+* { box-sizing: border-box; }
+
+.build-panel { max-width: 1180px; }
+
+.console-sub { font-size: 11.5px; color: var(--paper-faint); margin-top: 3px; }
+
+.summary-row { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--line); background: var(--ink-2); }
+.summary-col { padding: 14px 16px; border-left: 1px solid var(--line); }
+.summary-col:first-child { border-left: none; }
+.summary-col h4 {
+  margin: 0 0 10px; font-family: "Oswald", sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--paper-faint);
+}
+.summary-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 34px; }
+.summary-empty { font-size: 11px; color: var(--paper-faint); font-style: italic; padding-top: 6px; }
+
+.g-chip {
+  position: relative; display: flex; align-items: center; gap: 6px; background: var(--ink-3); border: 1px solid var(--line-strong);
+  border-radius: 4px; padding: 4px 8px 4px 4px;
+}
+.g-chip .g-icon {
+  width: 24px; height: 24px; border-radius: 3px; background: var(--ink); border: 1px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; overflow: hidden;
+}
+.g-chip .g-icon img { width: 76%; height: 76%; object-fit: contain; }
+.g-chip .g-meta { line-height: 1.25; }
+.g-chip .g-meta .g-n { font-size: 11px; font-weight: 700; color: var(--paper); }
+.g-chip .g-meta .g-t { font-size: 9.5px; color: var(--paper-faint); }
+.g-chip.more { color: var(--paper-dim); font-size: 11px; font-weight: 700; padding: 4px 10px; cursor: default; background: transparent; border-style: dashed; }
+
+.build-tabs { display: flex; gap: 18px; padding: 12px 18px 0; border-bottom: 1px solid var(--line); }
+.tab {
+  background: none; border: none; color: var(--paper-faint); font-family: "Oswald", sans-serif; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; padding: 9px 4px 11px; cursor: pointer; border-bottom: 2px solid transparent;
+}
+.tab:hover { color: var(--paper-dim); }
+.tab.active { color: var(--brass); border-bottom-color: var(--brass); }
+
+/* Sits in <app-dialog>'s [header-actions] slot next to the close button, so it's a compact badge
+   now rather than the full-width banner it was between the old title and close button. */
+.premium-banner {
+  padding: 6px 12px; border: 1px solid var(--brass); border-radius: 4px; white-space: nowrap;
+  background: var(--brass-soft); color: var(--brass); font-family: "Oswald", sans-serif; font-size: 11.5px;
+  font-weight: 700; letter-spacing: 0.04em; text-align: center;
+}
+
+.catalog { max-height: 40vh; overflow: auto; padding: 6px 10px; }
+.catalog::-webkit-scrollbar { width: 9px; }
+.catalog::-webkit-scrollbar-track { background: var(--ink); }
+.catalog::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 5px; }
+
+.cat-row { display: flex; flex-direction: column; gap: 5px; padding: 9px 10px; border-radius: 4px; border-bottom: 1px solid var(--line); }
+.cat-row:last-child { border-bottom: none; }
+.cat-row:hover { background: rgba(255,255,255,0.025); }
+.cat-row-top { display: flex; align-items: center; gap: 12px; }
+.cat-icon {
+  width: 40px; height: 40px; border-radius: 4px; background: var(--ink-3); border: 1px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;
+}
+.cat-icon img { width: 76%; height: 76%; object-fit: contain; }
+
+.cat-name-wrap { display: flex; align-items: center; gap: 5px; width: 122px; flex-shrink: 0; }
+.cat-name { font-weight: 700; font-size: 12.5px; color: var(--paper); }
+.info-btn-mini {
+  width: 15px; height: 15px; padding: 0; border: none; background: none; color: var(--paper-faint);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+}
+.info-btn-mini svg { width: 12px; height: 12px; }
+.info-btn-mini:hover { color: var(--focus); }
+
+.cat-costs { display: flex; gap: 10px; flex-shrink: 0; width: 172px; flex-wrap: wrap; }
+.cat-cost { display: flex; align-items: center; gap: 4px; font-size: 11.5px; color: var(--paper-dim); }
+.cat-cost img { width: 13px; height: 13px; object-fit: contain; }
+
+.cat-time { width: 80px; flex-shrink: 0; font-size: 11.5px; color: var(--paper-dim); }
+.cat-morale { width: 104px; flex-shrink: 0; font-size: 11px; color: var(--verdigris); }
+.cat-morale b { font-weight: 700; }
+
+.cat-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; row-gap: 4px; }
+
+.cat-btn {
+  height: 26px; padding: 0 9px; border-radius: 3px; cursor: pointer; font-family: "Oswald", sans-serif;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap;
+}
+.cat-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.cat-btn-queue { background: var(--ink-3); border: 1px solid var(--line-strong); color: var(--paper-dim); }
+.cat-btn-queue:hover:not(:disabled) { border-color: var(--paper-faint); color: var(--paper); }
+.cat-btn-build { background: transparent; border: 1px solid var(--verdigris); color: var(--verdigris); }
+.cat-btn-build:hover:not(:disabled) { background: var(--verdigris-soft); }
+.cat-btn-both { background: var(--brass); border: 1px solid var(--brass); color: #241a0e; }
+.cat-btn-both:hover:not(:disabled) { background: #dba064; border-color: #dba064; }
+
+.cat-row-summary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-left: 52px; font-size: 11px; color: var(--paper-faint); }
+.cat-damaged { color: var(--danger); font-weight: 700; }
+
+/* Entirely blocked by a missing prerequisite (every not-already-built province in this row is
+   blocked, not just some) - dim the icon/name/costs/time so the row visually reads as unavailable,
+   without touching the summary line (still needs to be legible and its toggle clickable). */
+.cat-row-blocked .cat-icon,
+.cat-row-blocked .cat-name-wrap,
+.cat-row-blocked .cat-costs,
+.cat-row-blocked .cat-time,
+.cat-row-blocked .cat-morale { opacity: 0.4; }
+.cat-row-blocked .cat-icon { filter: grayscale(1); }
+
+.prereq-toggle-btn {
+  background: none; border: none; color: var(--danger); font-size: 11px; font-weight: 700; cursor: pointer;
+  padding: 0; font-family: inherit;
+}
+.prereq-toggle-btn:hover { text-decoration: underline; }
+
+.cat-prereq-detail {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 10px; margin-left: 52px;
+  background: var(--ink-3); border: 1px solid var(--line); border-radius: 3px; font-size: 11px; color: var(--paper-dim);
+}
+.cat-prereq-item { font-weight: 700; color: var(--paper); }
+.cat-prereq-item::before { content: "•"; margin-right: 6px; color: var(--paper-faint); font-weight: 400; }
+
+/* The (i) button's description - rendered inline against the panel's own opaque background rather
+   than as a bottom-of-viewport toast, which could land over the game map behind the panel and be
+   unreadable there. */
+.cat-info-detail {
+  padding: 8px 10px; margin-left: 52px; background: var(--ink-3); border: 1px solid var(--line);
+  border-radius: 3px; font-size: 11.5px; line-height: 1.5; color: var(--paper-dim);
+}
+.afford-count { font-weight: 700; }
+.afford-count.afford-full { color: var(--ok); }
+.afford-count.afford-partial { color: var(--morale-orange); }
+.afford-count.afford-none { color: var(--danger); }
+.cat-total { display: flex; align-items: center; gap: 10px; }
+.cat-total-item { display: flex; align-items: center; gap: 3px; }
+.cat-total-item img { width: 12px; height: 12px; object-fit: contain; }
+.cat-total-item.short { color: var(--danger); font-weight: 700; }
+.cat-short-note { display: flex; align-items: center; gap: 6px; color: var(--danger); font-weight: 700; }
+.cat-short-item { display: flex; align-items: center; gap: 3px; }
+.cat-short-item img { width: 12px; height: 12px; object-fit: contain; }
+
+/* Collapsed building family row ("Factory") and its per-tier details expand. */
+.cat-family { border-bottom: 1px solid var(--line); }
+.cat-family:last-child { border-bottom: none; }
+.cat-row-family, .cat-row-tier { border-bottom: none; }
+.cat-row-family:hover { background: rgba(255,255,255,0.025); }
+.cat-row-family .cat-name-wrap { width: auto; min-width: 122px; }
+
+.detail-toggle-btn {
+  background: none; border: none; color: var(--focus); font-size: 10.5px; font-weight: 600; cursor: pointer;
+  padding: 2px 4px; white-space: nowrap; text-decoration: underline; text-underline-offset: 2px; font-family: inherit;
+}
+.detail-toggle-btn:hover { color: var(--paper); }
+
+.cat-family-details {
+  margin: 4px 0 2px 52px; border-left: 2px solid var(--brass-line); padding-left: 12px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.cat-row-tier { padding: 8px 10px; border-radius: 4px; }
+.cat-row-tier:hover { background: rgba(255,255,255,0.03); }
+.cat-row-tier .cat-name-wrap { width: 136px; flex-direction: column; align-items: flex-start; gap: 1px; }
+.cat-tier-count { font-size: 9.5px; font-weight: 400; color: var(--paper-faint); }
+
+.build-footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-top: 1px solid var(--line); background: var(--ink-2); font-size: 11px; color: var(--paper-faint); }
+
+/* ============================ MOBILE LAYOUT ============================
+   See build-panel.component.html's isMobile branch - every binding here reuses the exact same
+   evaluation getters/methods the desktop catalog above already computes, only the markup differs. */
+
+.m-build-body { padding: 12px 14px 18px; }
+
+.m-stat-strip { display: flex; gap: 7px; margin-bottom: 12px; overflow-x: auto; }
+.m-stat-strip::-webkit-scrollbar { height: 0; }
+.m-stat-tile { flex-shrink: 0; min-width: 118px; background: var(--ink-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.m-stat-tile h5 { margin: 0 0 5px; font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--paper-faint); font-weight: 600; }
+.m-stat-chips { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.m-stat-chip { display: flex; align-items: center; gap: 3px; }
+.m-stat-chip img { width: 18px; height: 18px; object-fit: contain; }
+.m-stat-chip b { font-size: 11px; color: var(--paper-dim); }
+.m-stat-more { font-size: 10px; color: var(--paper-faint); }
+.m-stat-empty { font-size: 11px; color: var(--paper-faint); font-style: italic; }
+
+.m-segmented { display: flex; background: var(--ink-2); border: 1px solid var(--line); border-radius: 8px; padding: 3px; margin-bottom: 13px; }
+.m-segmented button { flex: 1; background: transparent; border: none; color: var(--paper-faint); font-family: "Oswald", sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 8px 0; border-radius: 6px; cursor: pointer; }
+.m-segmented button.active { background: var(--brass); color: #241a0e; }
+
+.m-catalog { display: flex; flex-direction: column; gap: 9px; }
+.m-cat-empty { padding: 16px; font-size: 11px; color: var(--paper-faint); font-style: italic; }
+
+.m-cat-row { background: var(--ink-2); border: 1px solid var(--line); border-radius: 9px; padding: 11px 12px; }
+.m-cat-row.blocked { opacity: 0.62; }
+.m-cat-top { display: flex; align-items: flex-start; gap: 9px; }
+.m-cat-icon { width: 34px; height: 34px; border-radius: 6px; background: var(--ink-3); border: 1px solid var(--line-strong); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+.m-cat-icon.sm { width: 26px; height: 26px; }
+.m-cat-icon img { width: 76%; height: 76%; object-fit: contain; }
+.m-cat-name-wrap { flex: 1; min-width: 0; }
+.m-cat-name-line { display: flex; align-items: center; gap: 6px; }
+.m-cat-name { font-family: "Oswald", sans-serif; font-weight: 600; font-size: 13.5px; color: var(--paper); }
+.m-info-dot { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--line-strong); color: var(--paper-faint); background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; }
+.m-info-dot svg { width: 9px; height: 9px; }
+.m-expand-toggle { margin-top: 2px; background: none; border: none; padding: 0; font-size: 11px; color: var(--focus); cursor: pointer; font-family: inherit; }
+
+.m-cat-info { margin: 9px 0 0 43px; font-size: 11.5px; line-height: 1.5; color: var(--paper-dim); background: var(--ink-3); border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; }
+
+.m-cat-costs { display: flex; gap: 8px; flex-wrap: wrap; margin: 9px 0 0 43px; }
+.m-cost-chip { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--paper-dim); }
+.m-cost-chip img { width: 13px; height: 13px; object-fit: contain; }
+.m-cat-meta { display: flex; gap: 14px; margin: 8px 0 0 43px; font-size: 11px; color: var(--paper-faint); }
+.m-cat-meta b { color: var(--paper-dim); }
+
+.m-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0 43px; }
+.m-badge { font-size: 10.5px; padding: 3px 8px; border-radius: 5px; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.m-badge img { width: 11px; height: 11px; object-fit: contain; }
+.m-badge-built { background: var(--ink-3); color: var(--paper-faint); }
+.m-badge-damaged { background: rgba(193, 85, 74, 0.16); color: var(--danger); }
+.m-badge-busy { background: var(--ink-3); color: var(--paper-dim); }
+.m-badge-prereq { background: rgba(193, 85, 74, 0.16); color: var(--danger); cursor: pointer; }
+.m-badge-short { background: rgba(193, 85, 74, 0.16); color: var(--danger); }
+.m-badge-afford-full { background: var(--verdigris-soft); color: var(--verdigris); }
+.m-badge-afford-partial { background: var(--brass-soft); color: var(--brass); }
+.m-badge-afford-none { background: rgba(193, 85, 74, 0.16); color: var(--danger); }
+
+.m-prereq-detail { margin: 8px 0 0 43px; font-size: 11px; color: var(--paper-dim); background: var(--ink-3); border-radius: 6px; padding: 7px 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.m-prereq-detail b { color: var(--paper); font-weight: 700; }
+
+.m-cat-total { display: flex; align-items: center; gap: 8px; margin: 9px 0 0 43px; font-size: 11px; color: var(--paper-faint); flex-wrap: wrap; }
+.m-amt { display: flex; align-items: center; gap: 3px; color: var(--paper-dim); }
+.m-amt img { width: 12px; height: 12px; object-fit: contain; }
+.m-amt.short { color: var(--danger); font-weight: 700; }
+
+.m-cat-actions { display: flex; gap: 6px; margin: 11px 0 0 43px; }
+.m-cat-btn { flex: 1; font-family: "Oswald", sans-serif; font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; padding: 9px 4px; border-radius: 7px; border: 1px solid var(--line-strong); background: var(--ink-3); color: var(--paper-dim); cursor: pointer; }
+.m-cat-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.m-queue:not(:disabled) { color: var(--verdigris); border-color: var(--verdigris); }
+.m-build:not(:disabled) { background: var(--brass); border-color: var(--brass); color: #241a0e; }
+.m-both:not(:disabled) { color: var(--brass); border-color: var(--brass-line); }
+
+.m-tier-list { margin: 12px 0 0 43px; padding-left: 12px; border-left: 2px solid var(--line); }
+.m-tier-row { background: var(--ink-3); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; margin-bottom: 8px; }
+.m-tier-row:last-child { margin-bottom: 0; }
+.m-tier-count { font-size: 10px; color: var(--paper-faint); }
+
+.m-build-footer { text-align: center; font-size: 10.5px; color: var(--paper-faint); margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+
+.toast {
+  position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 14px); background: var(--ink-2); border: 1px solid var(--brass-line);
+  color: var(--paper); padding: 9px 16px; border-radius: 3px; font-size: 12.5px; font-weight: 600; box-shadow: var(--shadow);
+  opacity: 0; pointer-events: none; transition: opacity 0.16s ease, transform 0.16s ease; z-index: 70;
+  font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }

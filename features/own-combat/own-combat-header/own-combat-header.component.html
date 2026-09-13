@@ -1,0 +1,37 @@
+<div class="team-header-col" [class.right]="right">
+    <!-- left side for non-right orientation -->
+    <ng-container *ngIf="!right">
+        <button class="add-btn" (click)="emitAdd()">Add Army</button>
+        <ng-container *ngIf="!combining">
+            <button class="action-btn combine-btn" (click)="emitStartCombine()"
+                [disabled]="combineDisabled">Combine</button>
+        </ng-container>
+        <ng-container *ngIf="combining">
+            <button class="action-btn ok-btn" (click)="emitConfirmCombine()" [disabled]="selectedCount < 2">OK</button>
+            <button class="action-btn cancel-btn" (click)="emitCancelCombine()">Cancel</button>
+        </ng-container>
+    </ng-container>
+
+    <h4 class="col-title" [class.col-title--right]="right">
+        <span class="team-label">
+            {{ teamLabel }}
+        </span>
+
+        <span class="team-hp">
+            {{ totalHp | number:'1.0-1' }} HP
+        </span>
+    </h4>
+
+    <!-- right side for right orientation -->
+    <ng-container *ngIf="right">
+        <ng-container *ngIf="!combining">
+            <button class="action-btn combine-btn" (click)="emitStartCombine()"
+                [disabled]="combineDisabled">Combine</button>
+        </ng-container>
+        <ng-container *ngIf="combining">
+            <button class="action-btn ok-btn" (click)="emitConfirmCombine()" [disabled]="selectedCount < 2">OK</button>
+            <button class="action-btn cancel-btn" (click)="emitCancelCombine()">Cancel</button>
+        </ng-container>
+        <button class="add-btn" (click)="emitAdd()">Add Army</button>
+    </ng-container>
+</div>

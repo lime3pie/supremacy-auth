@@ -1,0 +1,65 @@
+<app-dialog
+  [show]="showDialog"
+  title="Player Diplomacy"
+  [draggable]="true"
+  [showBackdrop]="false"
+  [minWidth]="280"
+  (close)="close()"
+>
+  <div class="player-rel-container" >
+    
+    @if (targetPlayer) {
+      <div class="target-info">
+        <span class="player-name">{{ targetPlayer.name }}</span>
+        <span class="nation-name">{{ targetPlayer.nationName }}</span>
+        
+        <span class="current-status">
+            Current: <span [style.color]="currentRelationColor">{{ currentRelationName }}</span>
+        </span>
+      </div>
+
+      <div class="relation-grid">
+        <!-- Hostile Actions -->
+        <button class="rel-btn war" [disabled]="isRelationDisabled(RelationType.War)" (click)="setRelation(RelationType.War)">
+          <span class="icon">⚔️</span> War
+        </button>
+
+        <button class="rel-btn ceasefire" [disabled]="isRelationDisabled(RelationType.Ceasefire)" (click)="setRelation(RelationType.Ceasefire)">
+          <span class="icon">🛑</span> Ceasefire
+        </button>
+
+        <button class="rel-btn embargo" [disabled]="isRelationDisabled(RelationType.TradeEmbargo)" (click)="setRelation(RelationType.TradeEmbargo)">
+          <span class="icon">🚫</span> Embargo
+        </button>
+
+        <!-- Neutral/Friendly Actions -->
+        <button class="rel-btn peace" [disabled]="isRelationDisabled(RelationType.Peace)" (click)="setRelation(RelationType.Peace)">
+          <span class="icon">🏳️</span> Peace
+        </button>
+
+        <button class="rel-btn row" [disabled]="isRelationDisabled(RelationType.RightOfWay)" (click)="setRelation(RelationType.RightOfWay)">
+          <span class="icon">🚶</span> Right of Way
+        </button>
+
+        <button class="rel-btn map" [disabled]="isRelationDisabled(RelationType.ShareMap)" (click)="setRelation(RelationType.ShareMap)">
+          <span class="icon">🤝</span> Share Map
+        </button>
+
+        <button class="rel-btn intel" [disabled]="isRelationDisabled(RelationType.ShareIntelligence)" [title]="!isPremium ? 'Premium account is needed' : ''" (click)="setRelation(RelationType.ShareIntelligence)">
+          <span class="icon">🕵️</span> Share Intel
+        </button>
+      </div>
+
+      <div class="status-msg">
+        {{ statusMessage }}
+      </div>
+
+    } @else {
+      <div class="error-msg">
+        No valid player selected.<br>
+        Please select a unit or province on the map first.
+      </div>
+    }
+
+  </div>
+</app-dialog>

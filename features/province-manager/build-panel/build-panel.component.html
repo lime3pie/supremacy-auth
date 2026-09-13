@@ -1,0 +1,494 @@
+<!-- File: /scripts/features/province-manager/build-panel/build-panel.component.html -->
+
+<app-dialog
+  [show]="show"
+  title="Build New"
+  [showBackdrop]="true"
+  [minWidth]="isMobile ? null : minPanelWidth"
+  [preferredWidth]="isMobile ? null : preferredPanelWidth"
+  (close)="onClose()">
+
+  <div header-subtitle class="console-sub">{{ selectedRows.length }} Province{{ selectedRows.length === 1 ? '' : 's' }} Selected</div>
+
+  <div header-actions>
+    <div class="premium-banner" *ngIf="isNonPremium">Queueing requires Premium</div>
+  </div>
+
+  @if (!isMobile) {
+  <div class="build-panel">
+    <div class="summary-row">
+      <div class="summary-col">
+        <h4>Current Construction</h4>
+        <div class="summary-chips" *ngIf="constructionSummary.length > 0; else emptyConstruction">
+          <ng-container *ngFor="let c of capChips(constructionSummary).shown">
+            <span class="g-chip">
+              <span class="g-icon"><img [src]="c.icon" [alt]="c.name" onerror="this.style.display='none'" /></span>
+              <span class="g-meta"><span class="g-n">{{ c.name }}</span><br /><span class="g-t">×{{ c.count }}</span></span>
+            </span>
+          </ng-container>
+          <span class="g-chip more" *ngIf="capChips(constructionSummary).overflowCount > 0">+{{ capChips(constructionSummary).overflowCount }} more</span>
+        </div>
+        <ng-template #emptyConstruction><div class="summary-empty">Nothing under construction.</div></ng-template>
+      </div>
+
+      <div class="summary-col">
+        <h4>Current Production</h4>
+        <div class="summary-chips" *ngIf="productionSummary.length > 0; else emptyProduction">
+          <ng-container *ngFor="let c of capChips(productionSummary).shown">
+            <span class="g-chip">
+              <span class="g-icon"><img [src]="c.icon" [alt]="c.name" onerror="this.style.display='none'" /></span>
+              <span class="g-meta"><span class="g-n">{{ c.name }}</span><br /><span class="g-t">×{{ c.count }}</span></span>
+            </span>
+          </ng-container>
+          <span class="g-chip more" *ngIf="capChips(productionSummary).overflowCount > 0">+{{ capChips(productionSummary).overflowCount }} more</span>
+        </div>
+        <ng-template #emptyProduction><div class="summary-empty">Nothing in production.</div></ng-template>
+      </div>
+
+      <div class="summary-col">
+        <h4>Queued</h4>
+        <div class="summary-chips" *ngIf="queuedSummary.length > 0; else emptyQueued">
+          <ng-container *ngFor="let c of capChips(queuedSummary).shown">
+            <span class="g-chip">
+              <span class="g-icon"><img [src]="c.icon" [alt]="c.name" onerror="this.style.display='none'" /></span>
+              <span class="g-meta"><span class="g-n">{{ c.name }}</span><br /><span class="g-t">×{{ c.count }}</span></span>
+            </span>
+          </ng-container>
+          <span class="g-chip more" *ngIf="capChips(queuedSummary).overflowCount > 0">+{{ capChips(queuedSummary).overflowCount }} more</span>
+        </div>
+        <ng-template #emptyQueued><div class="summary-empty">Nothing queued.</div></ng-template>
+      </div>
+    </div>
+
+    <div class="build-tabs">
+      <button *ngFor="let cat of categories" class="tab" [class.active]="activeCategory === cat" (click)="setCategory(cat)">{{ cat }}</button>
+    </div>
+
+    <!-- Buildings: one collapsed family row (e.g. "Factory") per building, with a details expand
+         listing each tier that's currently relevant to the selection. -->
+    <div class="catalog" *ngIf="activeCategory === 'Buildings'">
+      <div class="cat-family" *ngFor="let family of buildingFamilies; trackBy: trackByFamilyKey">
+        <div class="cat-row cat-row-family" [class.cat-row-blocked]="isEntirelyBlocked(family)">
+          <div class="cat-row-top">
+            <span class="cat-icon"><img [src]="family.icon" [alt]="family.displayName" onerror="this.style.display='none'" /></span>
+
+            <span class="cat-name-wrap">
+              <span class="cat-name">{{ family.tiers.length === 1 ? family.tiers[0].item.displayName : family.displayName }}</span>
+              <button class="info-btn-mini" (click)="toggleInfoDetail(family.familyKey)" title="Info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9.5"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.6" r="0.9" fill="currentColor" stroke="none"/></svg>
+              </button>
+              <button class="detail-toggle-btn" *ngIf="family.tiers.length > 1" (click)="toggleFamilyDetail(family.familyKey)">
+                {{ isFamilyExpanded(family.familyKey) ? 'Hide levels ▲' : (family.tiers.length + ' levels ▼') }}
+              </button>
+            </span>
+
+            <span class="cat-actions">
+              <button class="cat-btn cat-btn-queue" *ngIf="!family.queueBlockedByPremium" [disabled]="!actionsReady || family.eligibleCount === 0" [title]="!actionsReady ? 'Disabled - see banner above' : ''" (click)="queueFamily(family)">Queue ({{ family.eligibleCount }})</button>
+              <button class="cat-btn cat-btn-build" [disabled]="!actionsReady || family.affordableCount === 0" [title]="!actionsReady ? 'Disabled - see banner above' : ''" (click)="buildFamily(family)">Build ({{ family.affordableCount }})</button>
+              <button class="cat-btn cat-btn-both" *ngIf="!family.queueBlockedByPremium" [disabled]="!actionsReady || (family.affordableCount === 0 && family.queueRemainderCount === 0)" [title]="!actionsReady ? 'Disabled - see banner above' : ''" (click)="buildAndQueueFamily(family)">Build+Queue ({{ family.affordableCount }}+{{ family.queueRemainderCount }})</button>
+            </span>
+          </div>
+
+          <div class="cat-row-summary">
+            <span *ngIf="showAlreadyBuiltCount && family.alreadyBuiltCount > 0">{{ family.alreadyBuiltCount }} already built</span>
+            <span class="cat-damaged" *ngIf="family.damagedCount > 0" title="Already built here but below full condition, and nothing is currently repairing it.">{{ family.damagedCount }} damaged</span>
+            <button class="prereq-toggle-btn" *ngIf="family.missingPrerequisiteCount > 0" (click)="togglePrereqDetail(family.familyKey)">
+              {{ family.missingPrerequisiteCount }} missing prerequisite {{ isPrereqExpanded(family.familyKey) ? '▲' : '▼' }}
+            </button>
+            <span *ngIf="family.queueOnlyCount > 0" title="The required building is under construction/queued but not finished yet - queue-only until it completes.">{{ family.queueOnlyCount }} prerequisite in progress (queue-only)</span>
+            <span *ngIf="family.busyCount > 0">{{ family.busyCount }} already busy</span>
+            <span class="cat-short-note" *ngIf="family.shortOnResourcesCount > 0">
+              {{ family.shortOnResourcesCount }} short on
+              <span class="cat-short-item" *ngFor="let r of buildShortResourceEntries(family.buildShortResourceIDs)">
+                <img [src]="r.icon" [alt]="r.name" /> {{ r.name }}
+              </span>
+            </span>
+            <span *ngIf="family.queueFullCount > 0">{{ family.queueFullCount }} queue full (max 4)</span>
+            <span class="afford-count" [class.afford-full]="family.affordableCount === family.readyToBuildCount && family.readyToBuildCount > 0" [class.afford-partial]="family.affordableCount > 0 && family.affordableCount < family.readyToBuildCount" [class.afford-none]="family.affordableCount === 0 && family.readyToBuildCount > 0">
+              {{ family.affordableCount }} of {{ family.readyToBuildCount }} affordable now
+            </span>
+            <span class="cat-total" *ngIf="family.readyToBuildCount > 0">
+              <span>Total if all {{ family.readyToBuildCount }}:</span>
+              <span class="cat-total-item" *ngFor="let c of totalCostEntries(family)" [class.short]="c.short">
+                <img [src]="c.icon" [alt]="c.name" /> {{ c.amount | number }}
+              </span>
+            </span>
+          </div>
+
+          <div class="cat-prereq-detail" *ngIf="family.missingPrerequisiteCount > 0 && isPrereqExpanded(family.familyKey)">
+            <span>Requires:</span>
+            <span class="cat-prereq-item" *ngFor="let r of familyMissingPrereqs(family)">{{ r.name }} (Tier {{ r.tier }})</span>
+          </div>
+
+          <div class="cat-info-detail" *ngIf="isInfoExpanded(family.familyKey)">{{ family.description }}</div>
+
+          <div class="cat-family-details" *ngIf="isFamilyExpanded(family.familyKey)">
+            <div class="cat-row cat-row-tier" [class.cat-row-blocked]="isEntirelyBlocked(tier.evaluation)" *ngFor="let tier of family.tiers; trackBy: trackByTierItemKey">
+              <div class="cat-row-top">
+                <span class="cat-icon"><img [src]="tier.item.icon" [alt]="tier.item.displayName" onerror="this.style.display='none'" /></span>
+
+                <span class="cat-name-wrap">
+                  <span class="cat-name">{{ tier.item.displayName }}</span>
+                  <span class="cat-tier-count">{{ tier.evaluation.selectedCount }} province{{ tier.evaluation.selectedCount === 1 ? '' : 's' }} at this level</span>
+                </span>
+
+                <span class="cat-costs">
+                  <span class="cat-cost" *ngFor="let c of costEntries(tier.item)" [title]="c.name">
+                    <img [src]="c.icon" [alt]="c.name" /> {{ c.amount | number }}
+                  </span>
+                </span>
+
+                <span class="cat-time">{{ formatDuration(tier.item.buildTimeSeconds) }}</span>
+                <span class="cat-morale">Morale: <b>{{ tier.item.moraleCost !== null ? tier.item.moraleCost : '—' }}</b></span>
+
+                <span class="cat-actions">
+                  <button class="cat-btn cat-btn-queue" *ngIf="!tier.evaluation.queueBlockedByPremium" [disabled]="!actionsReady || tier.evaluation.eligibleCount === 0" [title]="!actionsReady ? 'Disabled - see banner above' : ''" (click)="queueItem(tier.item, tier.evaluation)">Queue ({{ tier.evaluation.eligibleCount }})</button>
+                  <button class="cat-btn cat-btn-build" [disabled]="!actionsReady || tier.evaluation.affordableCount === 0" [title]="!actionsReady ? 'Disabled - see banner above' : ''" (click)="buildItem(tier.item, tier.evaluation)">Build ({{ tier.evaluation.affordableCount }})</button>
+                  <button class="cat-btn cat-btn-both" *ngIf="!tier.evaluation.queueBlockedByPremium" [disabled]="!actionsReady || (tier.evaluation.affordableCount === 0 && tier.evaluation.queueRemainderCount === 0)" [title]="!actionsReady ? 'Disabled - see banner above' : ''" (click)="buildAndQueueItem(tier.item, tier.evaluation)">Build+Queue ({{ tier.evaluation.affordableCount }}+{{ tier.evaluation.queueRemainderCount }})</button>
+                </span>
+              </div>
+
+              <div class="cat-row-summary">
+                <span class="cat-damaged" *ngIf="tier.evaluation.damagedCount > 0" title="Already built here but below full condition, and nothing is currently repairing it.">{{ tier.evaluation.damagedCount }} damaged</span>
+                <button class="prereq-toggle-btn" *ngIf="tier.evaluation.missingPrerequisiteCount > 0" (click)="togglePrereqDetail(tier.item.key)">
+                  {{ tier.evaluation.missingPrerequisiteCount }} missing prerequisite {{ isPrereqExpanded(tier.item.key) ? '▲' : '▼' }}
+                </button>
+                <span *ngIf="tier.evaluation.queueOnlyCount > 0" title="The required building is under construction/queued but not finished yet - queue-only until it completes.">{{ tier.evaluation.queueOnlyCount }} prerequisite in progress (queue-only)</span>
+                <span *ngIf="tier.evaluation.busyCount > 0">{{ tier.evaluation.busyCount }} already busy</span>
+                <span class="cat-short-note" *ngIf="tier.evaluation.shortOnResourcesCount > 0">
+                  {{ tier.evaluation.shortOnResourcesCount }} short on
+                  <span class="cat-short-item" *ngFor="let r of buildShortResourceEntries(tier.evaluation.buildShortResourceIDs)">
+                    <img [src]="r.icon" [alt]="r.name" /> {{ r.name }}
+                  </span>
+                </span>
+                <span *ngIf="tier.evaluation.queueFullCount > 0">{{ tier.evaluation.queueFullCount }} queue full (max 4)</span>
+                <span class="afford-count" [class.afford-full]="tier.evaluation.affordableCount === tier.evaluation.readyToBuildCount && tier.evaluation.readyToBuildCount > 0" [class.afford-partial]="tier.evaluation.affordableCount > 0 && tier.evaluation.affordableCount < tier.evaluation.readyToBuildCount" [class.afford-none]="tier.evaluation.affordableCount === 0 && tier.evaluation.readyToBuildCount > 0">
+                  {{ tier.evaluation.affordableCount }} of {{ tier.evaluation.readyToBuildCount }} affordable now
+                </span>
+              </div>
+
+              <div class="cat-prereq-detail" *ngIf="tier.evaluation.missingPrerequisiteCount > 0 && isPrereqExpanded(tier.item.key)">
+                <span>Requires:</span>
+                <span class="cat-prereq-item" *ngFor="let r of tier.item.requiredBuildings">{{ r.name }} (Tier {{ r.tier }})</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-empty" *ngIf="buildingFamilies.length === 0" style="padding:16px;">No catalog entries resolved for this category.</div>
+    </div>
+
+    <!-- Land/Air/Navy: flat, tier-less items exactly as before. -->
+    <div class="catalog" *ngIf="activeCategory !== 'Buildings'">
+      <div class="cat-row" *ngFor="let item of nonBuildingItems; trackBy: trackByItemKey" [class.cat-row-blocked]="isEntirelyBlocked(evaluate(item))">
+        <ng-container *ngIf="evaluate(item) as ev">
+          <div class="cat-row-top">
+            <span class="cat-icon"><img [src]="item.icon" [alt]="item.displayName" onerror="this.style.display='none'" /></span>
+
+            <span class="cat-name-wrap">
+              <span class="cat-name">{{ item.displayName }}</span>
+              <button class="info-btn-mini" (click)="toggleInfoDetail(item.key)" title="Info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9.5"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.6" r="0.9" fill="currentColor" stroke="none"/></svg>
+              </button>
+            </span>
+
+            <span class="cat-costs">
+              <span class="cat-cost" *ngFor="let c of costEntries(item)" [title]="c.name">
+                <img [src]="c.icon" [alt]="c.name" /> {{ c.amount | number }}
+              </span>
+            </span>
+
+            <span class="cat-time">{{ formatDuration(item.buildTimeSeconds) }}</span>
+            <span class="cat-morale">Morale: <b>{{ item.moraleCost !== null ? item.moraleCost : '—' }}</b></span>
+
+            <span class="cat-actions">
+              <button class="cat-btn cat-btn-queue" *ngIf="!ev.queueBlockedByPremium" [disabled]="!actionsReady || ev.eligibleCount === 0" [title]="!actionsReady ? 'Disabled - see banner above' : ''" (click)="queueItem(item, ev)">Queue ({{ ev.eligibleCount }})</button>
+              <button class="cat-btn cat-btn-build" [disabled]="!actionsReady || ev.affordableCount === 0" [title]="!actionsReady ? 'Disabled - see banner above' : ''" (click)="buildItem(item, ev)">Build ({{ ev.affordableCount }})</button>
+              <button class="cat-btn cat-btn-both" *ngIf="!ev.queueBlockedByPremium" [disabled]="!actionsReady || (ev.affordableCount === 0 && ev.queueRemainderCount === 0)" [title]="!actionsReady ? 'Disabled - see banner above' : ''" (click)="buildAndQueueItem(item, ev)">Build+Queue ({{ ev.affordableCount }}+{{ ev.queueRemainderCount }})</button>
+            </span>
+          </div>
+
+          <div class="cat-row-summary">
+            <span *ngIf="showAlreadyBuiltCount && ev.alreadyBuiltCount > 0">{{ ev.alreadyBuiltCount }} already built</span>
+            <span class="cat-damaged" *ngIf="ev.damagedCount > 0" title="Already built here but below full condition, and nothing is currently repairing it.">{{ ev.damagedCount }} damaged</span>
+            <button class="prereq-toggle-btn" *ngIf="ev.missingPrerequisiteCount > 0" (click)="togglePrereqDetail(item.key)">
+              {{ ev.missingPrerequisiteCount }} missing prerequisite {{ isPrereqExpanded(item.key) ? '▲' : '▼' }}
+            </button>
+            <span *ngIf="ev.queueOnlyCount > 0" title="The required building is under construction/queued but not finished yet - queue-only until it completes.">{{ ev.queueOnlyCount }} prerequisite in progress (queue-only)</span>
+            <span *ngIf="ev.busyCount > 0">{{ ev.busyCount }} already busy</span>
+            <span class="cat-short-note" *ngIf="ev.shortOnResourcesCount > 0">
+              {{ ev.shortOnResourcesCount }} short on
+              <span class="cat-short-item" *ngFor="let r of buildShortResourceEntries(ev.buildShortResourceIDs)">
+                <img [src]="r.icon" [alt]="r.name" /> {{ r.name }}
+              </span>
+            </span>
+            <span *ngIf="ev.queueFullCount > 0">{{ ev.queueFullCount }} queue full (max 4)</span>
+            <span class="afford-count" [class.afford-full]="ev.affordableCount === ev.readyToBuildCount && ev.readyToBuildCount > 0" [class.afford-partial]="ev.affordableCount > 0 && ev.affordableCount < ev.readyToBuildCount" [class.afford-none]="ev.affordableCount === 0 && ev.readyToBuildCount > 0">
+              {{ ev.affordableCount }} of {{ ev.readyToBuildCount }} affordable now
+            </span>
+            <span class="cat-total" *ngIf="ev.readyToBuildCount > 0">
+              <span>Total if all {{ ev.readyToBuildCount }}:</span>
+              <span class="cat-total-item" *ngFor="let c of totalCostEntries(ev)" [class.short]="c.short">
+                <img [src]="c.icon" [alt]="c.name" /> {{ c.amount | number }}
+              </span>
+            </span>
+          </div>
+
+          <div class="cat-prereq-detail" *ngIf="ev.missingPrerequisiteCount > 0 && isPrereqExpanded(item.key)">
+            <span>Requires:</span>
+            <span class="cat-prereq-item" *ngFor="let r of item.requiredBuildings">{{ r.name }} (Tier {{ r.tier }})</span>
+          </div>
+
+          <div class="cat-info-detail" *ngIf="isInfoExpanded(item.key)">{{ item.description }}</div>
+        </ng-container>
+      </div>
+
+      <div class="summary-empty" *ngIf="nonBuildingItems.length === 0" style="padding:16px;">No catalog entries resolved for this category.</div>
+    </div>
+
+    <div class="build-footer">Costs and affordability are computed against your current resource stockpile.</div>
+  </div>
+  } @else {
+  <!-- ================= MOBILE LAYOUT =================
+       Every binding below reuses the exact same evaluation getters/methods the desktop catalog
+       above already computes (buildingFamilies, evaluate(), costEntries(), queueItem()/buildItem()/
+       etc.) - only the markup differs, no new business logic. -->
+  <div class="m-build-body">
+    <div class="m-stat-strip">
+      <div class="m-stat-tile">
+        <h5>Construction</h5>
+        @if (constructionSummary.length > 0) {
+          <div class="m-stat-chips">
+            @for (c of capChips(constructionSummary).shown; track c.name) {
+              <span class="m-stat-chip"><img [src]="c.icon" [alt]="c.name" onerror="this.style.display='none'" /><b>{{ c.count }}</b></span>
+            }
+            @if (capChips(constructionSummary).overflowCount > 0) { <span class="m-stat-more">+{{ capChips(constructionSummary).overflowCount }}</span> }
+          </div>
+        } @else {
+          <div class="m-stat-empty">None</div>
+        }
+      </div>
+      <div class="m-stat-tile">
+        <h5>Production</h5>
+        @if (productionSummary.length > 0) {
+          <div class="m-stat-chips">
+            @for (c of capChips(productionSummary).shown; track c.name) {
+              <span class="m-stat-chip"><img [src]="c.icon" [alt]="c.name" onerror="this.style.display='none'" /><b>{{ c.count }}</b></span>
+            }
+            @if (capChips(productionSummary).overflowCount > 0) { <span class="m-stat-more">+{{ capChips(productionSummary).overflowCount }}</span> }
+          </div>
+        } @else {
+          <div class="m-stat-empty">None</div>
+        }
+      </div>
+      <div class="m-stat-tile">
+        <h5>Queued</h5>
+        @if (queuedSummary.length > 0) {
+          <div class="m-stat-chips">
+            @for (c of capChips(queuedSummary).shown; track c.name) {
+              <span class="m-stat-chip"><img [src]="c.icon" [alt]="c.name" onerror="this.style.display='none'" /><b>{{ c.count }}</b></span>
+            }
+            @if (capChips(queuedSummary).overflowCount > 0) { <span class="m-stat-more">+{{ capChips(queuedSummary).overflowCount }}</span> }
+          </div>
+        } @else {
+          <div class="m-stat-empty">None</div>
+        }
+      </div>
+    </div>
+
+    <div class="m-segmented">
+      @for (cat of categories; track cat) {
+        <button type="button" [class.active]="activeCategory === cat" (click)="setCategory(cat)">{{ cat }}</button>
+      }
+    </div>
+
+    @if (activeCategory === 'Buildings') {
+      <div class="m-catalog">
+        @for (family of buildingFamilies; track family.familyKey) {
+          <div class="m-cat-row" [class.blocked]="isEntirelyBlocked(family)">
+            <div class="m-cat-top">
+              <span class="m-cat-icon"><img [src]="family.icon" [alt]="family.displayName" onerror="this.style.display='none'" /></span>
+              <div class="m-cat-name-wrap">
+                <div class="m-cat-name-line">
+                  <span class="m-cat-name">{{ family.tiers.length === 1 ? family.tiers[0].item.displayName : family.displayName }}</span>
+                  <button class="m-info-dot" (click)="toggleInfoDetail(family.familyKey)" title="Info">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9.5"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.6" r="0.9" fill="currentColor" stroke="none"/></svg>
+                  </button>
+                </div>
+                @if (family.tiers.length > 1) {
+                  <button class="m-expand-toggle" (click)="toggleFamilyDetail(family.familyKey)">{{ isFamilyExpanded(family.familyKey) ? 'Hide levels ▲' : (family.tiers.length + ' levels ▼') }}</button>
+                }
+              </div>
+            </div>
+
+            @if (isInfoExpanded(family.familyKey)) { <div class="m-cat-info">{{ family.description }}</div> }
+
+            <div class="m-badges">
+              @if (showAlreadyBuiltCount && family.alreadyBuiltCount > 0) { <span class="m-badge m-badge-built">{{ family.alreadyBuiltCount }} already built</span> }
+              @if (family.damagedCount > 0) { <span class="m-badge m-badge-damaged">{{ family.damagedCount }} damaged</span> }
+              @if (family.missingPrerequisiteCount > 0) {
+                <span class="m-badge m-badge-prereq" (click)="togglePrereqDetail(family.familyKey)">{{ family.missingPrerequisiteCount }} missing prerequisite {{ isPrereqExpanded(family.familyKey) ? '▲' : '▼' }}</span>
+              }
+              @if (family.queueOnlyCount > 0) { <span class="m-badge m-badge-busy">{{ family.queueOnlyCount }} prereq in progress</span> }
+              @if (family.busyCount > 0) { <span class="m-badge m-badge-busy">{{ family.busyCount }} already busy</span> }
+              @if (family.queueFullCount > 0) { <span class="m-badge m-badge-busy">{{ family.queueFullCount }} queue full</span> }
+              @if (family.shortOnResourcesCount > 0) {
+                <span class="m-badge m-badge-short">{{ family.shortOnResourcesCount }} short on
+                  @for (r of buildShortResourceEntries(family.buildShortResourceIDs); track r.id) { <img [src]="r.icon" [alt]="r.name" /> }
+                </span>
+              }
+              @if (family.readyToBuildCount > 0) {
+                <span class="m-badge" [class.m-badge-afford-full]="family.affordableCount === family.readyToBuildCount" [class.m-badge-afford-partial]="family.affordableCount > 0 && family.affordableCount < family.readyToBuildCount" [class.m-badge-afford-none]="family.affordableCount === 0">{{ family.affordableCount }} of {{ family.readyToBuildCount }} affordable</span>
+              }
+            </div>
+
+            @if (family.missingPrerequisiteCount > 0 && isPrereqExpanded(family.familyKey)) {
+              <div class="m-prereq-detail">Requires:
+                @for (r of familyMissingPrereqs(family); track r.name) { <b>{{ r.name }} (Tier {{ r.tier }})</b> }
+              </div>
+            }
+
+            @if (family.readyToBuildCount > 0) {
+              <div class="m-cat-total">
+                <span>Total if all {{ family.readyToBuildCount }}:</span>
+                @for (c of totalCostEntries(family); track c.id) { <span class="m-amt" [class.short]="c.short"><img [src]="c.icon" [alt]="c.name" />{{ c.amount | number }}</span> }
+              </div>
+            }
+
+            <div class="m-cat-actions">
+              @if (!family.queueBlockedByPremium) {
+                <button class="m-cat-btn m-queue" [disabled]="!actionsReady || family.eligibleCount === 0" (click)="queueFamily(family)">Queue ({{ family.eligibleCount }})</button>
+              }
+              <button class="m-cat-btn m-build" [disabled]="!actionsReady || family.affordableCount === 0" (click)="buildFamily(family)">Build ({{ family.affordableCount }})</button>
+              @if (!family.queueBlockedByPremium) {
+                <button class="m-cat-btn m-both" [disabled]="!actionsReady || (family.affordableCount === 0 && family.queueRemainderCount === 0)" (click)="buildAndQueueFamily(family)">Build+Queue ({{ family.affordableCount }}+{{ family.queueRemainderCount }})</button>
+              }
+            </div>
+
+            @if (family.tiers.length > 1 && isFamilyExpanded(family.familyKey)) {
+              <div class="m-tier-list">
+                @for (tier of family.tiers; track tier.item.key) {
+                  <div class="m-tier-row" [class.blocked]="isEntirelyBlocked(tier.evaluation)">
+                    <div class="m-cat-top">
+                      <span class="m-cat-icon sm"><img [src]="tier.item.icon" [alt]="tier.item.displayName" onerror="this.style.display='none'" /></span>
+                      <div class="m-cat-name-wrap">
+                        <span class="m-cat-name">{{ tier.item.displayName }}</span>
+                        <span class="m-tier-count">{{ tier.evaluation.selectedCount }} province{{ tier.evaluation.selectedCount === 1 ? '' : 's' }}</span>
+                      </div>
+                    </div>
+                    <div class="m-cat-costs">
+                      @for (c of costEntries(tier.item); track c.id) { <span class="m-cost-chip"><img [src]="c.icon" [alt]="c.name" />{{ c.amount | number }}</span> }
+                    </div>
+                    <div class="m-cat-meta"><span>Time <b>{{ formatDuration(tier.item.buildTimeSeconds) }}</b></span></div>
+                    <div class="m-badges">
+                      @if (tier.evaluation.damagedCount > 0) { <span class="m-badge m-badge-damaged">{{ tier.evaluation.damagedCount }} damaged</span> }
+                      @if (tier.evaluation.missingPrerequisiteCount > 0) {
+                        <span class="m-badge m-badge-prereq" (click)="togglePrereqDetail(tier.item.key)">{{ tier.evaluation.missingPrerequisiteCount }} missing prerequisite {{ isPrereqExpanded(tier.item.key) ? '▲' : '▼' }}</span>
+                      }
+                      @if (tier.evaluation.busyCount > 0) { <span class="m-badge m-badge-busy">{{ tier.evaluation.busyCount }} already busy</span> }
+                      @if (tier.evaluation.readyToBuildCount > 0) {
+                        <span class="m-badge" [class.m-badge-afford-full]="tier.evaluation.affordableCount === tier.evaluation.readyToBuildCount" [class.m-badge-afford-partial]="tier.evaluation.affordableCount > 0 && tier.evaluation.affordableCount < tier.evaluation.readyToBuildCount" [class.m-badge-afford-none]="tier.evaluation.affordableCount === 0">{{ tier.evaluation.affordableCount }} of {{ tier.evaluation.readyToBuildCount }} affordable</span>
+                      }
+                    </div>
+                    @if (tier.evaluation.missingPrerequisiteCount > 0 && isPrereqExpanded(tier.item.key)) {
+                      <div class="m-prereq-detail">Requires:
+                        @for (r of tier.item.requiredBuildings; track r.name) { <b>{{ r.name }} (Tier {{ r.tier }})</b> }
+                      </div>
+                    }
+                    <div class="m-cat-actions">
+                      @if (!tier.evaluation.queueBlockedByPremium) {
+                        <button class="m-cat-btn m-queue" [disabled]="!actionsReady || tier.evaluation.eligibleCount === 0" (click)="queueItem(tier.item, tier.evaluation)">Queue ({{ tier.evaluation.eligibleCount }})</button>
+                      }
+                      <button class="m-cat-btn m-build" [disabled]="!actionsReady || tier.evaluation.affordableCount === 0" (click)="buildItem(tier.item, tier.evaluation)">Build ({{ tier.evaluation.affordableCount }})</button>
+                      @if (!tier.evaluation.queueBlockedByPremium) {
+                        <button class="m-cat-btn m-both" [disabled]="!actionsReady || (tier.evaluation.affordableCount === 0 && tier.evaluation.queueRemainderCount === 0)" (click)="buildAndQueueItem(tier.item, tier.evaluation)">Build+Queue ({{ tier.evaluation.affordableCount }}+{{ tier.evaluation.queueRemainderCount }})</button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+        @if (buildingFamilies.length === 0) { <div class="m-cat-empty">No catalog entries resolved for this category.</div> }
+      </div>
+    }
+
+    @if (activeCategory !== 'Buildings') {
+      <div class="m-catalog">
+        @for (item of nonBuildingItems; track item.key) {
+          @let ev = evaluate(item);
+          <div class="m-cat-row" [class.blocked]="isEntirelyBlocked(ev)">
+            <div class="m-cat-top">
+              <span class="m-cat-icon"><img [src]="item.icon" [alt]="item.displayName" onerror="this.style.display='none'" /></span>
+              <div class="m-cat-name-wrap">
+                <div class="m-cat-name-line">
+                  <span class="m-cat-name">{{ item.displayName }}</span>
+                  <button class="m-info-dot" (click)="toggleInfoDetail(item.key)" title="Info">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9.5"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.6" r="0.9" fill="currentColor" stroke="none"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            @if (isInfoExpanded(item.key)) { <div class="m-cat-info">{{ item.description }}</div> }
+
+            <div class="m-cat-costs">
+              @for (c of costEntries(item); track c.id) { <span class="m-cost-chip"><img [src]="c.icon" [alt]="c.name" />{{ c.amount | number }}</span> }
+            </div>
+            <div class="m-cat-meta"><span>Time <b>{{ formatDuration(item.buildTimeSeconds) }}</b></span></div>
+
+            <div class="m-badges">
+              @if (showAlreadyBuiltCount && ev.alreadyBuiltCount > 0) { <span class="m-badge m-badge-built">{{ ev.alreadyBuiltCount }} already built</span> }
+              @if (ev.damagedCount > 0) { <span class="m-badge m-badge-damaged">{{ ev.damagedCount }} damaged</span> }
+              @if (ev.missingPrerequisiteCount > 0) {
+                <span class="m-badge m-badge-prereq" (click)="togglePrereqDetail(item.key)">{{ ev.missingPrerequisiteCount }} missing prerequisite {{ isPrereqExpanded(item.key) ? '▲' : '▼' }}</span>
+              }
+              @if (ev.queueOnlyCount > 0) { <span class="m-badge m-badge-busy">{{ ev.queueOnlyCount }} prereq in progress</span> }
+              @if (ev.busyCount > 0) { <span class="m-badge m-badge-busy">{{ ev.busyCount }} already busy</span> }
+              @if (ev.queueFullCount > 0) { <span class="m-badge m-badge-busy">{{ ev.queueFullCount }} queue full</span> }
+              @if (ev.shortOnResourcesCount > 0) {
+                <span class="m-badge m-badge-short">{{ ev.shortOnResourcesCount }} short on
+                  @for (r of buildShortResourceEntries(ev.buildShortResourceIDs); track r.id) { <img [src]="r.icon" [alt]="r.name" /> }
+                </span>
+              }
+              @if (ev.readyToBuildCount > 0) {
+                <span class="m-badge" [class.m-badge-afford-full]="ev.affordableCount === ev.readyToBuildCount" [class.m-badge-afford-partial]="ev.affordableCount > 0 && ev.affordableCount < ev.readyToBuildCount" [class.m-badge-afford-none]="ev.affordableCount === 0">{{ ev.affordableCount }} of {{ ev.readyToBuildCount }} affordable</span>
+              }
+            </div>
+
+            @if (ev.missingPrerequisiteCount > 0 && isPrereqExpanded(item.key)) {
+              <div class="m-prereq-detail">Requires:
+                @for (r of item.requiredBuildings; track r.name) { <b>{{ r.name }} (Tier {{ r.tier }})</b> }
+              </div>
+            }
+
+            @if (ev.readyToBuildCount > 0) {
+              <div class="m-cat-total">
+                <span>Total if all {{ ev.readyToBuildCount }}:</span>
+                @for (c of totalCostEntries(ev); track c.id) { <span class="m-amt" [class.short]="c.short"><img [src]="c.icon" [alt]="c.name" />{{ c.amount | number }}</span> }
+              </div>
+            }
+
+            <div class="m-cat-actions">
+              @if (!ev.queueBlockedByPremium) {
+                <button class="m-cat-btn m-queue" [disabled]="!actionsReady || ev.eligibleCount === 0" (click)="queueItem(item, ev)">Queue ({{ ev.eligibleCount }})</button>
+              }
+              <button class="m-cat-btn m-build" [disabled]="!actionsReady || ev.affordableCount === 0" (click)="buildItem(item, ev)">Build ({{ ev.affordableCount }})</button>
+              @if (!ev.queueBlockedByPremium) {
+                <button class="m-cat-btn m-both" [disabled]="!actionsReady || (ev.affordableCount === 0 && ev.queueRemainderCount === 0)" (click)="buildAndQueueItem(item, ev)">Build+Queue ({{ ev.affordableCount }}+{{ ev.queueRemainderCount }})</button>
+              }
+            </div>
+          </div>
+        }
+        @if (nonBuildingItems.length === 0) { <div class="m-cat-empty">No catalog entries resolved for this category.</div> }
+      </div>
+    }
+
+    <div class="m-build-footer">Costs and affordability are computed against your current resource stockpile.</div>
+  </div>
+  }
+</app-dialog>
+
+<div class="toast" [class.show]="toastVisible">{{ toastMessage }}</div>

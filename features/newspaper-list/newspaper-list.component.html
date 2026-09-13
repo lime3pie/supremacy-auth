@@ -1,0 +1,45 @@
+<app-dialog [show]="showDialog" title="Newspaper" (close)="close()">
+  @if (showDialog) {
+  <div class="newspaper-container" [class.mobile]="isMobile">
+
+    <div class="controls">
+      <label for="newspaper-day-select">Showing articles from:</label>
+      <select id="newspaper-day-select" class="day-select" [(ngModel)]="selectedDay" (change)="onDayChange()">
+        @for (opt of dayOptions; track opt.day) {
+          <option [ngValue]="opt.day">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+
+    @if (isLoading) {
+      <div class="loading-state">Fetching the presses...</div>
+    }
+    @else if (articles.length === 0) {
+      <div class="empty-state">No editorial articles were published on this day.</div>
+    }
+    @else {
+      <div class="article-list">
+        @for (article of articles; track article.messageUID) {
+          <div class="article-card">
+            <div class="article-header">
+              <div class="article-title">{{ getTitle(article) }}</div>
+              <div class="article-author">{{ article.author }}</div>
+            </div>
+
+            @if (getImageUrl(article.imageID); as imgUrl) {
+              <img [src]="imgUrl" class="article-image" onerror="this.style.display='none'">
+            }
+
+            <div class="article-body">
+              @for (line of getMessageLines(article); track $index) {
+                <div class="stats-line" [class.is-me]="line.isMe" [innerHTML]="line.html"></div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+  }
+</app-dialog>

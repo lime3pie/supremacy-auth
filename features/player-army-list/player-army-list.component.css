@@ -1,0 +1,598 @@
+.player-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+/* --- Data Source Toggle --- */
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 2px 0;
+}
+
+.mode-toggle-btn {
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #aaa;
+  padding: 7px 14px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.mode-toggle-btn:hover {
+  color: #fff;
+  border-color: #cfa665;
+}
+
+.mode-toggle-btn.active {
+  background-color: #cfa665;
+  border-color: #cfa665;
+  color: #1a1a1a;
+}
+
+.mode-toggle-hint {
+  color: #888;
+  font-size: 0.8rem;
+  font-style: italic;
+  margin-left: 4px;
+}
+
+/* --- NEW: Filter Styles --- */
+.filter-header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 4px;
+  padding: 4px 2px;
+}
+
+.filter-input {
+  flex: 1;
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filter-input:focus {
+  border-color: #cfa665;
+}
+
+.filter-select {
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  min-width: 140px;
+}
+
+.filter-select:focus {
+  border-color: #cfa665;
+}
+
+.sort-select {
+  min-width: 160px;
+}
+
+.player-row {
+  background-color: #252526;
+  border: 1px solid #3e3e42;
+  border-radius: 6px;
+  padding: 10px;
+  transition: background-color 0.2s, border-color 0.2s;
+  cursor: default;
+}
+
+.player-row:hover {
+  background-color: #2d2d30;
+}
+
+/* ... (Rest of existing CSS remains unchanged) ... */
+
+/* --- Header Section --- */
+.player-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #3e3e42;
+  padding-bottom: 6px;
+}
+
+/* --- NEW: Relation Icon --- */
+.relation-icon {
+  font-size: 1.2rem;
+  margin-right: 8px;
+  cursor: help;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-name {
+  font-weight: bold;
+  color: #f0f0f0;
+  font-size: 1rem;
+}
+
+.nation-separator {
+  margin: 0 6px;
+  color: #666;
+}
+
+.nation-name {
+  color: #aaa;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.hp-badge {
+  color: #4caf50; 
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-right: 12px;
+  font-family: "Lucida Console", Monaco, monospace;
+  letter-spacing: -0.5px;
+}
+
+.stack-count-badge {
+  background: #333;
+  color: #888;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  border: 1px solid #444;
+}
+
+/* --- Unit Deck Layout --- */
+.unit-deck {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* --- S1914 Card Style --- */
+.s1914-card {
+  position: relative;
+  width: 60px;
+  height: 86px; 
+  background-color: #5a6b70; 
+  border: 2px solid #3a4b50;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.s1914-card.is-hero {
+  background-color: #e6c35d; 
+  border-color: #bfa040;
+}
+
+/* Image Container */
+.card-image-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.card-image-container img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+}
+
+/* Info Strip */
+.card-info-strip {
+  background-color: #1a1a1a;
+  color: #fff;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: bold;
+  border-top: 1px solid rgba(0,0,0,0.3);
+  border-bottom: 1px solid rgba(0,0,0,0.3);
+}
+
+.card-info-strip .icon {
+  font-size: 11px;
+  color: #ffd700; 
+}
+
+.card-info-strip .count {
+  color: #fff;
+}
+
+/* Health Bar Container */
+.card-health-container {
+  height: 12px;
+  background-color: #333; 
+  width: 100%;
+  position: relative;
+  border-top: 1px solid #222;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* Actual Health Fill */
+.health-fill {
+  height: 100%;
+  background-color: #4caf50; 
+  background-image: linear-gradient(90deg, 
+    rgba(255,255,255,0.2) 1px, 
+    transparent 1px
+  );
+  background-size: 25% 100%; 
+  border-bottom-left-radius: 4px;
+}
+
+.empty-state {
+  text-align: center;
+  color: #888;
+  padding: 20px;
+  font-style: italic;
+}
+
+/* --- Fixed Tooltip --- */
+.custom-tooltip {
+  position: fixed;
+  background: rgba(20, 25, 30, 0.95);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  border: 1px solid #555;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  z-index: 100000;
+}
+
+.custom-tooltip.tooltip-above {
+  transform: translate(-50%, -100%);
+}
+
+.custom-tooltip.tooltip-below {
+  transform: translate(-50%, 0);
+}
+
+/* ============================================================
+   Mobile layout (settings.hup.config.isMobileClient)
+   ============================================================ */
+
+.mobile-armies {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.segmented {
+  display: flex;
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  border-radius: 9px;
+  padding: 3px;
+}
+
+.segmented button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 9px 6px;
+  border-radius: 7px;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.segmented button.active {
+  background-color: #cfa665;
+  color: #1a1a1a;
+}
+
+.mobile-hint {
+  color: #888;
+  font-size: 0.8rem;
+  font-style: italic;
+  padding: 0 2px;
+}
+
+.mobile-armies .search-row input {
+  width: 100%;
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  min-height: 40px;
+}
+
+.mobile-armies .search-row input:focus {
+  border-color: #cfa665;
+}
+
+.filter-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  scrollbar-width: none;
+}
+
+.chip-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #aaa;
+  font-size: 0.78rem;
+  padding: 7px 13px;
+  border-radius: 20px;
+  cursor: pointer;
+  min-height: 34px;
+  white-space: nowrap;
+}
+
+.chip.active {
+  background-color: #cfa665;
+  border-color: #cfa665;
+  color: #1a1a1a;
+  font-weight: bold;
+}
+
+.sort-btn {
+  flex-shrink: 0;
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #aaa;
+  font-size: 0.78rem;
+  padding: 7px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  min-height: 34px;
+}
+
+.sort-panel {
+  background-color: #252526;
+  border: 1px solid #3e3e42;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sort-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  font-size: 0.88rem;
+  color: #f0f0f0;
+  cursor: pointer;
+  min-height: 44px;
+  border-bottom: 1px solid #3e3e42;
+}
+
+.sort-option:last-child {
+  border-bottom: none;
+}
+
+.sort-option .dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1.5px solid #555;
+  flex-shrink: 0;
+}
+
+.sort-option.selected .dot {
+  border-color: #cfa665;
+  background: radial-gradient(circle, #cfa665 0 5px, transparent 6px);
+}
+
+.mobile-armies .player-card {
+  background-color: #252526;
+  border: 1px solid #3e3e42;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.player-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 12px;
+  cursor: pointer;
+  min-height: 48px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.relation-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.player-id {
+  min-width: 0;
+  flex: 1;
+}
+
+.mobile-armies .player-name {
+  font-size: 0.88rem;
+  font-weight: bold;
+  color: #f0f0f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-armies .player-nation {
+  font-size: 0.75rem;
+  color: #888;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-armies .badge {
+  font-size: 0.7rem;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: #333;
+  border: 1px solid #444;
+  color: #aaa;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mobile-armies .badge.hp {
+  color: #4caf50;
+  font-family: "Lucida Console", Monaco, monospace;
+}
+
+.chevron {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: #888;
+  transition: transform 0.18s ease;
+}
+
+.player-card.expanded .chevron {
+  transform: rotate(180deg);
+}
+
+.mobile-armies .deck {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 2px 12px 13px;
+}
+
+.mobile-armies .unit-card {
+  position: relative;
+  width: 66px;
+  background-color: #2e2e28;
+  border: 1px solid #3b2b1f;
+  border-radius: 8px;
+  padding: 7px 5px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-armies .unit-card.is-hero {
+  border-color: #cfa665;
+  background: rgba(207, 166, 101, 0.12);
+}
+
+.mobile-armies .unit-image {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-armies .unit-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mobile-armies .unit-count {
+  font-family: "Lucida Console", Monaco, monospace;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.mobile-armies .unit-level {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.62rem;
+  color: #ffd700;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 3px;
+  padding: 0 3px;
+  line-height: 1.4;
+}
+
+.mobile-armies .health-track {
+  width: 100%;
+  height: 4px;
+  background: #000;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.mobile-armies .health-fill {
+  height: 100%;
+  background-color: #4caf50;
+  border-radius: 2px;
+}
+
+.mobile-armies .tap-tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0d0c0a;
+  border: 1px solid #cfa665;
+  color: #fff;
+  font-size: 0.68rem;
+  line-height: 1.4;
+  padding: 6px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 20;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-armies .tap-tip b {
+  color: #ffd700;
+}

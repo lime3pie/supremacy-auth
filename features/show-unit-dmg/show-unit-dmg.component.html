@@ -1,0 +1,51 @@
+<app-dialog
+  [show]="showDialog"
+  title="Combat Statistics"
+  (close)="closeDialog()"
+>
+  <table class="stats-table">
+    <thead>
+      <tr>
+        <th>Damage vs.</th>
+        <th>⚡ Attack</th>
+        <th>🛡 Defense</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Range</td>
+        <td>{{ damageModel?.range.attack }}</td>
+        <td>{{ damageModel?.range.defence }}</td>
+      </tr>
+      <tr>
+        <td>Normal</td>
+        <td>{{ damageModel?.normal.attack }}</td>
+        <td>{{ damageModel?.normal.defence }}</td>
+      </tr>
+      <tr>
+        <td>Air</td>
+        <td>{{ damageModel?.air.attack }}</td>
+        <td>{{ damageModel?.air.defence }}</td>
+      </tr>
+      <tr>
+        <td>Naval</td>
+        <td>{{ damageModel?.naval.attack }}</td>
+        <td>{{ damageModel?.naval.defence }}</td>
+      </tr>
+      <tr>
+        <td>Building</td>
+        <td>{{ damageModel?.building.attack }}</td>
+        <td>{{ damageModel?.building.defence }}</td>
+      </tr>
+      <tr>
+        <td>Province morale</td>
+        <td>{{ damageModel?.morale.attack }}</td>
+        <td>{{ damageModel?.morale.defence }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="dialog-buttons">
+    <button (click)="toggleMorale()">Toggle Morale ({{ withMorale }})</button>
+  </div>
+</app-dialog>

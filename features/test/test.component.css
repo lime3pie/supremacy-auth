@@ -1,0 +1,370 @@
+.test-container {
+  width: 100%;
+  min-width: 700px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: "Segoe UI", sans-serif;
+  color: #e0e0e0;
+}
+
+/* Tabs Styling */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #444;
+  margin-bottom: 4px;
+}
+
+.tab {
+  padding: 8px 16px;
+  cursor: pointer;
+  background: #252526;
+  color: #888;
+  border: 1px solid #333;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  margin-right: 2px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.tab:hover {
+  background: #333;
+  color: #ccc;
+}
+
+.tab.active {
+  background: #1e1e1e; /* Matches dialog background */
+  border-color: #444;
+  color: #cfa665;
+  font-weight: bold;
+  border-bottom: 1px solid #1e1e1e; /* Hide bottom border to merge */
+  margin-bottom: -1px; /* Overlap border */
+}
+
+/* Content Wrappers */
+.graph-content, .requests-content, .resource-utilities-content, .army-speed-content, .health-development-content, .scores-content, .building-toggle-content, .building-inspector-content, .site-api-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.province-list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #e0e0e0;
+}
+
+.checkbox-label .dim {
+  color: #777;
+  font-size: 0.75rem;
+}
+
+/* Health Development */
+.health-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.85rem;
+  color: #ccc;
+}
+
+.health-summary-badge {
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.territory-owned { background: #1f4d2e; color: #7ee79a; }
+.territory-allied { background: #1f3d4d; color: #7ec4e7; }
+.territory-enemy { background: #4d1f1f; color: #e77e7e; }
+.territory-sea { background: #1f2d4d; color: #7e9de7; }
+
+.unit-icon {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.health-up { color: #6fd97f; font-weight: bold; }
+.health-down { color: #e77e7e; font-weight: bold; }
+
+.error-hint { color: #e77e7e; }
+
+/* Scores Table */
+.scores-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #333;
+  border-radius: 4px;
+}
+
+.scores-table {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.scores-table th, .scores-table td {
+  padding: 6px 8px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #333;
+}
+
+.scores-table th {
+  background: #252526;
+  color: #cfa665;
+  position: sticky;
+  top: 0;
+}
+
+.scores-table tbody tr:hover {
+  background: #2a2a2a;
+}
+
+.scores-table .dim {
+  color: #777;
+  font-size: 0.75rem;
+}
+
+.hint {
+  color: #888;
+  font-size: 0.8rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.readonly-display {
+  display: flex;
+  align-items: center;
+  min-height: 1.2em;
+}
+
+.divider {
+  height: 1px;
+  background: #333;
+  margin: 4px 0;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label-row label {
+  font-weight: bold;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.help-icon {
+  background: #333;
+  color: #ccc;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-style: italic;
+  cursor: help;
+}
+
+/* Inputs */
+.action-select, .text-input {
+  background: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.action-select:focus, .text-input:focus {
+  border-color: #cfa665;
+}
+
+/* Arrays */
+.array-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #252526;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #333;
+}
+
+.array-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.remove-btn {
+  background: #4a2b2b;
+  color: #ffcccc;
+  border: 1px solid #6e3e3e;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.remove-btn:hover {
+  background: #5e3535;
+}
+
+.add-item-btn {
+  background: #333;
+  color: #ccc;
+  border: 1px dashed #555;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: 0.2s;
+}
+
+.add-item-btn:hover {
+  background: #444;
+  color: #fff;
+  border-color: #777;
+}
+
+/* JSON Textareas */
+.json-input {
+  width: 100%;
+  background: #1a1a1a;
+  color: #cfa665;
+  border: 1px solid #444;
+  font-family: monospace;
+  font-size: 0.85rem;
+  padding: 8px;
+  border-radius: 4px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.json-input.small {
+  height: 80px;
+}
+
+.json-input.preview {
+  height: 140px;
+  background: #111;
+  color: #aaa;
+  cursor: text;
+}
+
+.json-input.result {
+  height: 200px;
+  background: #1a1a1a;
+  color: #cfa665;
+}
+
+.json-input:focus {
+  border-color: #cfa665;
+  outline: none;
+}
+
+/* Result Section */
+.result-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.result-section label {
+  font-weight: bold;
+  color: #aaa;
+}
+
+/* Buttons */
+.test-btn {
+  background: #cfa665;
+  color: #000;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.test-btn:hover {
+  background: #e0b776;
+}
+
+.send-btn {
+  background: #4caf50;
+  color: #fff;
+}
+
+.send-btn:hover {
+  background: #66bb6a;
+}
+
+/* Minimized View */
+.mini-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 140px;
+  text-align: center;
+}
+
+.mini-msg {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.mini-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.mini-btn {
+  flex: 1;
+  border: 1px solid #555;
+  background: #2a2a2a;
+  color: #ccc;
+  font-size: 0.8rem;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.mini-btn:hover {
+  background: #333;
+  color: #fff;
+}

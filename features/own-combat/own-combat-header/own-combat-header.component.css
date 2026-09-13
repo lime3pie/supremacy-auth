@@ -1,0 +1,97 @@
+:host .team-header-col {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+:host .team-header-col.right {
+  justify-content: flex-end;
+}
+
+:host .col-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+  color: #5ca8ff;
+}
+
+:host .col-title--right {
+  color: #ff5252;
+}
+
+:host .team-label {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+:host .team-hp {
+  font-size: 0.8rem;
+  color: #4caf50;
+  font-weight: 500;
+}
+
+:host .action-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.2s;
+}
+
+:host .add-btn {
+  background: #007bff;
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+:host .add-btn:hover {
+  background: #0069d9;
+}
+
+:host .combine-btn,
+:host .ok-btn,
+:host .cancel-btn,
+:host .select-all-btn {
+  padding: 6px 14px;
+  font-size: 0.9rem;
+}
+
+:host .combine-btn {
+  background-color: #ff9800;
+}
+
+:host .combine-btn:hover:not(:disabled) {
+  background-color: #f57c00;
+}
+
+:host .ok-btn {
+  background-color: #4CAF50;
+}
+
+:host .ok-btn:hover:not(:disabled) {
+  background-color: #43A047;
+}
+
+:host .cancel-btn {
+  background-color: #f44336;
+}
+
+:host .cancel-btn:hover {
+  background-color: #E53935;
+}
+
+:host .action-btn:disabled,
+:host .combine-btn:disabled,
+:host .ok-btn:disabled {
+  background-color: #555;
+  opacity: 0.6;
+  cursor: not-allowed;
+}

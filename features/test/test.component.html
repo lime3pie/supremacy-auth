@@ -1,0 +1,803 @@
+<app-dialog
+  [show]="showDialog"
+  [minimized]="isMinimized"
+  [showBackdrop]="false"
+  [draggable]="true"
+  [resizable]="true"
+  title="Developer Tools"
+  (close)="close()">
+
+  <div class="test-container">
+    
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab" [class.active]="activeTab === 'graph'" (click)="setActiveTab('graph')">Graph Test</div>
+      <div class="tab" [class.active]="activeTab === 'requests'" (click)="setActiveTab('requests')">Game Requests</div>
+      <div class="tab" [class.active]="activeTab === 'resource-utilities'" (click)="setActiveTab('resource-utilities')">Resource Utils</div>
+      <div class="tab" [class.active]="activeTab === 'army-speed'" (click)="setActiveTab('army-speed')">Army Speed</div>
+      <div class="tab" [class.active]="activeTab === 'health-development'" (click)="setActiveTab('health-development')">Health Development</div>
+      <div class="tab" [class.active]="activeTab === 'scores'" (click)="setActiveTab('scores')">Scores</div>
+      <div class="tab" [class.active]="activeTab === 'building-toggle'" (click)="setActiveTab('building-toggle')">Building Toggle</div>
+      <div class="tab" [class.active]="activeTab === 'build'" (click)="setActiveTab('build')">Build</div>
+      <div class="tab" [class.active]="activeTab === 'building-inspector'" (click)="setActiveTab('building-inspector')">Building Inspector</div>
+      <div class="tab" [class.active]="activeTab === 'unit-inspector'" (click)="setActiveTab('unit-inspector')">Unit Inspector</div>
+      <div class="tab" [class.active]="activeTab === 'site-api'" (click)="setActiveTab('site-api')">Site API</div>
+    </div>
+
+    <!-- TAB 1: GRAPH TEST -->
+    @if (activeTab === 'graph') {
+      <div class="graph-content">
+        <!-- Province 1 Selector -->
+        <div class="input-group">
+          <div class="label-row">
+            <label>Start Province (1)</label>
+          </div>
+          <app-searchable-select
+            [options]="provinceOptions"
+            [(value)]="selectedProvinceId1"
+            placeholder="Select Start...">
+          </app-searchable-select>
+        </div>
+
+        <!-- Province 2 Selector -->
+        <div class="input-group">
+          <div class="label-row">
+            <label>End Province (2)</label>
+          </div>
+          <app-searchable-select
+            [options]="provinceOptions"
+            [(value)]="selectedProvinceId2"
+            placeholder="Select End...">
+          </app-searchable-select>
+        </div>
+
+        <button class="test-btn" (click)="runTestFunction()">Find Path (Dijkstra)</button>
+        <button class="test-btn" (click)="drawAllConnections()">Draw All Connections</button>
+      </div>
+    }
+
+    <!-- TAB 2: DYNAMIC REQUESTS -->
+    @if (activeTab === 'requests') {
+      <div class="requests-content">
+        
+        <!-- Dropdown to select the Action Interface -->
+        <div class="input-group">
+          <label>Select IUltAction Implementation</label>
+          <select class="action-select" [(ngModel)]="selectedSchemaId" (change)="onSchemaChange()">
+            @for (schema of schemas; track schema.id) {
+              <option [value]="schema.id">{{ schema.id }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Dynamic Form Fields based on Schema -->
+        <div class="dynamic-form">
+          @for (field of selectedSchema.fields; track field.key) {
+            <div class="input-group">
+              <div class="label-row">
+                <label>{{ field.label }} 
+                  @if (field.help) { <span class="help-icon" [title]="field.help">?</span> }
+                </label>
+              </div>
+
+              <!-- Simple Types -->
+              @if (field.type === 'string') {
+                <input type="text" class="text-input" [(ngModel)]="actionPayload[field.key]" />
+              }
+              @if (field.type === 'number') {
+                <input type="number" class="text-input" [(ngModel)]="actionPayload[field.key]" />
+              }
+              @if (field.type === 'boolean') {
+                <label class="checkbox-label">
+                  <input type="checkbox" [(ngModel)]="actionPayload[field.key]" /> True
+                </label>
+              }
+
+              <!-- Arrays -->
+              @if (field.type === 'string-array' || field.type === 'number-array') {
+                <div class="array-container">
+                  @for (item of actionPayload[field.key]; track trackByIndex(i, item); let i = $index) {
+                    <div class="array-row">
+                      <input 
+                        [type]="field.type === 'number-array' ? 'number' : 'text'" 
+                        class="text-input" 
+                        [(ngModel)]="actionPayload[field.key][i]" 
+                      />
+                      <button class="remove-btn" (click)="removeArrayItem(field.key, i)" title="Remove item">×</button>
+                    </div>
+                  }
+                  <button class="add-item-btn" (click)="addArrayItem(field.key, field.type)">+ Add Item</button>
+                </div>
+              }
+
+              <!-- JSON Objects -->
+              @if (field.type === 'json') {
+                <textarea 
+                  class="json-input small" 
+                  [(ngModel)]="jsonInputs[field.key]" 
+                  (ngModelChange)="onJsonChange(field.key, $event)"
+                  placeholder="{}">
+                </textarea>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Live JSON Preview & Send -->
+        <div class="json-preview">
+          <label>Payload Preview:</label>
+          <textarea class="json-input preview" [value]="constructedJson" readonly></textarea>
+        </div>
+
+        <button class="test-btn send-btn" (click)="sendDynamicRequest()">
+          Send Request
+        </button>
+
+      </div>
+    }
+
+    <!-- TAB 3: RESOURCE UTILITIES -->
+    @if (activeTab === 'resource-utilities') {
+      <div class="resource-utilities-content">
+        
+        <!-- Player Selector -->
+        <div class="input-group">
+          <div class="label-row">
+            <label>Select Player</label>
+          </div>
+          <app-searchable-select
+            [options]="playerOptions"
+            [(value)]="resourceTestPlayerId"
+            placeholder="Search by name or country...">
+          </app-searchable-select>
+        </div>
+
+        <button 
+          class="test-btn" 
+          (click)="testGetBuildingUpkeep()"
+          [disabled]="resourceTestLoading"
+        >
+          {{ resourceTestLoading ? 'Testing...' : 'Test getBuildingUpkeep()' }}
+        </button>
+        <button 
+          class="test-btn" 
+          (click)="testGetProvinceUpkeep()"
+          [disabled]="resourceTestLoading"
+        >
+          {{ resourceTestLoading ? 'Testing...' : 'Test getProvinceUpkeep()' }}
+        </button>
+        <button 
+          class="test-btn" 
+          (click)="testGetUnitUpkeep()"
+          [disabled]="resourceTestLoading"
+        >
+          {{ resourceTestLoading ? 'Testing...' : 'Test getUnitUpkeep()' }}
+        </button>
+        <button 
+          class="test-btn" 
+          (click)="testGetProvinceProduction()"
+          [disabled]="resourceTestLoading"
+        >
+          {{ resourceTestLoading ? 'Testing...' : 'Test getProvinceProduction()' }}
+        </button>
+
+        <!-- Results Display -->
+        @if (resourceTestResult) {
+          <div class="result-section">
+            <label>Result:</label>
+            <textarea 
+              class="json-input result" 
+              [value]="resourceTestResult" 
+              readonly
+            ></textarea>
+          </div>
+        }
+
+      </div>
+    }
+
+    <!-- TAB 4: ARMY SPEED -->
+    @if (activeTab === 'army-speed') {
+      <div class="army-speed-content">
+        <p class="hint">Select a stack on the map while this dialog is open — the values below refresh automatically, no button needed.</p>
+
+        <div class="result-section">
+          <label>Selected Stack:</label>
+          <div class="text-input readonly-display">{{ armySpeedSelectedLabel }}</div>
+        </div>
+
+        <div class="result-section">
+          <label>getSelectArmySpeed():</label>
+          <div class="text-input readonly-display">{{ armySpeedValue }}</div>
+        </div>
+
+        <div class="result-section">
+          <label>Normal Speed (Own):</label>
+          <div class="text-input readonly-display">{{ armySpeedNormal }}</div>
+        </div>
+
+        <div class="result-section">
+          <label>Friend Speed:</label>
+          <div class="text-input readonly-display">{{ armySpeedFriend }}</div>
+        </div>
+
+        <div class="result-section">
+          <label>Enemy Speed:</label>
+          <div class="text-input readonly-display">{{ armySpeedEnemy }}</div>
+        </div>
+
+        <div class="result-section">
+          <label>Normal Speed (Railroad):</label>
+          <div class="text-input readonly-display">{{ armySpeedNormalRailRoad }}</div>
+        </div>
+
+        <div class="result-section">
+          <label>Friend Speed (Railroad):</label>
+          <div class="text-input readonly-display">{{ armySpeedFriendRailRoad }}</div>
+        </div>
+
+        <div class="result-section">
+          <label>Enemy Speed (Railroad):</label>
+          <div class="text-input readonly-display">{{ armySpeedEnemyRailRoad }}</div>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 5: HEALTH DEVELOPMENT -->
+    @if (activeTab === 'health-development') {
+      <div class="health-development-content">
+        <p class="hint">Select a stack on the map while this dialog is open — projects each unit type's HP after the next day change, refreshed automatically every 500ms.</p>
+
+        <div class="result-section">
+          <label>Selected Stack:</label>
+          <div class="text-input readonly-display">{{ healthDevSelectedLabel }}</div>
+        </div>
+
+        @if (healthDevError) {
+          <p class="hint error-hint">Error: {{ healthDevError }}</p>
+        } @else if (!healthDevelopment) {
+          <p class="hint">No army selected.</p>
+        } @else {
+          <div class="health-summary">
+            <span class="health-summary-badge" [class]="'territory-' + healthDevelopment.territoryContext.toLowerCase()">
+              {{ healthDevelopment.territoryContext }}
+            </span>
+            <span>Province: {{ healthDevelopment.provinceName }}</span>
+            <span>Province morale: {{ healthDevelopment.provinceMoralePercent | number:'1.0-1' }}%</span>
+            <span>At airfield: {{ healthDevelopment.atAirfield ? 'Yes' : 'No' }}</span>
+            <span>In flight: {{ healthDevelopment.isInFlight ? 'Yes' : 'No' }}</span>
+          </div>
+
+          <div class="scores-table-wrapper">
+            <table class="scores-table">
+              <thead>
+                <tr>
+                  <th>Unit</th>
+                  <th>Category</th>
+                  <th>Count</th>
+                  <th>Current HP</th>
+                  <th>Projected HP</th>
+                  <th>Change</th>
+                  <th>Why</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of healthDevelopment.rows; track row.unitTypeID) {
+                  <tr>
+                    <td>
+                      <img [src]="row.icon" class="unit-icon" />
+                      {{ row.name }}
+                    </td>
+                    <td>{{ row.category }}</td>
+                    <td>{{ row.count }}</td>
+                    <td>{{ row.currentHp | number:'1.0-1' }} <span class="dim">({{ row.currentHpPercent | number:'1.0-1' }}%)</span></td>
+                    <td>{{ row.projectedHp | number:'1.0-1' }} <span class="dim">({{ row.projectedHpPercent | number:'1.0-1' }}%)</span></td>
+                    <td [class.health-up]="row.direction === 'up'" [class.health-down]="row.direction === 'down'">
+                      @if (row.direction === 'up') { ▲ }
+                      @if (row.direction === 'down') { ▼ }
+                      {{ row.hpChange | number:'1.0-1' }}
+                    </td>
+                    <td class="dim">{{ row.reason }}</td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3"><strong>Total</strong></td>
+                  <td>{{ healthDevelopment.totalCurrentHp | number:'1.0-1' }}</td>
+                  <td>{{ healthDevelopment.totalProjectedHp | number:'1.0-1' }}</td>
+                  <td [class.health-up]="healthDevelopment.totalHpChange > 0" [class.health-down]="healthDevelopment.totalHpChange < 0">
+                    {{ healthDevelopment.totalHpChange | number:'1.0-1' }}
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- TAB 6: SCORES -->
+    @if (activeTab === 'scores') {
+      <div class="scores-content">
+        <p class="hint">playerService.getScores() - refreshes every second. builtUpgradeCount only counts enabled improvements (province.improvements), not the fog-of-war unknownUpgradesCount field.</p>
+
+        <button class="test-btn" (click)="refreshScores()">Refresh Now</button>
+
+        <div class="scores-table-wrapper">
+          <table class="scores-table">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Nation</th>
+                <th>Provinces</th>
+                <th>Upgrades</th>
+                <th>Current</th>
+                <th>Upcoming</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of scoreEntries; track entry.playerId) {
+                <tr>
+                  <td>{{ entry.playerName }} <span class="dim">#{{ entry.playerId }}</span></td>
+                  <td>{{ entry.nationName }}</td>
+                  <td>{{ entry.provinceCount }}</td>
+                  <td>{{ entry.builtUpgradeCount }}</td>
+                  <td>{{ entry.currentScore !== null ? (entry.currentScore | number:'1.0-1') : '-' }}</td>
+                  <td>{{ entry.upcomingScore | number:'1.0-1' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 7: BUILDING TOGGLE -->
+    @if (activeTab === 'building-toggle') {
+      <div class="building-toggle-content">
+        <p class="hint">Enables/disables a building upgrade (e.g. a Barracks level) across selected provinces via UltUpdateProvinceAction. Only your own provinces that already have the selected upgrade built are listed.</p>
+
+        <div class="input-group">
+          <div class="label-row">
+            <label>Building Upgrade</label>
+          </div>
+          <app-searchable-select
+            [options]="buildingUpgradeOptions"
+            [(value)]="selectedBuildingUpgradeID"
+            (valueChange)="onBuildingUpgradeChange()"
+            placeholder="Select Building Upgrade...">
+          </app-searchable-select>
+        </div>
+
+        <div class="input-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="buildingToggleEnabled" /> Enabled
+          </label>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="input-group">
+          <div class="label-row">
+            <label>Matching Provinces ({{ selectedBuildingToggleCount }} / {{ buildingToggleProvinces.length }} selected)</label>
+          </div>
+
+          @if (selectedBuildingUpgradeID === null) {
+            <p class="hint">Select a building upgrade to list matching provinces.</p>
+          } @else if (buildingToggleProvinces.length === 0) {
+            <p class="hint">No provinces found with this upgrade built.</p>
+          } @else {
+            <div class="array-row">
+              <button class="add-item-btn" (click)="setAllBuildingToggleProvinces(true)">Select All</button>
+              <button class="add-item-btn" (click)="setAllBuildingToggleProvinces(false)">Select None</button>
+            </div>
+            <div class="array-container province-list">
+              @for (province of buildingToggleProvinces; track province.locationID) {
+                <label class="checkbox-label">
+                  <input type="checkbox" [(ngModel)]="province.selected" /> {{ province.name }} <span class="dim">#{{ province.locationID }}</span>
+                </label>
+              }
+            </div>
+          }
+        </div>
+
+        <button class="test-btn send-btn" (click)="sendBuildingToggleRequest()">
+          Send Request
+        </button>
+      </div>
+    }
+
+    <!-- TAB 8: BUILD -->
+    @if (activeTab === 'build') {
+      <div class="build-content">
+        <p class="hint">"Build" starts a unit directly in a production slot right now (UltUpdateProvinceAction, mode 2). "Queue" appends it to the build queue instead (UltBuildQueueAction, one entry per selected province). Only your own provinces are listed - the server will reject provinces that lack the required building or a free slot.</p>
+
+        <div class="input-group">
+          <div class="label-row">
+            <label>Unit Type</label>
+          </div>
+          <app-searchable-select
+            [options]="buildUnitOptions"
+            [(value)]="selectedBuildUnitTypeID"
+            placeholder="Select Unit Type...">
+          </app-searchable-select>
+        </div>
+
+        <div class="input-group">
+          <div class="label-row">
+            <label>Production Slot</label>
+          </div>
+          <input type="number" class="text-input" [(ngModel)]="buildSlot" min="0" />
+        </div>
+
+        <div class="input-group">
+          <div class="label-row">
+            <label>Size</label>
+          </div>
+          <input type="number" class="text-input" [(ngModel)]="buildSize" min="1" />
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="input-group">
+          <div class="label-row">
+            <label>Your Provinces ({{ selectedBuildProvinceCount }} / {{ buildProvinces.length }} selected)</label>
+          </div>
+
+          @if (buildProvinces.length === 0) {
+            <p class="hint">No owned provinces found.</p>
+          } @else {
+            <div class="array-row">
+              <button class="add-item-btn" (click)="setAllBuildProvinces(true)">Select All</button>
+              <button class="add-item-btn" (click)="setAllBuildProvinces(false)">Select None</button>
+              <button class="add-item-btn" (click)="selectMapSelectedBuildProvinces()">Select Map Selection</button>
+            </div>
+            <div class="array-container province-list">
+              @for (province of buildProvinces; track province.locationID) {
+                <label class="checkbox-label">
+                  <input type="checkbox" [(ngModel)]="province.selected" /> {{ province.name }} <span class="dim">#{{ province.locationID }}</span>
+                </label>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="array-row">
+          <button class="test-btn send-btn" (click)="sendBuildRequest()">
+            Build
+          </button>
+          <button class="test-btn send-btn" (click)="sendQueueRequest()">
+            Queue
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- TAB: BUILDING INSPECTOR -->
+    @if (activeTab === 'building-inspector') {
+      <div class="building-inspector-content">
+        <p class="hint">ProvinceService.inspectBuildings() - shows what a province's building data actually looks like right now, from both raw sources (loc.improvements and loc.getImprovementsBuilt()) side by side, plus the merged/grouped result and the next tier possible to build per family (getNextBuildableBuildings()). Use this to debug tier-detection discrepancies directly instead of guessing.</p>
+
+        <div class="input-group">
+          <div class="label-row">
+            <label>Province (your own)</label>
+          </div>
+          <app-searchable-select
+            [options]="inspectProvinceOptions"
+            [(value)]="selectedInspectProvinceId"
+            placeholder="Select Province...">
+          </app-searchable-select>
+        </div>
+
+        <div class="array-row">
+          <button class="test-btn" (click)="useInspectSelectionFromMap()">Use Map Selection</button>
+          <button class="test-btn" (click)="runBuildingInspection()">Inspect</button>
+        </div>
+
+        @if (buildingInspectionError) {
+          <p class="hint error-hint">{{ buildingInspectionError }}</p>
+        }
+
+        @if (buildingInspection) {
+          <div class="result-section">
+            <label>{{ buildingInspection.name }} <span class="dim">#{{ buildingInspection.locationID }}</span></label>
+          </div>
+
+          <div class="input-group">
+            <div class="label-row"><label>Built (merged/grouped result used by the Ledger and Build panel)</label></div>
+            @if (buildingInspection.built.length === 0) {
+              <p class="hint">Nothing built.</p>
+            } @else {
+              <div class="scores-table-wrapper">
+                <table class="scores-table">
+                  <thead>
+                    <tr>
+                      <th>Family</th>
+                      <th>Display Name</th>
+                      <th>Level</th>
+                      <th>Condition</th>
+                      <th>Max Condition</th>
+                      <th>Item IDs</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (b of buildingInspection.built; track b.familyKey) {
+                      <tr>
+                        <td>{{ b.familyKey }}</td>
+                        <td>{{ b.displayName }}</td>
+                        <td>{{ b.level }}</td>
+                        <td>{{ b.condition }}</td>
+                        <td>{{ b.maxCondition }}</td>
+                        <td class="dim">{{ b.itemIDs.join(', ') }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+
+          <div class="input-group">
+            <div class="label-row"><label>Next Buildable (ProvinceService.getNextBuildableBuildings() - next tier per family that isn't maxed out and has its prerequisite at least finished, under construction, or queued)</label></div>
+            @if (buildingInspection.nextBuildable.length === 0) {
+              <p class="hint">None - every known family is either maxed out or blocked on a prerequisite.</p>
+            } @else {
+              <div class="scores-table-wrapper">
+                <table class="scores-table">
+                  <thead>
+                    <tr><th>Family</th><th>Current Level</th><th>Next Level</th><th>Next Item ID</th><th>Status</th><th>Build Time</th><th>Costs</th></tr>
+                  </thead>
+                  <tbody>
+                    @for (n of buildingInspection.nextBuildable; track n.familyKey) {
+                      <tr>
+                        <td>{{ n.displayName }}</td>
+                        <td>{{ n.currentLevel }}</td>
+                        <td>{{ n.nextLevel }}</td>
+                        <td class="dim">{{ n.nextItemID }}</td>
+                        <td>{{ n.status === 'buildable' ? 'Build + Queue' : 'Queue only' }}</td>
+                        <td>{{ n.buildTimeSeconds }}s</td>
+                        <td class="dim">{{ n.costs | json }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+
+
+          <div class="input-group">
+            <div class="label-row"><label>Raw: loc.improvements ({{ buildingInspection.rawFromImprovementsField.length }} entries)</label></div>
+            @if (buildingInspection.rawFromImprovementsField.length === 0) {
+              <p class="hint">Empty or not present.</p>
+            } @else {
+              <div class="scores-table-wrapper">
+                <table class="scores-table">
+                  <thead>
+                    <tr><th>Item ID</th><th>Name</th><th>Tier</th><th>Condition</th><th>Max Condition</th><th>Enabled</th></tr>
+                  </thead>
+                  <tbody>
+                    @for (imp of buildingInspection.rawFromImprovementsField; track $index) {
+                      <tr>
+                        <td class="dim">{{ imp.itemID }}</td>
+                        <td>{{ imp.name }}</td>
+                        <td>{{ imp.tier }}</td>
+                        <td>{{ imp.condition }}</td>
+                        <td>{{ imp.maxCondition }}</td>
+                        <td>{{ imp.enabled }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+
+          <div class="input-group">
+            <div class="label-row"><label>Raw: loc.getImprovementsBuilt() ({{ buildingInspection.rawFromGetImprovementsBuilt.length }} entries)</label></div>
+            @if (buildingInspection.rawFromGetImprovementsBuilt.length === 0) {
+              <p class="hint">Empty or not present.</p>
+            } @else {
+              <div class="scores-table-wrapper">
+                <table class="scores-table">
+                  <thead>
+                    <tr><th>Item ID</th><th>Name</th><th>Tier</th><th>Condition</th><th>Max Condition</th><th>Enabled</th></tr>
+                  </thead>
+                  <tbody>
+                    @for (imp of buildingInspection.rawFromGetImprovementsBuilt; track $index) {
+                      <tr>
+                        <td class="dim">{{ imp.itemID }}</td>
+                        <td>{{ imp.name }}</td>
+                        <td>{{ imp.tier }}</td>
+                        <td>{{ imp.condition }}</td>
+                        <td>{{ imp.maxCondition }}</td>
+                        <td>{{ imp.enabled }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- TAB: UNIT INSPECTOR -->
+    @if (activeTab === 'unit-inspector') {
+      <div class="building-inspector-content">
+        <p class="hint">ProvinceService.getAvailableUnitsToBuild()/getUnavailableUnitsToBuild() - every buildable unit type this province can either Build right now or only Queue right now, based on whether each required building is finished, under construction, or queued. Units not yet plan/research-unlocked never appear in either list; everything else shows up in exactly one of the two tables below, with the Unavailable one breaking down which specific requirement is missing.</p>
+
+        <div class="input-group">
+          <div class="label-row">
+            <label>Province (your own)</label>
+          </div>
+          <app-searchable-select
+            [options]="inspectProvinceOptions"
+            [(value)]="selectedInspectProvinceId"
+            placeholder="Select Province...">
+          </app-searchable-select>
+        </div>
+
+        <div class="array-row">
+          <button class="test-btn" (click)="useInspectSelectionFromMap()">Use Map Selection</button>
+          <button class="test-btn" (click)="runUnitInspection()">Inspect</button>
+        </div>
+
+        @if (unitInspectionError) {
+          <p class="hint error-hint">{{ unitInspectionError }}</p>
+        }
+
+        @if (unitInspection) {
+          <div class="input-group">
+            <div class="label-row"><label>Available Units ({{ unitInspection.length }})</label></div>
+            @if (unitInspection.length === 0) {
+              <p class="hint">None - every buildable unit is either blocked on a prerequisite building that hasn't been started, or not plan/research-unlocked.</p>
+            } @else {
+              <div class="scores-table-wrapper">
+                <table class="scores-table">
+                  <thead>
+                    <tr><th>Unit</th><th>Unit Type ID</th><th>Requires</th><th>Status</th><th>Build Time</th><th>Costs</th></tr>
+                  </thead>
+                  <tbody>
+                    @for (u of unitInspection; track u.unitTypeID) {
+                      <tr>
+                        <td>{{ u.name }}</td>
+                        <td class="dim">{{ u.unitTypeID }}</td>
+                        <td class="dim">{{ formatRequiredBuildings(u.requiredBuildings) }}</td>
+                        <td>{{ u.status === 'buildable' ? 'Build + Queue' : 'Queue only' }}</td>
+                        <td>{{ u.buildTimeSeconds }}s</td>
+                        <td class="dim">{{ u.costs | json }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+
+          <div class="input-group">
+            <div class="label-row"><label>Unavailable Units ({{ unavailableUnitInspection?.length || 0 }}) - blocked on at least one requirement, breakdown shows which</label></div>
+            @if (!unavailableUnitInspection || unavailableUnitInspection.length === 0) {
+              <p class="hint">None - every producible, unlocked unit is at least queueable.</p>
+            } @else {
+              <div class="scores-table-wrapper">
+                <table class="scores-table">
+                  <thead>
+                    <tr><th>Unit</th><th>Unit Type ID</th><th>Requires (state)</th><th>Build Time</th><th>Costs</th></tr>
+                  </thead>
+                  <tbody>
+                    @for (u of unavailableUnitInspection; track u.unitTypeID) {
+                      <tr>
+                        <td>{{ u.name }}</td>
+                        <td class="dim">{{ u.unitTypeID }}</td>
+                        <td class="dim">{{ formatRequiredBuildings(u.requiredBuildings) }}</td>
+                        <td>{{ u.buildTimeSeconds }}s</td>
+                        <td class="dim">{{ u.costs | json }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- TAB: SITE API -->
+    @if (activeTab === 'site-api') {
+      <div class="site-api-content">
+        <p class="hint">WebHubApiService.getGame()/getUserDetail() call supremacy1914.com directly using your own live session and ALWAYS sync the result to the WebAPI afterwards (api/game-info/sync, api/player-profile/sync) - the call, the response mapping, and the sync are all centralized in WebHubApiService itself, so every caller gets the sync for free. See docs/getgame-site-api-sync.md.</p>
+
+        <div class="result-section">
+          <label>Session status:</label>
+          <div class="text-input readonly-display">
+            userId: {{ siteApiSessionStatus.userId ?? '—' }} · uber auth: {{ siteApiSessionStatus.hasUber ? 'yes' : 'no' }} · session auth: {{ siteApiSessionStatus.hasSession ? 'yes' : 'no' }}
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Auth Pair</label>
+          <select class="action-select" [(ngModel)]="siteApiAuthPair">
+            <option value="uber">uber (hup.config.uber) - confirmed for getUserDetailsFirefly</option>
+            <option value="session">session (hup.config) - try if a call returns resultCode -18</option>
+          </select>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="input-group">
+          <label>getGame(gameId)</label>
+          <div class="array-row">
+            <input type="number" class="text-input" [(ngModel)]="siteApiGameId" placeholder="Game ID" />
+            <button class="test-btn send-btn" (click)="testGetGame()" [disabled]="siteApiGameLoading">
+              {{ siteApiGameLoading ? 'Calling...' : 'Fetch & Sync' }}
+            </button>
+          </div>
+          @if (siteApiGameResult) {
+            <textarea class="json-input result" [value]="siteApiGameResult" readonly></textarea>
+          }
+        </div>
+
+        <div class="input-group">
+          <label>getUserDetail(siteUserId)</label>
+          <div class="array-row">
+            <input type="number" class="text-input" [(ngModel)]="siteApiPlayerId" placeholder="Site User ID" />
+            <button class="test-btn send-btn" (click)="testGetUserDetail()" [disabled]="siteApiPlayerLoading">
+              {{ siteApiPlayerLoading ? 'Calling...' : 'Fetch & Sync' }}
+            </button>
+          </div>
+          @if (siteApiPlayerResult) {
+            <textarea class="json-input result" [value]="siteApiPlayerResult" readonly></textarea>
+          }
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="input-group">
+          <div class="label-row"><label>Recent API Log ({{ apiLogEntries.length }}) - includes the WebAPI sync POSTs</label></div>
+          @if (apiLogEntries.length === 0) {
+            <p class="hint">No entries yet.</p>
+          } @else {
+            <div class="scores-table-wrapper">
+              <table class="scores-table">
+                <thead>
+                  <tr><th>Time</th><th>Source</th><th>Method</th><th>URL</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  @for (entry of apiLogEntries; track entry.time) {
+                    <tr>
+                      <td class="dim">{{ entry.time | date:'HH:mm:ss' }}</td>
+                      <td>{{ entry.source }}</td>
+                      <td>{{ entry.method }}</td>
+                      <td class="dim">{{ entry.url }}</td>
+                      <td [class.health-up]="entry.status === 'success'" [class.health-down]="entry.status === 'error'">
+                        {{ entry.status === 'success' ? '✅' : '❌' }} {{ entry.detail }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+
+  <!-- MINIMIZED VIEW -->
+  <div minimized-content class="mini-content">
+    <div class="mini-msg">Tool Active</div>
+    <div class="mini-actions">
+      <button class="mini-btn" (click)="isMinimized = false">Expand</button>
+      <button class="mini-btn" (click)="close()">Close</button>
+    </div>
+  </div>
+
+</app-dialog>

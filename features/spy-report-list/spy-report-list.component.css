@@ -1,0 +1,536 @@
+.spy-container {
+  width: 900px;
+  max-width: 95vw;
+  min-height: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #444;
+  align-items: center;
+}
+
+.fetch-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.fetch-btn:disabled {
+  background: #444;
+  cursor: not-allowed;
+}
+
+.check-spies-btn {
+  background: #3b2519;
+  color: #cfa665;
+  border: 1px solid #cfa665;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
+}
+.check-spies-btn:hover {
+  background: #4a2e1e;
+}
+
+/* --- Enemy spy check (minimized popup) --- */
+.spy-check-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 260px;
+}
+
+.spy-check-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  color: #ffd54f;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.mini-btn.restore {
+  border: 1px solid #555;
+  background: #2a2a2a;
+  color: #ccc;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mini-btn.restore:hover {
+  background: #333;
+  color: #fff;
+}
+
+.spy-check-day-select {
+  width: 100%;
+}
+
+.spy-check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.spy-check-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: #222;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+.spy-check-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.spy-check-province {
+  color: #fff;
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spy-check-owner {
+  color: #ef9a9a;
+  font-size: 0.72rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon-btn {
+  font-size: 0.75rem;
+  padding: 2px 5px;
+  background: #2b3536;
+  border: 1px solid #4a6fa5;
+  color: #a5d6a7;
+  cursor: pointer;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.icon-btn:hover {
+  background: #324759;
+}
+
+.spy-check-hint {
+  font-size: 0.72rem;
+  color: #888;
+  font-style: italic;
+}
+
+.empty-msg {
+  font-style: italic;
+  color: #666;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 0.8rem;
+}
+
+/* UPDATED: Changed from fixed width to flex: 1 to fill space */
+.country-select-wrapper {
+  flex: 1;
+  min-width: 0; /* Prevents flex overflow issues */
+}
+
+.day-select {
+  background: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 120px;
+  outline: none;
+}
+
+.day-select:focus {
+  border-color: #cfa665;
+}
+
+.report-content {
+  overflow-y: auto;
+  padding-right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Header */
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid #cfa665;
+  padding-bottom: 8px;
+}
+
+.header-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.flag-icon-lg {
+  width: 48px;
+  height: 32px;
+  border: 1px solid #555;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.report-header .nation {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #cfa665;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.report-header .player {
+  font-size: 1rem;
+  color: #ccc;
+}
+
+.snapshot-info {
+  font-style: italic;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #eee;
+  background: #333;
+  padding: 4px 8px;
+  border-left: 3px solid #cfa665;
+  margin-bottom: 4px;
+}
+
+/* Resources */
+.resource-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.res-card {
+  background: #252526;
+  border: 1px solid #3e3e42;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.res-card img {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 4px;
+}
+
+.res-amount {
+  font-weight: bold;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+.res-name {
+  font-size: 0.8rem;
+  color: #aaa;
+}
+
+/* Relations (NEW) */
+.rel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.rel-card {
+  background: #222;
+  border: 1px solid #444;
+  padding: 6px 10px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  border-left: 4px solid transparent;
+}
+
+.rel-target {
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.rel-status {
+  font-size: 0.85rem;
+  margin-top: 2px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Stock Market */
+.stock-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stock-item {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: #222;
+  border: 1px solid #444;
+}
+
+.stock-item.buy { border-color: #4caf50; color: #a5d6a7; }
+.stock-item.sell { border-color: #f44336; color: #ef9a9a; }
+
+.order-type { font-weight: bold; margin-right: 6px; text-transform: uppercase; }
+
+/* Messages */
+.msg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.msg-card {
+  background: #1e1e1e;
+  border: 1px solid #444;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.msg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid #333;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+}
+
+.msg-meta {
+  font-size: 0.75rem;
+  color: #cfa665;
+  font-weight: bold;
+}
+
+.msg-subject {
+  font-size: 0.8rem;
+  color: #ccc;
+  font-style: italic;
+}
+
+.msg-body {
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  line-height: 1.5;
+}
+
+.msg-body img {
+  max-width: 100%;
+  height: auto;
+}
+
+.spy-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #cfa665;
+  font-weight: bold;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.spy-item:hover {
+  background: #333;
+  text-decoration: underline;
+}
+
+.spy-owner {
+  color: #999;
+  font-weight: normal;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Columns */
+.cols-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Armies */
+.army-list {
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.army-item {
+  display: flex;
+  align-items: center;
+  background: #2a2a2a;
+  padding: 4px;
+  border: 1px solid #333;
+}
+
+.army-icon img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  margin-right: 8px;
+}
+
+.army-loc {
+  color: #cfa665;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.army-comp {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+/* Provinces */
+.prov-list {
+  max-height: 300px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.prov-item {
+  background: #2a2a2a;
+  border: 1px solid #333;
+  padding: 6px;
+}
+
+.prov-header {
+  font-weight: bold;
+  color: #ddd;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #444;
+}
+
+.prov-upgrades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.upgrade-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Production */
+.prov-production {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed #444;
+  font-size: 0.8rem;
+}
+
+.prov-production .label {
+  color: #888;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.prod-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prod-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.prod-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.prod-name {
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.prod-time {
+  color: #ddd;
+  font-size: 0.8rem;
+}
+
+.none-found {
+  color: #666;
+  font-style: italic;
+  font-size: 0.9rem;
+  padding: 4px;
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+  font-style: italic;
+  font-size: 1.1rem;
+}
+.loading-state { color: #cfa665; }
+
+/* Scrollbars */
+.report-content::-webkit-scrollbar,
+.army-list::-webkit-scrollbar,
+.prov-list::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track { background: #222; }
+::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #777; }

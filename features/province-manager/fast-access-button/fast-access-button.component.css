@@ -1,0 +1,49 @@
+/* File: /scripts/features/province-manager/fast-access-button/fast-access-button.component.css */
+
+/* Every native #func_game_menu button's round badge is baked into its own per-tool
+   "game_menu-<key>" graphic from the host page's stylesheet - .menu_item/.menu_icon
+   contribute no shape/size on their own. There's no game-provided asset for a tool the game
+   itself doesn't know about, so this draws an equivalent circle in CSS - a double-ring
+   medallion (dark charcoal fill, thin white inner ring, thick grey outer ring), the approved
+   "tool-icon" badge design for Province Manager, instead of the flat black/white
+   UtilityMenuItemComponent uses elsewhere (.game_menu-utility) or this button's earlier plain
+   teal-gradient circle.
+
+   The ring is drawn at the same absolute stroke widths as the approved design (3px border,
+   6px outline) rather than scaled down, so the core box is sized at 68x67 (not 80x79) with
+   box-sizing: border-box - the 6px outline then adds 6px back on every side outside that box,
+   landing the *total visual footprint* back at 80x79 to stay flush with this bar's native
+   sibling buttons (Province Administration, Armies), same as every button in this bar. */
+#func_btn_province_manager_fast_access .game_menu-province_manager {
+  box-sizing: border-box;
+  width: 53px;
+  height: 53px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #1A2A2E;
+  border: 3px solid transparent;
+  outline: 4px solid #294046;
+  outline-offset: 2px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, outline-color 0.15s ease;
+}
+
+#func_btn_province_manager_fast_access:hover .game_menu-province_manager {
+  background-color: #85c0ce;
+  outline-color: #b1c0c2;
+}
+
+/* Stays applied while the dialog is open (see ProvinceManagerFastAccessComponent.isOpen),
+   independent of the cursor - placed after :hover so it wins the tie when both match (equal
+   selector specificity), i.e. hovering an already-open badge keeps showing "open", not "hover". */
+#func_btn_province_manager_fast_access.active .game_menu-province_manager {
+  background-color: #6c7f79;
+}
+
+#func_btn_province_manager_fast_access .game_menu-province_manager svg {
+  width: 90%;
+  height: 90%;
+  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.2));
+}

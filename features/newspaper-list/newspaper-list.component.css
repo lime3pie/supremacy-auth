@@ -1,0 +1,147 @@
+.newspaper-container {
+  width: 700px;
+  max-width: 95vw;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid #444;
+  position: sticky;
+  top: 0;
+  background: #222;
+  z-index: 1;
+}
+
+.controls label {
+  color: #ccc;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.day-select {
+  background: #2e2e28;
+  border: 1px solid #3b2b1f;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.day-select:focus {
+  border-color: #cfa665;
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+  font-style: italic;
+  font-size: 1.1rem;
+}
+.loading-state {
+  color: #cfa665;
+}
+
+.article-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.article-card {
+  background: #1e1e1e;
+  border: 1px solid #444;
+  border-left: 3px solid #cfa665;
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.article-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.article-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #cfa665;
+}
+
+.article-author {
+  font-size: 0.8rem;
+  color: #888;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.article-image {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.article-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.95rem;
+  color: #e0e0e0;
+  line-height: 1.6;
+}
+
+.stats-line.is-me {
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.article-body ::ng-deep .func_country_link {
+  color: #cfa665;
+  font-weight: bold;
+}
+
+/* Mobile: the dialog itself becomes a full-width bottom sheet (see app-dialog's own
+   mobile CSS), so this just needs its own content to stack cleanly at that width and
+   give touch targets enough room instead of the desktop's compact side-by-side layout. */
+.newspaper-container.mobile {
+  width: 100%;
+  max-width: 100%;
+}
+
+.newspaper-container.mobile .controls {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.newspaper-container.mobile .day-select {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  min-height: 44px;
+}
+
+.newspaper-container.mobile .article-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.newspaper-container.mobile .article-author {
+  white-space: normal;
+}

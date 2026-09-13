@@ -1,0 +1,56 @@
+<!-- File: /scripts/features/province-manager/cancel-panel/cancel-panel.component.html -->
+
+<app-dialog
+  [show]="show"
+  title="Cancel"
+  [showBackdrop]="true"
+  [minWidth]="360"
+  [preferredWidth]="640"
+  (close)="onClose()">
+
+  <div header-subtitle class="console-sub">{{ selectedRows.length }} Province{{ selectedRows.length === 1 ? '' : 's' }} Selected</div>
+
+  <div class="cancel-panel">
+    <ng-container *ngIf="rows.length > 0; else emptyState">
+      <div class="cnl-section" *ngIf="buildingRows.length > 0">
+        <div class="cnl-section-head">
+          <span class="cnl-section-title">Under Construction</span>
+          <button class="cnl-btn cnl-btn-all" (click)="cancelAllBuildings()">Cancel All Buildings ({{ totalBuildingCount }})</button>
+        </div>
+        <div class="cnl-row" *ngFor="let row of buildingRows">
+          <span class="cnl-icon"><img [src]="row.icon" [alt]="row.displayName" title="{{ row.displayName }}" onerror="this.style.display='none'" /></span>
+          <div class="cnl-meta">
+            <div class="cnl-name">{{ row.displayName }}</div>
+            <div class="cnl-status">{{ row.targets.length }} province{{ row.targets.length === 1 ? '' : 's' }}</div>
+          </div>
+          <div class="cnl-actions">
+            <button class="cnl-btn cnl-btn-cancel" (click)="cancelRow(row)">Cancel ({{ row.targets.length }})</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cnl-section" *ngIf="unitRows.length > 0">
+        <div class="cnl-section-head">
+          <span class="cnl-section-title">In Production</span>
+          <button class="cnl-btn cnl-btn-all" (click)="cancelAllUnits()">Cancel All Units ({{ totalUnitCount }})</button>
+        </div>
+        <div class="cnl-row" *ngFor="let row of unitRows">
+          <span class="cnl-icon"><img [src]="row.icon" [alt]="row.displayName" title="{{ row.displayName }}" onerror="this.style.display='none'" /></span>
+          <div class="cnl-meta">
+            <div class="cnl-name">{{ row.displayName }}</div>
+            <div class="cnl-status">{{ row.targets.length }} province{{ row.targets.length === 1 ? '' : 's' }}</div>
+          </div>
+          <div class="cnl-actions">
+            <button class="cnl-btn cnl-btn-cancel" (click)="cancelRow(row)">Cancel ({{ row.targets.length }})</button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #emptyState>
+      <div class="cnl-empty">Nothing under construction or in production in the selected province(s).</div>
+    </ng-template>
+  </div>
+</app-dialog>
+
+<div class="toast" [class.show]="toastVisible">{{ toastMessage }}</div>

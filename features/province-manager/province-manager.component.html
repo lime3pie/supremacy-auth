@@ -1,0 +1,678 @@
+<!-- File: /scripts/features/province-manager/province-manager.component.html -->
+
+<app-dialog
+  [show]="showDialog"
+  [minimized]="minimized"
+  [title]="isMobile ? mobileTitle : 'Province Manager'"
+  [draggable]="true"
+  [resizable]="!isMobile"
+  [minWidth]="isMobile ? null : minPanelWidth"
+  [minHeight]="isMobile ? null : minPanelHeight"
+  [preferredWidth]="isMobile ? null : preferredPanelWidth"
+  [preferredHeight]="isMobile ? null : preferredPanelHeight"
+  [maxWidth]="isMobile ? null : maxPanelWidth"
+  [fillHeightMobile]="isMobile"
+  [showBackdrop]="false"
+  (close)="close()">
+
+  <div header-subtitle class="console-sub">{{ rows.length }} province{{ rows.length === 1 ? '' : 's' }} - {{ selectedIDs.size }} selected</div>
+
+  <div header-actions>
+    <button class="settings-btn" (click)="toggleMinimize()" title="{{ minimized ? 'Restore' : 'Minimize' }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line *ngIf="!minimized" x1="5" y1="19" x2="19" y2="19"/>
+        <polyline *ngIf="minimized" points="6,15 12,9 18,15"/>
+      </svg>
+    </button>
+    <button class="settings-btn" (click)="openSettings()" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </div>
+
+  @if (!isMobile) {
+  <div class="console-body" [style.grid-template-columns]="(rostersCollapsed ? '60px' : '205px') + ' 1fr 244px'">
+
+    <!-- ROSTERS RAIL -->
+    <div class="rail rail-left" [class.collapsed]="rostersCollapsed">
+      <div class="rail-title-row">
+        <div class="rail-title" *ngIf="!rostersCollapsed">Rosters</div>
+        <button class="fold-btn" (click)="toggleRostersCollapsed()" title="{{ rostersCollapsed ? 'Expand Rosters' : 'Collapse Rosters' }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline *ngIf="!rostersCollapsed" points="14,5 8,12 14,19"/>
+            <polyline *ngIf="rostersCollapsed" points="10,5 16,12 10,19"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="slots-vertical">
+        <div class="slot" *ngFor="let slot of rosterSlots; let i = index"
+             role="group" tabindex="0"
+             [class.filled]="slot.locationIDs.length > 0"
+             [attr.data-slot]="i + 1"
+             [title]="rostersCollapsed ? (slot.name || ('Empty slot ' + (i + 1))) : null"
+             (click)="onSlotClick(i)" (keydown.enter)="onSlotClick(i)">
+
+          <ng-container *ngIf="!rostersCollapsed">
+            <ng-container *ngIf="renamingSlotIndex === i; else slotLabel">
+              <input class="slot-name-input" [(ngModel)]="renameDraft" title="Roster slot name"
+                     (click)="$event.stopPropagation()"
+                     (keydown.enter)="commitRename(i)" (keydown.escape)="cancelRename()"
+                     (blur)="commitRename(i)" />
+            </ng-container>
+            <ng-template #slotLabel>
+              <span class="slot-label">{{ slot.name || ('Empty slot ' + (i + 1)) }}</span>
+            </ng-template>
+          </ng-container>
+
+          <span class="count" *ngIf="slot.locationIDs.length > 0">{{ slot.locationIDs.length }}</span>
+
+          <button class="slot-rename" *ngIf="!rostersCollapsed" (click)="startRename(i, $event)" title="Rename">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.5 4.5l5 5L8 21H3v-5z"/>
+            </svg>
+          </button>
+
+          <button class="slot-clear" *ngIf="!rostersCollapsed && slot.locationIDs.length > 0" (click)="clearSlot(i, $event)" title="Clear Slot">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost btn-icon-save" [class.armed]="savingToSlotArmed" (click)="armSaveToSlot()"
+              [title]="savingToSlotArmed ? 'Click an empty slot…' : 'Save Selection to Slot (replaces slot contents)'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 3.5h11.5L20.5 7.5V20.5H5z"/>
+          <path d="M8 3.5V9h8V3.5"/>
+          <rect x="7.5" y="13" width="9" height="7"/>
+        </svg>
+        <span *ngIf="!rostersCollapsed">{{ savingToSlotArmed ? 'Click an empty slot…' : 'Save Selection' }}</span>
+      </button>
+
+      <button class="btn btn-ghost btn-icon-save" [class.armed]="addingToSlotArmed" (click)="armAddToSlot()"
+              [title]="addingToSlotArmed ? 'Click a slot…' : 'Add Selection to Slot (keeps existing contents)'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span *ngIf="!rostersCollapsed">{{ addingToSlotArmed ? 'Click a slot…' : 'Add Selection' }}</span>
+      </button>
+
+      <button class="btn btn-ghost btn-icon-save" [class.armed]="removingFromSlotArmed" (click)="armRemoveFromSlot()"
+              [title]="removingFromSlotArmed ? 'Click a slot…' : 'Remove Selection from Slot'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span *ngIf="!rostersCollapsed">{{ removingFromSlotArmed ? 'Click a slot…' : 'Remove Selection' }}</span>
+      </button>
+
+      <p class="rail-hint" *ngIf="!rostersCollapsed">Click a filled slot to load it (replaces current selection). Arm "Save" then click an empty slot to save, "+" to add the selection into a slot's group, or "−" to remove it from one.</p>
+    </div>
+
+    <!-- LEDGER CENTER -->
+    <div class="rail rail-center">
+      <div class="query-bar">
+        <span class="cond-label">Match</span>
+
+        <span class="cond-group">Building</span>
+        <select class="field-select" title="Building filter" [(ngModel)]="query.buildingName" (ngModelChange)="onBuildingNameChange()">
+          <option [ngValue]="null">Any</option>
+          <option *ngFor="let name of buildingNameOptions" [ngValue]="name">{{ name }}</option>
+        </select>
+        <select class="field-select" title="Level operator" [(ngModel)]="query.buildingLevelOperator">
+          <option value=">">Lvl &gt;</option>
+          <option value=">=">Lvl &ge;</option>
+          <option value="<">Lvl &lt;</option>
+          <option value="<=">Lvl &le;</option>
+          <option value="=">Lvl =</option>
+        </select>
+        <select class="field-select num-input" title="Level value" [(ngModel)]="query.buildingLevel">
+          <option *ngFor="let lvl of buildingLevelOptions" [ngValue]="lvl">{{ lvl === 0 ? 'Not built' : lvl }}</option>
+        </select>
+        <select class="field-select" title="Condition" [(ngModel)]="query.buildingCondition">
+          <option value="any">Any condition</option>
+          <option value="damaged">Damaged</option>
+          <option value="undamaged">Not damaged</option>
+        </select>
+
+        <button class="btn btn-brass" (click)="selectMatchingCondition()">Select</button>
+        <button class="btn btn-ghost" (click)="deselectMatchingCondition()">Deselect</button>
+        <button class="btn btn-ghost" (click)="clearSelection()" [disabled]="selectedIDs.size === 0">Clear Selection</button>
+        <button class="btn btn-ghost" [class.active]="advancedOpen" (click)="toggleAdvanced()">{{ advancedOpen ? 'Advanced ▲' : 'Advanced ▼' }}</button>
+      </div>
+
+      <div class="query-bar query-bar-advanced" *ngIf="advancedOpen">
+        <span class="cond-group">Morale</span>
+        <select class="field-select" title="Morale operator" [(ngModel)]="query.moraleOperator">
+          <option value=">">&gt;</option>
+          <option value=">=">&ge;</option>
+          <option value="<">&lt;</option>
+          <option value="<=">&le;</option>
+          <option value="=">=</option>
+        </select>
+        <input type="number" class="field-select num-input" title="Morale value" [(ngModel)]="query.moraleValue" />
+
+        <div class="divider-v"></div>
+
+        <span class="cond-group">Activity</span>
+        <select class="field-select" title="Activity filter" [(ngModel)]="query.activityFilter" (ngModelChange)="onActivityFilterChange()">
+          <option value="any">Any</option>
+          <option value="idle">Idle</option>
+          <option value="unit">Unit</option>
+          <option value="building">Building</option>
+        </select>
+        <select
+          class="field-select"
+          [(ngModel)]="query.activityItemName"
+          [disabled]="query.activityFilter !== 'unit' && query.activityFilter !== 'building'"
+          title="{{ query.activityFilter === 'unit' ? 'Only provinces producing this unit' : query.activityFilter === 'building' ? 'Only provinces constructing this building' : 'Pick Unit or Building above first' }}">
+          <option [ngValue]="null">{{ query.activityFilter === 'unit' ? 'Unit: Any' : query.activityFilter === 'building' ? 'Building: Any' : 'Any' }}</option>
+          <option *ngFor="let name of activityItemOptions" [ngValue]="name">{{ name }}</option>
+        </select>
+
+        <div class="divider-v"></div>
+
+        <span class="cond-group">Resource</span>
+        <select class="field-select" title="Resource type" [(ngModel)]="query.resourceTypeId">
+          <option [ngValue]="null">Any type</option>
+          <option *ngFor="let rt of resourceTypeOptions" [ngValue]="rt.id">{{ rt.name }}</option>
+        </select>
+        <select class="field-select" title="Resource filter" [(ngModel)]="query.resourceFilter">
+          <option value="any">Any</option>
+          <option value="single">Single</option>
+          <option value="double">Double</option>
+        </select>
+
+        <button class="btn btn-ghost" (click)="selectFromMap()" title="Selects every province currently selected on the native map">Select from Map</button>
+        <button class="btn btn-ghost" (click)="resetFilters()" title="Resets every Match condition above back to its default">Reset</button>
+      </div>
+
+      <div class="ledger-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-check no-sort"></th>
+              <th (click)="toggleSort('name')" [class.sorted]="sortBy === 'name'">Province <span class="arrow">{{ sortArrow('name') }}</span></th>
+              <th (click)="toggleSort('resource')" [class.sorted]="sortBy === 'resource'">Resource <span class="arrow">{{ sortArrow('resource') }}</span></th>
+              <th (click)="toggleSort('money')" [class.sorted]="sortBy === 'money'">Money <span class="arrow">{{ sortArrow('money') }}</span></th>
+              <th (click)="toggleSort('morale')" [class.sorted]="sortBy === 'morale'">Morale <span class="arrow">{{ sortArrow('morale') }}</span></th>
+              <th (click)="toggleSort('buildings')" [class.sorted]="sortBy === 'buildings'">Buildings <span class="arrow">{{ sortArrow('buildings') }}</span></th>
+              <th class="col-activity no-sort">
+                <span class="sub-sort" (click)="toggleSort('construction')" [class.sorted]="sortBy === 'construction'">Building <span class="arrow">{{ sortArrow('construction') }}</span></span>
+                <span class="sep">/</span>
+                <span class="sub-sort" (click)="toggleSort('production')" [class.sorted]="sortBy === 'production'">Producing <span class="arrow">{{ sortArrow('production') }}</span></span>
+              </th>
+              <th class="col-goto no-sort"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of visibleRows; trackBy: trackByLocationID" [class.selected]="isSelected(row.locationID)" (click)="toggleRow(row.locationID)">
+              <td class="col-check">
+                <input type="checkbox" title="Select province" [checked]="isSelected(row.locationID)" (click)="$event.stopPropagation()" (change)="toggleRowSelection(row.locationID, $event)" />
+              </td>
+              <td><span class="prov-name" [title]="row.name">{{ row.name }}</span></td>
+              <td>
+                <ng-container *ngIf="row.primaryResource as res; else noRes">
+                  <span class="stat" [class.double]="res.doubled" [title]="res.name + (res.doubled ? ' (double production)' : '')">
+                    <img [src]="res.image" [alt]="res.name" title="{{ res.name }}" />
+                    <span>{{ res.amount | number }}</span>
+                  </span>
+                </ng-container>
+                <ng-template #noRes>—</ng-template>
+              </td>
+              <td>{{ row.money | number }}</td>
+              <td><span class="morale-value" [ngClass]="moraleClass(row.morale)">{{ row.morale }}</span></td>
+              <td>
+                <div class="bldg-strip">
+                  <span class="chip" *ngFor="let b of row.buildings" [class.damaged]="b.damaged" [title]="b.name + (b.level ? ' Lvl ' + b.level : '')">
+                    <img [src]="b.image" [alt]="b.name" title="{{ b.name }}" onerror="this.style.display='none'" />
+                    <span class="lvl" *ngIf="b.level">{{ toRoman(b.level) }}</span>
+                  </span>
+                </div>
+              </td>
+              <td class="col-activity">
+                <div class="activity" *ngIf="row.activity.length > 0; else idleTpl">
+                  <div class="activity-line" *ngFor="let a of row.activity" [class.construction]="a.kind === 'construction'" [class.production]="a.kind === 'production'">
+                    <span class="a-icon">
+                      <img [src]="a.icon" [alt]="a.name" [title]="a.name + (a.level ? ' Lvl ' + a.level : '')" onerror="this.style.display='none'" />
+                      <span class="lvl" *ngIf="a.level">{{ toRoman(a.level) }}</span>
+                    </span>
+                    <span>{{ a.name }}</span>
+                    <span class="a-time">{{ formatDuration(a.remainingSeconds) }}</span>
+                    <button class="a-cancel-btn" (click)="cancelActivity(row, a, $event)" title="Cancel">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <ng-template #idleTpl><span class="activity-idle">Idle</span></ng-template>
+
+                <div class="queue-strip" *ngIf="row.queuedActivity.length > 0">
+                  <span class="queue-label">Queue</span>
+                  <span class="queue-chip" *ngFor="let q of row.queuedActivity" [class.construction]="q.kind === 'construction'" [class.production]="q.kind === 'production'" [title]="q.name + (q.level ? ' Lvl ' + q.level : '') + (q.count > 1 ? ' ×' + q.count : '')">
+                    <img [src]="q.icon" [alt]="q.name" [title]="q.name + (q.level ? ' Lvl ' + q.level : '')" onerror="this.style.display='none'" />
+                    <span class="queue-lvl" *ngIf="q.level">{{ toRoman(q.level) }}</span>
+                    <span class="queue-count" *ngIf="q.count > 1">×{{ q.count }}</span>
+                  </span>
+                </div>
+              </td>
+              <td class="col-goto">
+                <button class="goto-btn" (click)="$event.stopPropagation(); gotoProvince(row.locationID)" title="Go to province">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/>
+                    <line x1="12" y1="1.5" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22.5"/>
+                    <line x1="1.5" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22.5" y2="12"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="visibleRows.length === 0">
+              <td colspan="7" class="activity-idle ledger-empty-cell">
+                {{ rows.length === 0 ? 'No owned provinces found.' : 'No provinces match the current filter.' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ORDERS RAIL -->
+    <div class="rail rail-right">
+      <div>
+        <div class="rail-title">Selection Manifest</div>
+        <div class="manifest-count"><b>{{ selectedIDs.size }}</b> <span class="unit">Selected</span></div>
+        <div class="manifest-line"><span>Damaged buildings</span> <b>{{ damagedSelectedCount }}</b></div>
+        <div class="manifest-line"><span>Idle provinces</span> <b>{{ idleSelectedCount }}</b></div>
+      </div>
+
+      <div class="orders">
+        <div class="rail-title">Orders</div>
+        <div class="btn-block">
+          <button class="btn btn-block" (click)="mapSelectAll()" [disabled]="selectedIDs.size === 0" title="Selects every checked province on the native map at once">Map Select</button>
+        </div>
+        <div class="btn-block">
+          <button class="btn btn-block" (click)="repairAll()" [disabled]="damagedSelectedCount === 0">Repair All</button>
+        </div>
+        <div class="btn-block">
+          <button class="btn btn-block" (click)="upgradeTier()" [disabled]="selectedIDs.size === 0">Upgrade Tier</button>
+        </div>
+        <div class="btn-block">
+          <button class="btn btn-block" (click)="openTogglePanel()" [disabled]="selectedIDs.size === 0">Toggle Building</button>
+        </div>
+        <div class="btn-block">
+          <button class="btn btn-block" (click)="openCancelPanel()" [disabled]="selectedIDs.size === 0">Cancel</button>
+        </div>
+        <div class="btn-block">
+          <button class="btn btn-brass btn-block" (click)="openBuildPanel('Buildings')" [disabled]="selectedIDs.size === 0">Build Buildings</button>
+        </div>
+        <div class="btn-block">
+          <button class="btn btn-brass btn-block" (click)="openBuildPanel('Land')" [disabled]="selectedIDs.size === 0">Build Land Units</button>
+        </div>
+        <div class="btn-block">
+          <button class="btn btn-brass btn-block" (click)="openBuildPanel('Air')" [disabled]="selectedIDs.size === 0">Build Air Units</button>
+        </div>
+        <div class="btn-block">
+          <button class="btn btn-brass btn-block" (click)="openBuildPanel('Navy')" [disabled]="selectedIDs.size === 0">Build Navy Units</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  } @else {
+  <!-- ================= MOBILE LAYOUT =================
+       Desktop's three rails (Rosters / Ledger / Orders) become one Ledger view plus three
+       on-demand screens, switched via mobileView (see province-manager.component.ts). Every
+       binding below reuses the exact same state/methods the desktop rails above already use -
+       nothing here is mobile-only business logic, only mobile-only layout. -->
+  <div class="m-pm">
+
+    <!-- Persistent 4-button nav - always rendered (not just on the Ledger screen) so switching to
+         Filters/Rosters/Selected never hides it behind a "Back" button; each screen is reached by
+         tapping straight from wherever you already are instead of backing out first. -->
+    <div class="m-toolbar">
+      <button class="m-tool-btn" [class.on]="mobileView === 'ledger' && !mobileSortOpen" (click)="goMobile('ledger')" title="Main">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+      </button>
+      <button class="m-tool-btn" [class.on]="mobileView === 'rosters'" (click)="goMobile('rosters')" title="Rosters">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,3 21,8 12,13 3,8"/><polyline points="3,13 12,18 21,13"/><polyline points="3,18 12,23 21,18"/></svg>
+      </button>
+      <button class="m-tool-btn" [class.on]="mobileView === 'filters'" (click)="goMobile('filters')" title="Filters">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3,4 21,4 14,13 14,20 10,20 10,13"/></svg>
+      </button>
+      <button class="m-tool-btn" [class.on]="mobileSortOpen" (click)="toggleMobileSort()" title="Sort">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8l6-6 6 6M6 16l6 6 6-6M12 2v20"/></svg>
+      </button>
+    </div>
+
+    <div class="m-content">
+    @if (mobileView === 'ledger') {
+    <div class="m-ledger">
+    @if (mobileSortOpen) {
+    <div class="m-sort-panel">
+      <div class="m-sort-row" [class.active]="sortBy === 'name'" (click)="toggleSort('name')"><span>Province</span><span class="arrow">{{ sortArrow('name') }}</span></div>
+      <div class="m-sort-row" [class.active]="sortBy === 'resource'" (click)="toggleSort('resource')"><span>Resource</span><span class="arrow">{{ sortArrow('resource') }}</span></div>
+      <div class="m-sort-row" [class.active]="sortBy === 'money'" (click)="toggleSort('money')"><span>Money</span><span class="arrow">{{ sortArrow('money') }}</span></div>
+      <div class="m-sort-row" [class.active]="sortBy === 'morale'" (click)="toggleSort('morale')"><span>Morale</span><span class="arrow">{{ sortArrow('morale') }}</span></div>
+      <div class="m-sort-row" [class.active]="sortBy === 'buildings'" (click)="toggleSort('buildings')"><span>Buildings</span><span class="arrow">{{ sortArrow('buildings') }}</span></div>
+      <div class="m-sort-row" [class.active]="sortBy === 'construction'" (click)="toggleSort('construction')"><span>Building</span><span class="arrow">{{ sortArrow('construction') }}</span></div>
+      <div class="m-sort-row" [class.active]="sortBy === 'production'" (click)="toggleSort('production')"><span>Producing</span><span class="arrow">{{ sortArrow('production') }}</span></div>
+    </div>
+    }
+
+    <div class="m-list-wrap">
+    <div class="m-list" #mList (scroll)="onMobileListScroll($event)">
+      @for (row of visibleRows; track row.locationID) {
+        <div class="m-card" [class.selected]="isSelected(row.locationID)" (click)="toggleRow(row.locationID)">
+          <div class="m-row1">
+            <span class="m-name" [title]="row.name">{{ row.name }}</span>
+            <span class="m-morale" [ngClass]="moraleClass(row.morale)">{{ row.morale }}</span>
+            @if (showSilverOnMobile) {
+              <span class="m-res-icon" title="Silver">
+                <img [src]="moneyImage" alt="Silver" title="Silver" onerror="this.style.display='none'" />
+              </span>
+              @if (showResourceAmountOnMobile) {
+                <span class="m-res-amount">{{ row.money | number }}</span>
+              }
+            }
+            @if (row.primaryResource) {
+              @if (showResourceAmountOnMobile) {
+                <span class="m-res-amount" [class.double]="row.primaryResource.doubled">{{ row.primaryResource.amount | number }}</span>
+              }
+              <span class="m-res-icon" [title]="row.primaryResource.name + (row.primaryResource.doubled ? ' (double production)' : '')">
+                <img [src]="row.primaryResource.image" [alt]="row.primaryResource.name" title="{{ row.primaryResource.name }}" onerror="this.style.display='none'" />
+                @if (row.primaryResource.doubled) { <span class="m-lvl">2×</span> }
+              </span>
+            }
+          </div>
+          <div class="m-row2">
+            <div class="m-bldg-scroll">
+              @for (b of row.buildings; track $index) {
+                <span class="m-bldg-chip" [class.damaged]="b.damaged" [title]="b.name + (b.level ? ' Lvl ' + b.level : '')">
+                  <img [src]="b.image" [alt]="b.name" title="{{ b.name }}" onerror="this.style.display='none'" />
+                  @if (b.level) { <span class="m-lvl">{{ toRoman(b.level) }}</span> }
+                </span>
+              }
+            </div>
+            @if (row.activity.length > 0) {
+              <div class="m-act-strip">
+                @for (a of row.activity; track $index) {
+                  <span class="m-act-chip" [class.construction]="a.kind === 'construction'" [class.production]="a.kind === 'production'" [title]="a.name + (a.level ? ' Lvl ' + a.level : '')">
+                    <span class="m-act-visual">
+                      <span class="m-act-icon">
+                        <img [src]="a.icon" [alt]="a.name" [title]="a.name + (a.level ? ' Lvl ' + a.level : '')" onerror="this.style.display='none'" />
+                        <span class="m-lvl" *ngIf="a.level">{{ toRoman(a.level) }}</span>
+                      </span>
+                      <button class="m-act-cancel" (click)="cancelActivity(row, a, $event)" title="Cancel">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+                      </button>
+                    </span>
+                    <span class="m-act-time">{{ formatDuration(a.remainingSeconds) }}</span>
+                  </span>
+                }
+              </div>
+            }
+          </div>
+          @if (row.queuedActivity.length > 0) {
+            <div class="m-row3">
+              <span class="m-queue-label">Queue</span>
+              <div class="m-queue-strip">
+                @for (q of row.queuedActivity; track $index) {
+                  <span class="m-queue-chip" [class.construction]="q.kind === 'construction'" [class.production]="q.kind === 'production'" [title]="q.name + (q.level ? ' Lvl ' + q.level : '') + (q.count > 1 ? ' ×' + q.count : '')">
+                    <img [src]="q.icon" [alt]="q.name" [title]="q.name + (q.level ? ' Lvl ' + q.level : '')" onerror="this.style.display='none'" />
+                    @if (q.level) { <span class="m-queue-lvl">{{ toRoman(q.level) }}</span> }
+                    @if (q.count > 1) { <span class="m-lvl">×{{ q.count }}</span> }
+                  </span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+      @if (visibleRows.length === 0) {
+        <div class="m-empty">{{ rows.length === 0 ? 'No owned provinces found.' : 'No provinces match the current filter.' }}</div>
+      }
+    </div>
+    @if (mobileShowScrollTop) {
+      <button class="m-scroll-fab" (click)="mList.scrollTo({ top: 0, behavior: 'smooth' })" title="Scroll to top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    }
+    </div>
+
+    @if (selectedIDs.size > 0) {
+      <div class="m-sticky-bar" (click)="goMobile('selected')">
+        <div class="m-sticky-info">
+          <b>{{ selectedIDs.size }} Selected</b>
+          <span class="m-sticky-hint">{{ damagedSelectedCount }} damaged building{{ damagedSelectedCount === 1 ? '' : 's' }}</span>
+        </div>
+        <div class="m-sticky-chev">
+          Orders
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,5 15,12 9,19"/></svg>
+        </div>
+      </div>
+    }
+    </div>
+    }
+
+    @if (mobileView === 'filters') {
+    <div class="m-screen">
+      <div class="m-f-label">Building</div>
+      <div class="m-f-field">
+        <label>Building</label>
+        <select class="m-f-input" title="Building filter" [(ngModel)]="query.buildingName" (ngModelChange)="onBuildingNameChange()">
+          <option [ngValue]="null">Any</option>
+          <option *ngFor="let name of buildingNameOptions" [ngValue]="name">{{ name }}</option>
+        </select>
+      </div>
+      <div class="m-f-row2">
+        <div class="m-f-field">
+          <label>Level</label>
+          <select class="m-f-input" title="Level operator" [(ngModel)]="query.buildingLevelOperator">
+            <option value=">">Lvl &gt;</option>
+            <option value=">=">Lvl &ge;</option>
+            <option value="<">Lvl &lt;</option>
+            <option value="<=">Lvl &le;</option>
+            <option value="=">Lvl =</option>
+          </select>
+        </div>
+        <div class="m-f-field">
+          <label>Value</label>
+          <select class="m-f-input" title="Level value" [(ngModel)]="query.buildingLevel">
+            <option *ngFor="let lvl of buildingLevelOptions" [ngValue]="lvl">{{ lvl === 0 ? 'Not built' : lvl }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="m-f-field">
+        <label>Condition</label>
+        <select class="m-f-input" title="Condition" [(ngModel)]="query.buildingCondition">
+          <option value="any">Any condition</option>
+          <option value="damaged">Damaged</option>
+          <option value="undamaged">Not damaged</option>
+        </select>
+      </div>
+
+      <div class="m-f-disclosure" (click)="toggleAdvanced()">
+        <span>Advanced</span>
+        <span>{{ advancedOpen ? '▲' : '▼' }}</span>
+      </div>
+
+      @if (advancedOpen) {
+        <div class="m-f-label">Morale</div>
+        <div class="m-f-row2">
+          <div class="m-f-field">
+            <label>Operator</label>
+            <select class="m-f-input" title="Morale operator" [(ngModel)]="query.moraleOperator">
+              <option value=">">&gt;</option>
+              <option value=">=">&ge;</option>
+              <option value="<">&lt;</option>
+              <option value="<=">&le;</option>
+              <option value="=">=</option>
+            </select>
+          </div>
+          <div class="m-f-field">
+            <label>Value</label>
+            <input type="number" class="m-f-input" title="Morale value" [(ngModel)]="query.moraleValue" />
+          </div>
+        </div>
+
+        <div class="m-f-label">Activity</div>
+        <div class="m-f-row2">
+          <div class="m-f-field">
+            <select class="m-f-input" title="Activity filter" [(ngModel)]="query.activityFilter" (ngModelChange)="onActivityFilterChange()">
+              <option value="any">Any</option>
+              <option value="idle">Idle</option>
+              <option value="unit">Unit</option>
+              <option value="building">Building</option>
+            </select>
+          </div>
+          <div class="m-f-field">
+            <select class="m-f-input" title="Activity item" [(ngModel)]="query.activityItemName" [disabled]="query.activityFilter !== 'unit' && query.activityFilter !== 'building'">
+              <option [ngValue]="null">{{ query.activityFilter === 'unit' ? 'Unit: Any' : query.activityFilter === 'building' ? 'Building: Any' : 'Any' }}</option>
+              <option *ngFor="let name of activityItemOptions" [ngValue]="name">{{ name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="m-f-label">Resource</div>
+        <div class="m-f-row2">
+          <div class="m-f-field">
+            <select class="m-f-input" title="Resource type" [(ngModel)]="query.resourceTypeId">
+              <option [ngValue]="null">Any type</option>
+              <option *ngFor="let rt of resourceTypeOptions" [ngValue]="rt.id">{{ rt.name }}</option>
+            </select>
+          </div>
+          <div class="m-f-field">
+            <select class="m-f-input" title="Resource filter" [(ngModel)]="query.resourceFilter">
+              <option value="any">Any</option>
+              <option value="single">Single</option>
+              <option value="double">Double</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="m-ghost-row">
+          <button class="m-btn m-btn-ghost" (click)="selectFromMap()" title="Selects every province currently selected on the native map">Select from Map</button>
+          <button class="m-btn m-btn-ghost" (click)="resetFilters()" title="Resets every Match condition above back to its default">Reset</button>
+        </div>
+      }
+
+      <div class="m-f-footer">
+        <button class="m-btn m-btn-brass m-btn-block" (click)="selectMatchingCondition()">Select Matching</button>
+        <div class="m-ghost-row">
+          <button class="m-btn m-btn-ghost" (click)="deselectMatchingCondition()">Deselect</button>
+          <button class="m-btn m-btn-ghost" [disabled]="selectedIDs.size === 0" (click)="clearSelection()">Clear Selection</button>
+        </div>
+      </div>
+    </div>
+    }
+
+    @if (mobileView === 'rosters') {
+    <div class="m-screen">
+      <button class="m-btn m-btn-block" [class.m-btn-brass]="!savingToSlotArmed" [class.m-btn-armed]="savingToSlotArmed" (click)="armSaveToSlot()">
+        {{ savingToSlotArmed ? 'Tap an empty slot…' : 'Save Selection to Slot…' }}
+      </button>
+
+      <div class="m-ghost-row">
+        <button class="m-btn m-btn-ghost" [class.m-btn-armed]="addingToSlotArmed" (click)="armAddToSlot()">
+          {{ addingToSlotArmed ? 'Tap a slot…' : '+ Add to Slot' }}
+        </button>
+        <button class="m-btn m-btn-ghost" [class.m-btn-armed]="removingFromSlotArmed" (click)="armRemoveFromSlot()">
+          {{ removingFromSlotArmed ? 'Tap a slot…' : '− Remove from Slot' }}
+        </button>
+      </div>
+
+      @for (slot of rosterSlots; track $index) {
+        <div class="m-slot-row" [class.filled]="slot.locationIDs.length > 0" (click)="onSlotClick($index)">
+          <span class="m-slot-num">{{ $index + 1 }}</span>
+          @if (renamingSlotIndex === $index) {
+            <input class="m-slot-name-input" title="Roster slot name" [(ngModel)]="renameDraft" (click)="$event.stopPropagation()"
+                   (keydown.enter)="commitRename($index)" (keydown.escape)="cancelRename()" (blur)="commitRename($index)" />
+          } @else {
+            <span class="m-slot-name">{{ slot.name || ('Empty slot ' + ($index + 1)) }}</span>
+          }
+          @if (slot.locationIDs.length > 0) {
+            <span class="m-slot-count">{{ slot.locationIDs.length }}</span>
+          }
+          @if (renamingSlotIndex !== $index) {
+            <button class="m-slot-icon" title="Rename" (click)="startRename($index, $event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4.5l5 5L8 21H3v-5z"/></svg>
+            </button>
+          }
+          @if (slot.locationIDs.length > 0) {
+            <button class="m-slot-icon" title="Clear" (click)="clearSlot($index, $event)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          }
+        </div>
+      }
+
+      <p class="m-hint">Tap a filled slot to load it (replaces current selection). Arm "Save" then tap an empty slot to save, "Add" to add the selection into a slot's group, or "Remove" to remove it from one.</p>
+    </div>
+    }
+
+    @if (mobileView === 'selected') {
+    <div class="m-screen m-screen-selected">
+      <div class="m-selected-scroll">
+        <div class="m-manifest">
+          <div class="m-manifest-count">{{ selectedIDs.size }}</div>
+          <div class="m-manifest-label">Selected</div>
+          <div class="m-manifest-stats">
+            <div class="m-stat"><b>{{ damagedSelectedCount }}</b><span>Damaged</span></div>
+            <div class="m-stat"><b>{{ idleSelectedCount }}</b><span>Idle</span></div>
+          </div>
+        </div>
+
+        <div class="m-orders-label">Orders</div>
+        <button class="m-btn m-btn-ghost m-btn-block" [disabled]="selectedIDs.size === 0" (click)="mapSelectAll()" title="Selects every checked province on the native map at once">Map Select</button>
+        <button class="m-btn m-btn-ghost m-btn-block" [disabled]="damagedSelectedCount === 0" (click)="repairAll()">Repair All</button>
+        <button class="m-btn m-btn-ghost m-btn-block" [disabled]="selectedIDs.size === 0" (click)="upgradeTier()">Upgrade Tier</button>
+        <button class="m-btn m-btn-ghost m-btn-block" [disabled]="selectedIDs.size === 0" (click)="openTogglePanel()">Toggle Building</button>
+        <button class="m-btn m-btn-ghost m-btn-block" [disabled]="selectedIDs.size === 0" (click)="openCancelPanel()">Cancel</button>
+      </div>
+
+      <div class="m-build-sticky">
+        <div class="m-orders-label m-orders-label-first">Build New</div>
+        <div class="m-build-grid">
+          <button class="m-btn m-btn-brass" [disabled]="selectedIDs.size === 0" (click)="openBuildPanel('Buildings')">Buildings</button>
+          <button class="m-btn m-btn-brass" [disabled]="selectedIDs.size === 0" (click)="openBuildPanel('Land')">Land</button>
+          <button class="m-btn m-btn-brass" [disabled]="selectedIDs.size === 0" (click)="openBuildPanel('Air')">Air</button>
+          <button class="m-btn m-btn-brass" [disabled]="selectedIDs.size === 0" (click)="openBuildPanel('Navy')">Navy</button>
+        </div>
+      </div>
+    </div>
+    }
+    </div>
+
+  </div>
+  }
+</app-dialog>
+
+<div class="toast" [class.show]="toastVisible">{{ toastMessage }}</div>
+
+<app-province-manager-build-panel
+  [show]="showBuildPanel"
+  [selectedRows]="selectedRows"
+  [initialCategory]="buildPanelCategory"
+  (close)="onBuildPanelClose()">
+</app-province-manager-build-panel>
+
+<app-province-manager-building-toggle-panel
+  [show]="showTogglePanel"
+  [selectedRows]="selectedRows"
+  (close)="onTogglePanelClose()">
+</app-province-manager-building-toggle-panel>
+
+<app-province-manager-cancel-panel
+  [show]="showCancelPanel"
+  [selectedRows]="selectedRows"
+  (close)="onCancelPanelClose()">
+</app-province-manager-cancel-panel>
+
+<app-province-manager-settings
+  [show]="showSettings"
+  (close)="showSettings = false">
+</app-province-manager-settings>

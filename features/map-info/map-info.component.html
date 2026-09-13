@@ -1,0 +1,422 @@
+<app-dialog [show]="showDialog" title="Map Info" (close)="close()">
+  @if (showDialog) {
+  @if (!isMobile) {
+  <div class="kd-container">
+
+    <div class="tabs">
+      <div class="tab" [class.active]="activeTab === 'players'" (click)="setActiveTab('players')">Map K/D</div>
+      <div class="tab" [class.active]="activeTab === 'map'" (click)="setActiveTab('map')">Detailed K/D</div>
+      @if (canViewRealKd) {
+        <div class="tab" [class.active]="activeTab === 'real'" (click)="setActiveTab('real')">Real K/D</div>
+      }
+    </div>
+
+    @if (activeTab === 'players') {
+      @if (playersKd.length === 0) {
+        <div class="empty-state">
+          No player statistics available.
+        </div>
+      }
+      @else {
+        @if (!isAnonymousGame) {
+          <div class="controls controls-end">
+            <button class="fetch-btn" (click)="fetchAlliances()" [disabled]="allianceLoading">
+              {{ allianceLoading ? 'Fetching...' : (allianceFetched ? 'Refresh Alliance' : 'Fetch Alliance') }}
+            </button>
+          </div>
+        }
+
+        <div class="opponent-list">
+          <div class="opponent-row header-row with-alliance">
+            <span class="flag-icon"></span>
+            <span class="opponent-name">Player</span>
+            <span class="opponent-alliance sortable" [class.active]="playersSortColumn === 'alliance'" (click)="sortPlayersBy('alliance')">Alliance{{ sortArrow('players', 'alliance') }}</span>
+            <span class="stat sortable" [class.active]="playersSortColumn === 'kills'" (click)="sortPlayersBy('kills')">Kills{{ sortArrow('players', 'kills') }}</span>
+            <span class="stat sortable" [class.active]="playersSortColumn === 'deaths'" (click)="sortPlayersBy('deaths')">Deaths{{ sortArrow('players', 'deaths') }}</span>
+            <span class="stat sortable" [class.active]="playersSortColumn === 'ratio'" (click)="sortPlayersBy('ratio')">K/D{{ sortArrow('players', 'ratio') }}</span>
+          </div>
+          @for (row of playersKd; track row.playerId) {
+            <div class="opponent-row with-alliance">
+              <img [src]="row.flagUrl" class="flag-icon" onerror="this.style.display='none'">
+              <span class="opponent-name">{{ row.name }} <span class="nation-hint">({{ row.nation }})</span></span>
+              <span class="opponent-alliance">
+                @if (allianceUrl(row.allianceId); as url) {
+                  <a [href]="url" target="_blank" rel="noopener noreferrer">{{ row.alliance }}</a>
+                } @else {
+                  {{ row.alliance ?? '—' }}
+                }
+              </span>
+              <span class="stat kills">{{ row.kills | number }}</span>
+              <span class="stat deaths">{{ row.deaths | number }}</span>
+              <span class="stat ratio">{{ formatRatio(row.kills, row.deaths) }}</span>
+            </div>
+          }
+        </div>
+      }
+    }
+    @else if (activeTab === 'map') {
+      <div class="controls">
+        <button class="fetch-btn" (click)="fetchAllWars()" [disabled]="isLoading">
+          {{ isLoading ? loadingProgress : (hasFetched ? 'Refresh' : 'Fetch All Wars') }}
+        </button>
+
+        <div class="country-select-wrapper">
+          <app-searchable-select
+            [options]="countryOptions"
+            [value]="selectedCountryId"
+            (valueChange)="onCountryChange($event)"
+            placeholder="Select a Nation..."
+            [disabled]="isLoading || countryOptions.length === 0">
+          </app-searchable-select>
+        </div>
+      </div>
+
+      @if (isLoading) {
+        <div class="loading-state">
+          <p>Combing through the newspaper archives...</p>
+          <p>{{ loadingProgress }}</p>
+        </div>
+      }
+      @else if (!hasFetched || countryOptions.length === 0) {
+        <div class="empty-state">
+          No war casualty reports found in the newspaper yet.
+        </div>
+      }
+      @else if (!selectedCountryId) {
+        <div class="empty-state">
+          Select a nation above to view its Kill/Death record.
+        </div>
+      }
+      @else {
+        <div class="summary-bar">
+          <div class="summary-item kills">
+            <span class="summary-label">Kills</span>
+            <span class="summary-value">{{ totalKills | number }}</span>
+          </div>
+          <div class="summary-item deaths">
+            <span class="summary-label">Deaths</span>
+            <span class="summary-value">{{ totalDeaths | number }}</span>
+          </div>
+          <div class="summary-item ratio">
+            <span class="summary-label">K/D</span>
+            <span class="summary-value">{{ overallRatio }}</span>
+          </div>
+        </div>
+
+        <div class="opponent-list">
+          <div class="opponent-row header-row">
+            <span class="flag-icon"></span>
+            <span class="opponent-name">Opponent</span>
+            <span class="stat sortable" [class.active]="mapSortColumn === 'kills'" (click)="sortMapBy('kills')">Kills{{ sortArrow('map', 'kills') }}</span>
+            <span class="stat sortable" [class.active]="mapSortColumn === 'deaths'" (click)="sortMapBy('deaths')">Deaths{{ sortArrow('map', 'deaths') }}</span>
+            <span class="stat sortable" [class.active]="mapSortColumn === 'ratio'" (click)="sortMapBy('ratio')">K/D{{ sortArrow('map', 'ratio') }}</span>
+          </div>
+          @for (o of opponents; track o.opponentId) {
+            <div class="opponent-row">
+              <img [src]="o.flagUrl" class="flag-icon" onerror="this.style.display='none'">
+              <span class="opponent-name">{{ o.opponentName }}</span>
+              <span class="stat kills">{{ o.kills | number }}</span>
+              <span class="stat deaths">{{ o.deaths | number }}</span>
+              <span class="stat ratio">{{ formatRatio(o.kills, o.deaths) }}</span>
+            </div>
+          }
+        </div>
+      }
+    }
+    @else if (activeTab === 'real' && canViewRealKd) {
+      <div class="controls">
+        <button class="fetch-btn" (click)="fetchRealKd()" [disabled]="realKdLoading">
+          {{ realKdLoading ? (realKdProgress || 'Fetching...') : (realKdHasFetched ? 'Refresh' : 'Fetch Real K/D') }}
+        </button>
+
+        <input
+          type="text"
+          class="real-kd-search"
+          placeholder="Search player or nation..."
+          [(ngModel)]="realKdSearch"
+          (ngModelChange)="applyRealKdFilter()"
+          [disabled]="!realKdHasFetched || realKdLoading"
+        />
+      </div>
+
+      @if (realKdLoading) {
+        <div class="loading-state">
+          <p>Fetching lifetime combat stats from the site API...</p>
+          <p>{{ realKdProgress }}</p>
+        </div>
+      }
+      @else if (!realKdHasFetched) {
+        <div class="empty-state">
+          Click "Fetch Real K/D" to load lifetime combat stats for every player on the map.
+        </div>
+      }
+      @else if (realKdDisplayed.length === 0) {
+        <div class="empty-state">
+          No players match the current search.
+        </div>
+      }
+      @else {
+        <div class="opponent-list">
+          <div class="opponent-row header-row with-alliance">
+            <span class="flag-icon"></span>
+            <span class="opponent-name">Player</span>
+            <span class="opponent-alliance sortable" [class.active]="realSortColumn === 'alliance'" (click)="sortRealBy('alliance')">Alliance{{ sortArrow('real', 'alliance') }}</span>
+            <span class="stat sortable" [class.active]="realSortColumn === 'kills'" (click)="sortRealBy('kills')">Kills{{ sortArrow('real', 'kills') }}</span>
+            <span class="stat sortable" [class.active]="realSortColumn === 'deaths'" (click)="sortRealBy('deaths')">Deaths{{ sortArrow('real', 'deaths') }}</span>
+            <span class="stat sortable" [class.active]="realSortColumn === 'ratio'" (click)="sortRealBy('ratio')">K/D{{ sortArrow('real', 'ratio') }}</span>
+          </div>
+          @for (row of realKdDisplayed; track row.siteUserId) {
+            <div class="opponent-row with-alliance">
+              <img [src]="row.flagUrl" class="flag-icon" onerror="this.style.display='none'">
+              <span class="opponent-name">{{ row.name }} <span class="nation-hint">({{ row.nation }})</span></span>
+              <span class="opponent-alliance">
+                @if (allianceUrl(row.allianceId); as url) {
+                  <a [href]="url" target="_blank" rel="noopener noreferrer">{{ row.alliance }}</a>
+                } @else {
+                  {{ row.alliance ?? '—' }}
+                }
+              </span>
+              <span class="stat kills">{{ row.kills | number }}</span>
+              <span class="stat deaths">{{ row.deaths | number }}</span>
+              <span class="stat ratio">{{ formatRatio(row.kills, row.deaths) }}</span>
+            </div>
+          }
+        </div>
+      }
+    }
+
+  </div>
+  } @else {
+  <!-- ================= MOBILE LAYOUT ================= -->
+  <div class="mobile-kd" (click)="closeMobileOverlays()">
+
+    <div class="segmented segmented-3">
+      <button type="button" [class.active]="activeTab === 'players'" (click)="setActiveTab('players'); $event.stopPropagation()">Map K/D</button>
+      <button type="button" [class.active]="activeTab === 'map'" (click)="setActiveTab('map'); $event.stopPropagation()">Detailed K/D</button>
+      @if (canViewRealKd) {
+        <button type="button" [class.active]="activeTab === 'real'" (click)="setActiveTab('real'); $event.stopPropagation()">Real K/D</button>
+      }
+    </div>
+
+    @if (activeTab === 'players') {
+      @if (playersKd.length === 0) {
+        <div class="empty-state">
+          No player statistics available.
+        </div>
+      }
+      @else {
+        <div class="mobile-controls">
+          @if (!isAnonymousGame) {
+            <button class="fetch-btn" (click)="fetchAlliances(); $event.stopPropagation()" [disabled]="allianceLoading">
+              {{ allianceLoading ? 'Fetching...' : (allianceFetched ? 'Refresh Alliance' : 'Fetch Alliance') }}
+            </button>
+          }
+          <button type="button" class="sort-btn" (click)="toggleSortPanel(); $event.stopPropagation()">Sort</button>
+        </div>
+
+        @if (sortPanelOpen) {
+          <div class="sort-panel" (click)="$event.stopPropagation()">
+            <div class="sort-option" [class.selected]="playersSortColumn === 'kills'" (click)="sortPlayersBy('kills'); closeMobileOverlays()">
+              <span>Kills{{ sortArrow('players', 'kills') }}</span><span class="dot"></span>
+            </div>
+            <div class="sort-option" [class.selected]="playersSortColumn === 'deaths'" (click)="sortPlayersBy('deaths'); closeMobileOverlays()">
+              <span>Deaths{{ sortArrow('players', 'deaths') }}</span><span class="dot"></span>
+            </div>
+            <div class="sort-option" [class.selected]="playersSortColumn === 'ratio'" (click)="sortPlayersBy('ratio'); closeMobileOverlays()">
+              <span>K/D{{ sortArrow('players', 'ratio') }}</span><span class="dot"></span>
+            </div>
+            <div class="sort-option" [class.selected]="playersSortColumn === 'alliance'" (click)="sortPlayersBy('alliance'); closeMobileOverlays()">
+              <span>Alliance{{ sortArrow('players', 'alliance') }}</span><span class="dot"></span>
+            </div>
+          </div>
+        }
+
+        <div class="kd-cards">
+          @for (row of playersKd; track row.playerId) {
+            <div class="kd-card">
+              <img [src]="row.flagUrl" class="flag-icon" onerror="this.style.display='none'">
+              <div class="kd-id">
+                <div class="kd-name">{{ row.name }} <span class="nation-hint">({{ row.nation }})</span></div>
+                <div class="kd-alliance">
+                  @if (allianceUrl(row.allianceId); as url) {
+                    <a [href]="url" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">{{ row.alliance }}</a>
+                  } @else {
+                    {{ row.alliance ?? '—' }}
+                  }
+                </div>
+              </div>
+              <div class="kd-stats">
+                <div class="kd-stat"><span class="stat-val kills">{{ row.kills | number }}</span><span class="stat-lbl">K</span></div>
+                <div class="kd-stat"><span class="stat-val deaths">{{ row.deaths | number }}</span><span class="stat-lbl">D</span></div>
+                <div class="kd-stat"><span class="stat-val ratio">{{ formatRatio(row.kills, row.deaths) }}</span><span class="stat-lbl">Ratio</span></div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+    @else if (activeTab === 'map') {
+      <div class="mobile-controls">
+        <button class="fetch-btn" (click)="fetchAllWars(); $event.stopPropagation()" [disabled]="isLoading">
+          {{ isLoading ? loadingProgress : (hasFetched ? 'Refresh' : 'Fetch All Wars') }}
+        </button>
+      </div>
+
+      <div class="country-select-wrapper" (click)="$event.stopPropagation()">
+        <app-searchable-select
+          [options]="countryOptions"
+          [value]="selectedCountryId"
+          (valueChange)="onCountryChange($event)"
+          placeholder="Select a Nation..."
+          [disabled]="isLoading || countryOptions.length === 0">
+        </app-searchable-select>
+      </div>
+
+      @if (isLoading) {
+        <div class="loading-state">
+          <p>Combing through the newspaper archives...</p>
+          <p>{{ loadingProgress }}</p>
+        </div>
+      }
+      @else if (!hasFetched || countryOptions.length === 0) {
+        <div class="empty-state">
+          No war casualty reports found in the newspaper yet.
+        </div>
+      }
+      @else if (!selectedCountryId) {
+        <div class="empty-state">
+          Select a nation above to view its Kill/Death record.
+        </div>
+      }
+      @else {
+        <div class="summary-bar">
+          <div class="summary-item kills">
+            <span class="summary-label">Kills</span>
+            <span class="summary-value">{{ totalKills | number }}</span>
+          </div>
+          <div class="summary-item deaths">
+            <span class="summary-label">Deaths</span>
+            <span class="summary-value">{{ totalDeaths | number }}</span>
+          </div>
+          <div class="summary-item ratio">
+            <span class="summary-label">K/D</span>
+            <span class="summary-value">{{ overallRatio }}</span>
+          </div>
+        </div>
+
+        <div class="mobile-controls">
+          <button type="button" class="sort-btn" (click)="toggleSortPanel(); $event.stopPropagation()">Sort</button>
+        </div>
+
+        @if (sortPanelOpen) {
+          <div class="sort-panel" (click)="$event.stopPropagation()">
+            <div class="sort-option" [class.selected]="mapSortColumn === 'kills'" (click)="sortMapBy('kills'); closeMobileOverlays()">
+              <span>Kills{{ sortArrow('map', 'kills') }}</span><span class="dot"></span>
+            </div>
+            <div class="sort-option" [class.selected]="mapSortColumn === 'deaths'" (click)="sortMapBy('deaths'); closeMobileOverlays()">
+              <span>Deaths{{ sortArrow('map', 'deaths') }}</span><span class="dot"></span>
+            </div>
+            <div class="sort-option" [class.selected]="mapSortColumn === 'ratio'" (click)="sortMapBy('ratio'); closeMobileOverlays()">
+              <span>K/D{{ sortArrow('map', 'ratio') }}</span><span class="dot"></span>
+            </div>
+          </div>
+        }
+
+        <div class="kd-cards">
+          @for (o of opponents; track o.opponentId) {
+            <div class="kd-card">
+              <img [src]="o.flagUrl" class="flag-icon" onerror="this.style.display='none'">
+              <div class="kd-id">
+                <div class="kd-name">{{ o.opponentName }}</div>
+              </div>
+              <div class="kd-stats">
+                <div class="kd-stat"><span class="stat-val kills">{{ o.kills | number }}</span><span class="stat-lbl">K</span></div>
+                <div class="kd-stat"><span class="stat-val deaths">{{ o.deaths | number }}</span><span class="stat-lbl">D</span></div>
+                <div class="kd-stat"><span class="stat-val ratio">{{ formatRatio(o.kills, o.deaths) }}</span><span class="stat-lbl">Ratio</span></div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+    @else if (activeTab === 'real' && canViewRealKd) {
+      <div class="mobile-controls">
+        <button class="fetch-btn" (click)="fetchRealKd(); $event.stopPropagation()" [disabled]="realKdLoading">
+          {{ realKdLoading ? (realKdProgress || 'Fetching...') : (realKdHasFetched ? 'Refresh' : 'Fetch Real K/D') }}
+        </button>
+        <button type="button" class="sort-btn" (click)="toggleSortPanel(); $event.stopPropagation()">Sort</button>
+      </div>
+
+      <div class="search-row" (click)="$event.stopPropagation()">
+        <input
+          type="text"
+          placeholder="Search player or nation..."
+          [(ngModel)]="realKdSearch"
+          (ngModelChange)="applyRealKdFilter()"
+          [disabled]="!realKdHasFetched || realKdLoading"
+        />
+      </div>
+
+      @if (sortPanelOpen) {
+        <div class="sort-panel" (click)="$event.stopPropagation()">
+          <div class="sort-option" [class.selected]="realSortColumn === 'kills'" (click)="sortRealBy('kills'); closeMobileOverlays()">
+            <span>Kills{{ sortArrow('real', 'kills') }}</span><span class="dot"></span>
+          </div>
+          <div class="sort-option" [class.selected]="realSortColumn === 'deaths'" (click)="sortRealBy('deaths'); closeMobileOverlays()">
+            <span>Deaths{{ sortArrow('real', 'deaths') }}</span><span class="dot"></span>
+          </div>
+          <div class="sort-option" [class.selected]="realSortColumn === 'ratio'" (click)="sortRealBy('ratio'); closeMobileOverlays()">
+            <span>K/D{{ sortArrow('real', 'ratio') }}</span><span class="dot"></span>
+          </div>
+          <div class="sort-option" [class.selected]="realSortColumn === 'alliance'" (click)="sortRealBy('alliance'); closeMobileOverlays()">
+            <span>Alliance{{ sortArrow('real', 'alliance') }}</span><span class="dot"></span>
+          </div>
+        </div>
+      }
+
+      @if (realKdLoading) {
+        <div class="loading-state">
+          <p>Fetching lifetime combat stats from the site API...</p>
+          <p>{{ realKdProgress }}</p>
+        </div>
+      }
+      @else if (!realKdHasFetched) {
+        <div class="empty-state">
+          Tap "Fetch Real K/D" to load lifetime combat stats for every player on the map.
+        </div>
+      }
+      @else if (realKdDisplayed.length === 0) {
+        <div class="empty-state">
+          No players match the current search.
+        </div>
+      }
+      @else {
+        <div class="kd-cards">
+          @for (row of realKdDisplayed; track row.siteUserId) {
+            <div class="kd-card">
+              <img [src]="row.flagUrl" class="flag-icon" onerror="this.style.display='none'">
+              <div class="kd-id">
+                <div class="kd-name">{{ row.name }} <span class="nation-hint">({{ row.nation }})</span></div>
+                <div class="kd-alliance">
+                  @if (allianceUrl(row.allianceId); as url) {
+                    <a [href]="url" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">{{ row.alliance }}</a>
+                  } @else {
+                    {{ row.alliance ?? '—' }}
+                  }
+                </div>
+              </div>
+              <div class="kd-stats">
+                <div class="kd-stat"><span class="stat-val kills">{{ row.kills | number }}</span><span class="stat-lbl">K</span></div>
+                <div class="kd-stat"><span class="stat-val deaths">{{ row.deaths | number }}</span><span class="stat-lbl">D</span></div>
+                <div class="kd-stat"><span class="stat-val ratio">{{ formatRatio(row.kills, row.deaths) }}</span><span class="stat-lbl">Ratio</span></div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+  </div>
+  }
+  }
+</app-dialog>

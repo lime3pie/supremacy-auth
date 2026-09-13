@@ -1,0 +1,125 @@
+<!-- File: /scripts/features/navy-rally-point/navy-rally-point.component.html -->
+
+<app-dialog
+  [show]="showDialog"
+  [minimized]="pickingSeaLocation"
+  [showBackdrop]="false"
+  [draggable]="true"
+  title="Navy Rally Point"
+  (close)="close()">
+
+  <!-- NORMAL EXPANDED CONTENT -->
+  <div class="rally-container">
+
+    @if (!isPremium) {
+      <div class="premium-gate">🔒 Premium account is needed</div>
+    } @else {
+
+    <div class="toggle-row">
+      <label class="switch">
+        <input type="checkbox" [checked]="enabled" (change)="toggleEnabled()">
+        <span class="slider"></span>
+      </label>
+      <span class="toggle-label">{{ enabled ? 'Auto-rally enabled' : 'Auto-rally disabled' }}</span>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Add Rally Point</div>
+
+      <button class="small-btn select-all-btn" (click)="selectAllHarbourProvinces()">
+        ⚓ Select All Harbour Provinces
+      </button>
+
+      @if (selectedProvinces.length > 0) {
+        <div class="selected-provinces">
+          <div class="selected-provinces-label">
+            {{ selectedProvinces.length }} province{{ selectedProvinces.length === 1 ? '' : 's' }} selected on map:
+          </div>
+          <div class="selected-provinces-chips">
+            @for (p of selectedProvinces; track p.locationID) {
+              <span class="province-chip">{{ p.name }}</span>
+            }
+          </div>
+        </div>
+      } @else {
+        <app-searchable-select
+          [options]="provinceOptions"
+          [(value)]="selectedProvinceId"
+          placeholder="Select a coastal province...">
+        </app-searchable-select>
+      }
+
+      <div class="pick-row">
+        <button class="small-btn" [class.active]="pickingSeaLocation" (click)="startPickSeaLocation()">
+          ⚓ {{ pickingSeaLocation ? 'Cancel Pick' : 'Pick Sea Location' }}
+        </button>
+        @if (pickedTarget) {
+          <span class="picked-coord">({{ pickedTarget.x }}, {{ pickedTarget.y }})</span>
+        }
+      </div>
+
+      @if (statusMessage) {
+        <div class="status-msg">{{ statusMessage }}</div>
+      }
+
+      <button class="save-btn" [disabled]="(selectedProvinces.length === 0 && !selectedProvinceId) || !pickedTarget" (click)="saveRallyPoint()">
+        {{ selectedProvinces.length > 1 ? 'Save Rally Point for ' + selectedProvinces.length + ' Provinces' : 'Save Rally Point' }}
+      </button>
+
+      <button class="remove-btn" [disabled]="selectedProvinces.length === 0 && !selectedProvinceId" (click)="removeRallyPointsForSelected()">
+        🗑️ {{ selectedProvinces.length > 1 ? 'Remove Rally Points for ' + selectedProvinces.length + ' Provinces' : 'Remove Rally Point for Selected' }}
+      </button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Configured Rally Points ({{ rallyPoints.length }})</div>
+
+      @if (rallyPoints.length > 0) {
+        <div class="rally-list">
+          @for (rp of rallyPoints; track rp.provinceID) {
+            <div class="rally-row">
+              <div class="rally-info">
+                <span class="rally-province">{{ rp.provinceName }}</span>
+                <span class="rally-arrow">→</span>
+                <span class="rally-target">({{ rp.targetX }}, {{ rp.targetY }})</span>
+              </div>
+              <div class="rally-actions">
+                <button class="icon-btn" title="Jump to province" (click)="jumpToProvince(rp.provinceID)">📍</button>
+                <button class="icon-btn danger" title="Remove" (click)="removeRallyPoint(rp.provinceID)">🗑️</button>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-msg">No rally points configured yet.</div>
+      }
+    </div>
+
+    <div class="section">
+      <div class="section-title">Activity Log</div>
+      @if (activityLog.length > 0) {
+        <div class="log-list">
+          @for (entry of activityLog; track entry.time + entry.message) {
+            <div class="log-row">
+              <span class="log-time">{{ formatTime(entry.time) }}</span>
+              <span class="log-msg">{{ entry.message }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-msg">No activity yet.</div>
+      }
+    </div>
+
+    }
+  </div>
+
+  <!-- MINIMIZED CONTENT (while picking a sea location on the map) -->
+  <div minimized-content class="mini-content">
+    <div class="mini-msg">⚓ Click a sea location on the map...</div>
+    <div class="mini-actions">
+      <button class="mini-btn cancel" (click)="stopPicking()">Cancel</button>
+    </div>
+  </div>
+
+</app-dialog>

@@ -1,0 +1,245 @@
+<!-- Main Player List Dialog -->
+<app-dialog
+  [show]="showListDialog"
+  title="Player Armies"
+  (close)="closeListDialog()"
+>
+  @if (!isMobile) {
+  <div class="player-list-container" *ngIf="showListDialog">
+
+    <!-- Data Source Toggle -->
+    <div class="mode-toggle">
+      <button
+        type="button"
+        class="mode-toggle-btn"
+        [class.active]="viewMode === 'real'"
+        (click)="setViewMode('real')"
+      >
+        Real Troops
+      </button>
+      <button
+        type="button"
+        class="mode-toggle-btn"
+        [class.active]="viewMode === 'spy'"
+        (click)="setViewMode('spy')"
+      >
+        Spy Reports
+      </button>
+
+      @if (viewMode === 'spy' && spySnapshotDay !== null) {
+        <span class="mode-toggle-hint">Intel as of Day {{ spySnapshotDay }}</span>
+      }
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-header">
+      <input
+        type="text"
+        class="filter-input"
+        placeholder="Search User or Country..."
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="applyFilters()"
+      />
+
+      <select
+        class="filter-select"
+        [(ngModel)]="relationFilter"
+        (ngModelChange)="applyFilters()"
+      >
+        <option value="All">All</option>
+        <option value="Friends">Friends & Allies</option>
+        <option value="Enemies">Enemies & Others</option>
+      </select>
+
+      <select
+        class="filter-select sort-select"
+        [(ngModel)]="sortBy"
+        (ngModelChange)="applyFilters()"
+      >
+        @for (opt of sortOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Spy Lookup In Progress -->
+    @if (spyLoading) {
+      <div class="empty-state">Searching spy network for the latest known army positions...</div>
+    }
+
+    <!-- Loop over displayedPlayers (Filtered & Sorted) -->
+    @if (!spyLoading) {
+      @for (player of displayedPlayers; track player.playerID) {
+        <div class="player-row">
+
+          <div class="player-header">
+            <!-- Relations Icon Logic -->
+            @let status = getRelationIcon(player);
+            <span class="relation-icon"
+                  [style.color]="status.color"
+                  (mouseenter)="showTooltip($event, status.name, 'top')"
+                  (mouseleave)="hideTooltip()">
+              {{ status.icon }}
+            </span>
+
+            <span class="player-name">{{ player.player.name }}</span>
+            <span class="nation-separator">-</span>
+            <span class="nation-name">{{ player.player.nationName || 'Unknown Nation' }}</span>
+            <span class="spacer"></span>
+
+            <span class="hp-badge">
+              HP: {{ getHealthStats(player) }}
+            </span>
+
+            <span class="stack-count-badge">{{ player.armies.length }} Stacks</span>
+          </div>
+
+          <div class="unit-deck">
+            @for (unit of getDisplayUnits(player); track unit.unitTypeID) {
+              <div class="s1914-card" [class.is-hero]="isHero(unit)">
+
+                <div class="card-image-container"
+                     (mouseenter)="showTooltip($event, unit.name, 'top')"
+                     (mouseleave)="hideTooltip()">
+                  <img [src]="unit.image" alt="{{ unit.name }}" onerror="this.style.display='none'"/>
+                </div>
+
+                <div class="card-info-strip">
+                  <span class="icon">
+                    @if (unit.level > 0) {
+                      ★ {{ unit.level }}
+                    }
+                  </span>
+                  <span class="count">{{ unit.amount }}</span>
+                </div>
+
+                <div class="card-health-container"
+                     (mouseenter)="showTooltip($event, getHealthTooltip(unit), 'bottom')"
+                     (mouseleave)="hideTooltip()">
+                  <div class="health-fill" [style.width.%]="getHealthPct(unit)"></div>
+                </div>
+
+              </div>
+            }
+          </div>
+
+        </div>
+      }
+
+      <!-- Empty State Logic -->
+      @if (allPlayers.length === 0) {
+        <div class="empty-state">
+          {{ viewMode === 'spy' ? 'No spy-reported army data available.' : 'No active armies found on the map.' }}
+        </div>
+      } @else if (displayedPlayers.length === 0) {
+        <div class="empty-state">No players match the current filters.</div>
+      }
+    }
+
+  </div>
+  } @else {
+  <!-- ================= MOBILE LAYOUT ================= -->
+  <div class="mobile-armies" *ngIf="showListDialog" (click)="closeMobileOverlays()">
+
+    <div class="segmented">
+      <button type="button" [class.active]="viewMode === 'real'" (click)="setViewMode('real')">Real Troops</button>
+      <button type="button" [class.active]="viewMode === 'spy'" (click)="setViewMode('spy')">Spy Reports</button>
+    </div>
+    @if (viewMode === 'spy' && spySnapshotDay !== null) {
+      <div class="mobile-hint">Intel as of Day {{ spySnapshotDay }}</div>
+    }
+
+    <div class="search-row">
+      <input
+        type="text"
+        placeholder="Search user or country..."
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="applyFilters()"
+      />
+    </div>
+
+    <div class="filter-row">
+      <div class="chip-scroll">
+        <button type="button" class="chip" [class.active]="relationFilter === 'All'" (click)="relationFilter = 'All'; applyFilters()">All</button>
+        <button type="button" class="chip" [class.active]="relationFilter === 'Friends'" (click)="relationFilter = 'Friends'; applyFilters()">Friends &amp; Allies</button>
+        <button type="button" class="chip" [class.active]="relationFilter === 'Enemies'" (click)="relationFilter = 'Enemies'; applyFilters()">Enemies</button>
+      </div>
+      <button type="button" class="sort-btn" (click)="sortPanelOpen = !sortPanelOpen; $event.stopPropagation()">
+        Sort
+      </button>
+    </div>
+
+    @if (sortPanelOpen) {
+      <div class="sort-panel" (click)="$event.stopPropagation()">
+        @for (opt of sortOptions; track opt.value) {
+          <div class="sort-option" [class.selected]="sortBy === opt.value" (click)="selectSort(opt.value)">
+            <span>{{ opt.label }}</span>
+            <span class="dot"></span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (spyLoading) {
+      <div class="empty-state">Searching spy network for the latest known army positions...</div>
+    }
+
+    @if (!spyLoading) {
+      @for (player of displayedPlayers; track player.playerID) {
+        @let status = getRelationIcon(player);
+        <div class="player-card" [class.expanded]="isExpanded(player.playerID)">
+          <div class="player-head" (click)="toggleExpanded(player.playerID); $event.stopPropagation()">
+            <span class="relation-dot" [style.background]="status.color"></span>
+            <div class="player-id">
+              <div class="player-name">{{ player.player.name }}</div>
+              <div class="player-nation">{{ player.player.nationName || 'Unknown Nation' }}</div>
+            </div>
+            <span class="badge hp">HP {{ getHealthStats(player) }}</span>
+            <span class="badge">{{ player.armies.length }} stacks</span>
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+
+          @if (isExpanded(player.playerID)) {
+            <div class="deck">
+              @for (unit of getDisplayUnits(player); track unit.unitTypeID) {
+                <div class="unit-card" [class.is-hero]="isHero(unit)" (click)="toggleUnitTip(player.playerID, unit); $event.stopPropagation()">
+                  @if (unit.level > 0) {
+                    <span class="unit-level">★{{ unit.level }}</span>
+                  }
+                  <div class="unit-image">
+                    <img [src]="unit.image" alt="{{ unit.name }}" onerror="this.style.display='none'"/>
+                  </div>
+                  <div class="unit-count">{{ unit.amount }}</div>
+                  <div class="health-track"><div class="health-fill" [style.width.%]="getHealthPct(unit)"></div></div>
+
+                  @if (isTipOpen(player.playerID, unit)) {
+                    <div class="tap-tip"><b>{{ unit.name }}</b><br>{{ getHealthTooltip(unit) }}</div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (allPlayers.length === 0) {
+        <div class="empty-state">
+          {{ viewMode === 'spy' ? 'No spy-reported army data available.' : 'No active armies found on the map.' }}
+        </div>
+      } @else if (displayedPlayers.length === 0) {
+        <div class="empty-state">No players match the current filters.</div>
+      }
+    }
+
+  </div>
+  }
+</app-dialog>
+
+<!-- Fixed Position Tooltip -->
+<div class="custom-tooltip"
+     *ngIf="tooltipVisible"
+     [style.top.px]="tooltipTop"
+     [style.left.px]="tooltipLeft"
+     [ngClass]="tooltipClass">
+  {{ tooltipText }}
+</div>

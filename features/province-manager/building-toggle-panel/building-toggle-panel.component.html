@@ -1,0 +1,40 @@
+<!-- File: /scripts/features/province-manager/building-toggle-panel/building-toggle-panel.component.html -->
+
+<app-dialog
+  [show]="show"
+  title="Toggle Building"
+  [showBackdrop]="true"
+  [minWidth]="360"
+  [preferredWidth]="640"
+  (close)="onClose()">
+
+  <div header-subtitle class="console-sub">{{ selectedRows.length }} Province{{ selectedRows.length === 1 ? '' : 's' }} Selected</div>
+
+  <div class="toggle-panel">
+    <div class="toggle-list" *ngIf="rows.length > 0; else emptyState">
+      <div class="tgl-row" *ngFor="let row of rows">
+        <span class="tgl-icon"><img [src]="row.icon" [alt]="row.displayName" title="{{ row.displayName }}" onerror="this.style.display='none'" /></span>
+
+        <div class="tgl-meta">
+          <div class="tgl-name">{{ row.displayName }}</div>
+          <div class="tgl-status">
+            <span class="tgl-enabled">{{ row.enabledCount }} enabled</span>
+            <span class="tgl-sep" *ngIf="row.disabledCount > 0">·</span>
+            <span class="tgl-disabled" *ngIf="row.disabledCount > 0">{{ row.disabledCount }} disabled</span>
+          </div>
+        </div>
+
+        <div class="tgl-actions">
+          <button class="tgl-btn tgl-btn-enable" [disabled]="row.enableTargetIDs.length === 0" (click)="enable(row)">Enable ({{ row.enableTargetIDs.length }})</button>
+          <button class="tgl-btn tgl-btn-disable" [disabled]="row.disableTargetIDs.length === 0" (click)="disable(row)">Disable ({{ row.disableTargetIDs.length }})</button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="toggle-empty">No toggleable buildings in the selected province(s). Only some building types can be enabled/disabled.</div>
+    </ng-template>
+  </div>
+</app-dialog>
+
+<div class="toast" [class.show]="toastVisible">{{ toastMessage }}</div>
