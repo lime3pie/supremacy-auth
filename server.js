@@ -127,21 +127,29 @@ app.post('/api/get-mod', (req, res) => {
         return res.status(403).json({ success: false, message: "Access denied" });
     }
 
-    // Здесь находится сам защищенный код вашего мода (injected.js), 
-    // который теперь хранится ТОЛЬКО на сервере и скрыт от посторонних глаз:
-    const protectedModCode = `
-        console.log("Mod successfully loaded from secure server for user: ${username}");
-        
-        // Вставьте сюда весь ваш реальный код из injected.js:
-        // Например, логику работы чита, хуки, функции и т.д.
-        
-        (function() {
-            // Ваш код мода работает здесь
-        })();
-    `;
+  const fs = require('fs');
+const path = require('path');
 
-    res.json({ 
-        success: true, 
-        script: protectedModCode 
-    });
+// Эндпоинт для защищенной загрузки скрипта мода
+app.post('/api/get-mod', (req, res) => {
+    const { username } = req.body;
+
+    // Проверяем, существует ли пользователь
+    if (!username || !usersDB[username]) {
+        return res.status(403).json({ success: false, message: "Access denied" });
+    }
+
+    try {
+        // Читаем файл mod.js с сервера (он должен лежать рядом с server.js на GitHub)
+        const modFilePath = path.join(__dirname, 'mod.js');
+        const protectedModCode = fs.readFileSync(modFilePath, 'utf8');
+
+        res.json({ 
+            success: true, 
+            script: protectedModCode 
+        });
+    } catch (err) {
+        console.error("Ошибка чтения файла мода:", err);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
 });
