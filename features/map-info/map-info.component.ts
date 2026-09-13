@@ -13,10 +13,9 @@ export class MapInfoComponent implements OnInit {
 
   @Output() closeDialog = new EventEmitter<void>();
 
-  // Вкладки: 'players' | 'map' | 'real'
   activeTab: string = 'players';
 
-  // --- Состояния для обычных игроков и карты ---
+  // Остальные списки
   playersKd: any[] = [];
   countryOptions: any[] = [];
   selectedCountryId: any = null;
@@ -27,17 +26,16 @@ export class MapInfoComponent implements OnInit {
   totalDeaths: number = 0;
   overallRatio: string = '0.00';
   opponents: any[] = [];
-
   allianceLoading: boolean = false;
   allianceFetched: boolean = false;
 
-  // --- Сортировки для обычных вкладок ---
+  // Сортировки
   playersSortColumn: string = 'kills';
   playersSortDirection: 'asc' | 'desc' = 'desc';
   mapSortColumn: string = 'kills';
   mapSortDirection: 'asc' | 'desc' = 'desc';
 
-  // --- Состояния для вкладки «Реальный K/D» ---
+  // Переменные для «Реального K/D»
   realKdLoading: boolean = false;
   realKdHasFetched: boolean = false;
   realKdProgress: string = '';
@@ -48,7 +46,6 @@ export class MapInfoComponent implements OnInit {
   realKdDisplayed: any[] = [];
   private allRealKdRows: any[] = [];
 
-  // Мобильные панели
   sortPanelOpen: boolean = false;
 
   constructor() {}
@@ -85,86 +82,44 @@ export class MapInfoComponent implements OnInit {
     let activeCol = '';
     let dir = 'desc';
 
-    if (tab === 'players') {
-      activeCol = this.playersSortColumn;
-      dir = this.playersSortDirection;
-    } else if (tab === 'map') {
-      activeCol = this.mapSortColumn;
-      dir = this.mapSortDirection;
-    } else if (tab === 'real') {
-      activeCol = this.realSortColumn;
-      dir = this.realSortDirection;
-    }
+    if (tab === 'players') { activeCol = this.playersSortColumn; dir = this.playersSortDirection; }
+    else if (tab === 'map') { activeCol = this.mapSortColumn; dir = this.mapSortDirection; }
+    else if (tab === 'real') { activeCol = this.realSortColumn; dir = this.realSortDirection; }
 
     if (activeCol !== column) return '';
     return dir === 'asc' ? ' ▲' : ' ▼';
   }
 
-  // --- Заглушки для кнопок загрузки (подключите свои сервисы) ---
-  fetchAlliances(): void {
-    this.allianceLoading = true;
-    setTimeout(() => {
-      this.allianceLoading = false;
-      this.allianceFetched = true;
-    }, 1000);
-  }
-
-  fetchAllWars(): void {
-    this.isLoading = true;
-    this.loadingProgress = 'Загрузка...';
-    setTimeout(() => {
-      this.isLoading = false;
-      this.hasFetched = true;
-    }, 1000);
-  }
-
-  onCountryChange(countryId: any): void {
-    this.selectedCountryId = countryId;
-  }
+  fetchAlliances(): void {}
+  fetchAllWars(): void {}
+  onCountryChange(countryId: any): void { this.selectedCountryId = countryId; }
+  sortPlayersBy(column: string): void {}
+  sortMapBy(column: string): void {}
 
   // ==========================================
-  // ЛОГИКА ВКЛАДКИ «РЕАЛЬНЫЙ K/D»
+  // ЭТО ЛОГИКА ДЛЯ «РЕАЛЬНОГО КД»
   // ==========================================
 
   fetchRealKd(): void {
     this.realKdLoading = true;
-    this.realKdProgress = 'Подключение к API сервера...';
+    this.realKdProgress = 'Загрузка игроков...';
 
-    // ⚠️ ЗДЕСЬ ВЫЗЫВАЙТЕ ВАШ СЕРВИС ДЛЯ ПОЛУЧЕНИЯ ДАННЫХ ИГРОКОВ
-    // Пример имитации ответа от бэкенда:
+    // СЮДА ПОЗЖЕ НУЖНО БУДЕТ ПОДКЛЮЧИТЬ ВАШ СЕРВИС С ДАННЫМИ С САЙТА.
+    // Пока что здесь тестовые данные, чтобы проверить, работает ли таблица:
     setTimeout(() => {
       this.allRealKdRows = [
         {
           siteUserId: 1,
-          internalId: 101,
-          name: 'Commander_Alex',
-          nation: 'Германия',
-          alliance: 'Axis',
-          allianceId: 10,
-          coalition: 'Альянс Центр',
-          level: 45,
-          kills: 1420,
-          deaths: 890,
-          power: 'Высокая',
+          name: 'Игрок Тест 1',
+          nation: 'Россия',
+          alliance: 'Clan A',
+          coalition: 'Коалиция 1',
+          level: 25,
+          kills: 500,
+          deaths: 100,
+          power: '1000',
           powerClass: 'high',
-          flagUrl: 'assets/flags/ger.png',
-          isEnemy: true,
-          isAlly: false
-        },
-        {
-          siteUserId: 2,
-          internalId: 102,
-          name: 'John_Doe',
-          nation: 'США',
-          alliance: 'Allies',
-          allianceId: 20,
-          coal coalition: 'Коалиция Заход',
-          level: 38,
-          kills: 950,
-          deaths: 920,
-          power: 'Средняя',
-          powerClass: 'medium',
-          flagUrl: 'assets/flags/usa.png',
+          flagUrl: '',
           isEnemy: false,
           isAlly: true
         }
@@ -174,7 +129,7 @@ export class MapInfoComponent implements OnInit {
       this.realKdLoading = false;
       this.realKdHasFetched = true;
       this.realKdProgress = '';
-    }, 1500);
+    }, 1000);
   }
 
   applyRealKdFilter(): void {
@@ -199,42 +154,17 @@ export class MapInfoComponent implements OnInit {
     }
 
     this.realKdDisplayed.sort((a, b) => {
-      let valA = a[column];
-      let valB = b[column];
+      let valA = a[column] ?? '';
+      let valB = b[column] ?? '';
 
       if (typeof valA === 'string') {
-        valA = valA ? valA.toLowerCase() : '';
-        valB = valB ? valB.toLowerCase() : '';
-      } else {
-        valA = valA ?? 0;
-        valB = valB ?? 0;
+        valA = valA.toLowerCase();
+        valB = valB.toLowerCase();
       }
 
       if (valA < valB) return this.realSortDirection === 'asc' ? -1 : 1;
       if (valA > valB) return this.realSortDirection === 'asc' ? 1 : -1;
       return 0;
     });
-  }
-
-  // Сортировка обычной вкладки игроков
-  sortPlayersBy(column: string): void {
-    if (this.playersSortColumn === column) {
-      this.playersSortDirection = this.playersSortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.playersSortColumn = column;
-      this.playersSortDirection = 'desc';
-    }
-    // Логика сортировки playersKd массива аналогична real
-  }
-
-  // Сортировка вкладки карты
-  sortMapBy(column: string): void {
-    if (this.mapSortColumn === column) {
-      this.mapSortDirection = this.mapSortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.mapSortColumn = column;
-      this.mapSortDirection = 'desc';
-    }
-    // Логика сортировки opponents массива аналогична real
   }
 }
