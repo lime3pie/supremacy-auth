@@ -118,3 +118,30 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+// Эндпоинт для защищенной загрузки скрипта мода
+app.post('/api/get-mod', (req, res) => {
+    const { username } = req.body;
+
+    // Проверяем, существует ли пользователь и активен ли он
+    if (!username || !usersDB[username]) {
+        return res.status(403).json({ success: false, message: "Access denied" });
+    }
+
+    // Здесь находится сам защищенный код вашего мода (injected.js), 
+    // который теперь хранится ТОЛЬКО на сервере и скрыт от посторонних глаз:
+    const protectedModCode = `
+        console.log("Mod successfully loaded from secure server for user: ${username}");
+        
+        // Вставьте сюда весь ваш реальный код из injected.js:
+        // Например, логику работы чита, хуки, функции и т.д.
+        
+        (function() {
+            // Ваш код мода работает здесь
+        })();
+    `;
+
+    res.json({ 
+        success: true, 
+        script: protectedModCode 
+    });
+});
