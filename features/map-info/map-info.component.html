@@ -1,27 +1,27 @@
-<app-dialog [show]="showDialog" title="Map Info" (close)="close()">
+<app-dialog [show]="showDialog" title="Информация о карте" (close)="close()">
   @if (showDialog) {
   @if (!isMobile) {
   <div class="kd-container">
 
     <div class="tabs">
-      <div class="tab" [class.active]="activeTab === 'players'" (click)="setActiveTab('players')">Map K/D</div>
-      <div class="tab" [class.active]="activeTab === 'map'" (click)="setActiveTab('map')">Detailed K/D</div>
+      <div class="tab" [class.active]="activeTab === 'players'" (click)="setActiveTab('players')">K/D карты</div>
+      <div class="tab" [class.active]="activeTab === 'map'" (click)="setActiveTab('map')">Подробный K/D</div>
       @if (canViewRealKd) {
-        <div class="tab" [class.active]="activeTab === 'real'" (click)="setActiveTab('real')">Real K/D</div>
+        <div class="tab" [class.active]="activeTab === 'real'" (click)="setActiveTab('real')">Реальный K/D</div>
       }
     </div>
 
     @if (activeTab === 'players') {
       @if (playersKd.length === 0) {
         <div class="empty-state">
-          No player statistics available.
+          Статистика игроков недоступна.
         </div>
       }
       @else {
         @if (!isAnonymousGame) {
           <div class="controls controls-end">
             <button class="fetch-btn" (click)="fetchAlliances()" [disabled]="allianceLoading">
-              {{ allianceLoading ? 'Fetching...' : (allianceFetched ? 'Refresh Alliance' : 'Fetch Alliance') }}
+              {{ allianceLoading ? 'Загрузка...' : (allianceFetched ? 'Обновить кланы' : 'Загрузить кланы') }}
             </button>
           </div>
         }
@@ -29,11 +29,11 @@
         <div class="opponent-list">
           <div class="opponent-row header-row with-alliance">
             <span class="flag-icon"></span>
-            <span class="opponent-name">Player</span>
-            <span class="opponent-alliance sortable" [class.active]="playersSortColumn === 'alliance'" (click)="sortPlayersBy('alliance')">Alliance{{ sortArrow('players', 'alliance') }}</span>
-            <span class="stat sortable" [class.active]="playersSortColumn === 'kills'" (click)="sortPlayersBy('kills')">Kills{{ sortArrow('players', 'kills') }}</span>
-            <span class="stat sortable" [class.active]="playersSortColumn === 'deaths'" (click)="sortPlayersBy('deaths')">Deaths{{ sortArrow('players', 'deaths') }}</span>
-            <span class="stat sortable" [class.active]="playersSortColumn === 'ratio'" (click)="sortPlayersBy('ratio')">K/D{{ sortArrow('players', 'ratio') }}</span>
+            <span class="opponent-name">Игрок</span>
+            <span class="opponent-alliance sortable" [class.active]="playersSortColumn === 'alliance'" (click)="sortPlayersBy('alliance')">Клан{{ sortArrow('players', 'alliance') }}</span>
+            <span class="stat sortable" [class.active]="playersSortColumn === 'kills'" (click)="sortPlayersBy('kills')">Убийства{{ sortArrow('players', 'kills') }}</span>
+            <span class="stat sortable" [class.active]="playersSortColumn === 'deaths'" (click)="sortPlayersBy('deaths')">Потери{{ sortArrow('players', 'deaths') }}</span>
+            <span class="stat sortable" [class.active]="playersSortColumn === 'ratio'" (click)="sortPlayersBy('ratio')">К/Д{{ sortArrow('players', 'ratio') }}</span>
           </div>
           @for (row of playersKd; track row.playerId) {
             <div class="opponent-row with-alliance">
@@ -57,7 +57,7 @@
     @else if (activeTab === 'map') {
       <div class="controls">
         <button class="fetch-btn" (click)="fetchAllWars()" [disabled]="isLoading">
-          {{ isLoading ? loadingProgress : (hasFetched ? 'Refresh' : 'Fetch All Wars') }}
+          {{ isLoading ? loadingProgress : (hasFetched ? 'Обновить' : 'Загрузить все войны') }}
         </button>
 
         <div class="country-select-wrapper">
@@ -65,7 +65,7 @@
             [options]="countryOptions"
             [value]="selectedCountryId"
             (valueChange)="onCountryChange($event)"
-            placeholder="Select a Nation..."
+            placeholder="Выберите страну..."
             [disabled]="isLoading || countryOptions.length === 0">
           </app-searchable-select>
         </div>
@@ -73,32 +73,32 @@
 
       @if (isLoading) {
         <div class="loading-state">
-          <p>Combing through the newspaper archives...</p>
+          <p>Изучаем архивы газет...</p>
           <p>{{ loadingProgress }}</p>
         </div>
       }
       @else if (!hasFetched || countryOptions.length === 0) {
         <div class="empty-state">
-          No war casualty reports found in the newspaper yet.
+          В газете пока не найдены отчеты о боевых потерях.
         </div>
       }
       @else if (!selectedCountryId) {
         <div class="empty-state">
-          Select a nation above to view its Kill/Death record.
+          Выберите страну выше, чтобы посмотреть ее статистику убийств/потерь.
         </div>
       }
       @else {
         <div class="summary-bar">
           <div class="summary-item kills">
-            <span class="summary-label">Kills</span>
+            <span class="summary-label">Убийства</span>
             <span class="summary-value">{{ totalKills | number }}</span>
           </div>
           <div class="summary-item deaths">
-            <span class="summary-label">Deaths</span>
+            <span class="summary-label">Потери</span>
             <span class="summary-value">{{ totalDeaths | number }}</span>
           </div>
           <div class="summary-item ratio">
-            <span class="summary-label">K/D</span>
+            <span class="summary-label">К/Д</span>
             <span class="summary-value">{{ overallRatio }}</span>
           </div>
         </div>
@@ -106,10 +106,10 @@
         <div class="opponent-list">
           <div class="opponent-row header-row">
             <span class="flag-icon"></span>
-            <span class="opponent-name">Opponent</span>
-            <span class="stat sortable" [class.active]="mapSortColumn === 'kills'" (click)="sortMapBy('kills')">Kills{{ sortArrow('map', 'kills') }}</span>
-            <span class="stat sortable" [class.active]="mapSortColumn === 'deaths'" (click)="sortMapBy('deaths')">Deaths{{ sortArrow('map', 'deaths') }}</span>
-            <span class="stat sortable" [class.active]="mapSortColumn === 'ratio'" (click)="sortMapBy('ratio')">K/D{{ sortArrow('map', 'ratio') }}</span>
+            <span class="opponent-name">Противник</span>
+            <span class="stat sortable" [class.active]="mapSortColumn === 'kills'" (click)="sortMapBy('kills')">Убийства{{ sortArrow('map', 'kills') }}</span>
+            <span class="stat sortable" [class.active]="mapSortColumn === 'deaths'" (click)="sortMapBy('deaths')">Потери{{ sortArrow('map', 'deaths') }}</span>
+            <span class="stat sortable" [class.active]="mapSortColumn === 'ratio'" (click)="sortMapBy('ratio')">К/Д{{ sortArrow('map', 'ratio') }}</span>
           </div>
           @for (o of opponents; track o.opponentId) {
             <div class="opponent-row">
@@ -126,13 +126,13 @@
     @else if (activeTab === 'real' && canViewRealKd) {
       <div class="controls">
         <button class="fetch-btn" (click)="fetchRealKd()" [disabled]="realKdLoading">
-          {{ realKdLoading ? (realKdProgress || 'Fetching...') : (realKdHasFetched ? 'Refresh' : 'Fetch Real K/D') }}
+          {{ realKdLoading ? (realKdProgress || 'Загрузка...') : (realKdHasFetched ? 'Обновить' : 'Найти реальные ники') }}
         </button>
 
         <input
           type="text"
           class="real-kd-search"
-          placeholder="Search player or nation..."
+          placeholder="Поиск игрока или страны..."
           [(ngModel)]="realKdSearch"
           (ngModelChange)="applyRealKdFilter()"
           [disabled]="!realKdHasFetched || realKdLoading"
@@ -141,22 +141,22 @@
 
       @if (realKdLoading) {
         <div class="loading-state">
-          <p>Fetching lifetime combat stats from the site API...</p>
+          <p>Получение реальной боевой статистики из API сайта...</p>
           <p>{{ realKdProgress }}</p>
         </div>
       }
       @else if (!realKdHasFetched) {
         <div class="empty-state">
-          Click "Fetch Real K/D" to load lifetime combat stats for every player on the map.
+          Нажмите «Найти реальные ники», чтобы загрузить профили и статистику игроков.
         </div>
       }
       @else if (realKdDisplayed.length === 0) {
         <div class="empty-state">
-          No players match the current search.
+          Нет игроков, соответствующих текущему поиску.
         </div>
       }
       @else {
-        <!-- ДЕСКТОПНАЯ ТАБЛИЦА ПРОФИЛЕЙ (как в разделе "Кто играет") -->
+        <!-- ДЕСКТОПНАЯ ТАБЛИЦА ПРОФИЛЕЙ -->
         <div class="table-wrap">
           <table class="roster stack">
             <thead>
@@ -166,9 +166,9 @@
                 <th class="sortable" (click)="sortRealBy('alliance')">Клан{{ sortArrow('real', 'alliance') }}</th>
                 <th>Коалиция</th>
                 <th>Уровень</th>
-                <th class="sortable" (click)="sortRealBy('kills')">Kills{{ sortArrow('real', 'kills') }}</th>
-                <th class="sortable" (click)="sortRealBy('deaths')">Deaths{{ sortArrow('real', 'deaths') }}</th>
-                <th class="sortable" (click)="sortRealBy('ratio')">Кд{{ sortArrow('real', 'ratio') }}</th>
+                <th class="sortable" (click)="sortRealBy('kills')">Убийства{{ sortArrow('real', 'kills') }}</th>
+                <th class="sortable" (click)="sortRealBy('deaths')">Потери{{ sortArrow('real', 'deaths') }}</th>
+                <th class="sortable" (click)="sortRealBy('ratio')">К/Д{{ sortArrow('real', 'ratio') }}</th>
                 <th>Сила</th>
               </tr>
             </thead>
@@ -177,7 +177,6 @@
                 <tr>
                   <td data-label="Игрок">
                     <img [src]="row.flagUrl" class="flag-icon-sm" onerror="this.style.display='none'">
-                    <!-- Ссылка на профиль игрока на вашем сайте -->
                     <a class="nick" [href]="'/players/' + (row.internalId || row.siteUserId)" target="_blank">{{ row.name }}</a>
                     @if (row.isEnemy) { <span class="badge clan-enemy">во врагах</span> }
                     @if (row.isAlly) { <span class="badge clan-ally">в друзьях</span> }
@@ -192,9 +191,9 @@
                   </td>
                   <td class="muted" data-label="Коалиция">{{ row.coalition ?? '—' }}</td>
                   <td class="muted nowrap" data-label="Уровень">{{ row.level ?? '—' }}</td>
-                  <td class="stat kills" data-label="Kills">{{ row.kills | number }}</td>
-                  <td class="stat deaths" data-label="Deaths">{{ row.deaths | number }}</td>
-                  <td class="stat ratio" data-label="Кд">{{ formatRatio(row.kills, row.deaths) }}</td>
+                  <td class="stat kills" data-label="Убийства">{{ row.kills | number }}</td>
+                  <td class="stat deaths" data-label="Потери">{{ row.deaths | number }}</td>
+                  <td class="stat ratio" data-label="К/Д">{{ formatRatio(row.kills, row.deaths) }}</td>
                   <td class="muted nowrap" data-label="Сила">
                     @if (row.power) {
                       <span class="swatch" [ngClass]="row.powerClass"></span> {{ row.power }}
@@ -210,94 +209,48 @@
       }
     }
 
-      @if (realKdLoading) {
-        <div class="loading-state">
-          <p>Fetching lifetime combat stats from the site API...</p>
-          <p>{{ realKdProgress }}</p>
-        </div>
-      }
-      @else if (!realKdHasFetched) {
-        <div class="empty-state">
-          Click "Fetch Real K/D" to load lifetime combat stats for every player on the map.
-        </div>
-      }
-      @else if (realKdDisplayed.length === 0) {
-        <div class="empty-state">
-          No players match the current search.
-        </div>
-      }
-      @else {
-        <div class="opponent-list">
-          <div class="opponent-row header-row with-alliance">
-            <span class="flag-icon"></span>
-            <span class="opponent-name">Player</span>
-            <span class="opponent-alliance sortable" [class.active]="realSortColumn === 'alliance'" (click)="sortRealBy('alliance')">Alliance{{ sortArrow('real', 'alliance') }}</span>
-            <span class="stat sortable" [class.active]="realSortColumn === 'kills'" (click)="sortRealBy('kills')">Kills{{ sortArrow('real', 'kills') }}</span>
-            <span class="stat sortable" [class.active]="realSortColumn === 'deaths'" (click)="sortRealBy('deaths')">Deaths{{ sortArrow('real', 'deaths') }}</span>
-            <span class="stat sortable" [class.active]="realSortColumn === 'ratio'" (click)="sortRealBy('ratio')">K/D{{ sortArrow('real', 'ratio') }}</span>
-          </div>
-          @for (row of realKdDisplayed; track row.siteUserId) {
-            <div class="opponent-row with-alliance">
-              <img [src]="row.flagUrl" class="flag-icon" onerror="this.style.display='none'">
-              <span class="opponent-name">{{ row.name }} <span class="nation-hint">({{ row.nation }})</span></span>
-              <span class="opponent-alliance">
-                @if (allianceUrl(row.allianceId); as url) {
-                  <a [href]="url" target="_blank" rel="noopener noreferrer">{{ row.alliance }}</a>
-                } @else {
-                  {{ row.alliance ?? '—' }}
-                }
-              </span>
-              <span class="stat kills">{{ row.kills | number }}</span>
-              <span class="stat deaths">{{ row.deaths | number }}</span>
-              <span class="stat ratio">{{ formatRatio(row.kills, row.deaths) }}</span>
-            </div>
-          }
-        </div>
-      }
-    }
-
   </div>
   } @else {
-  <!-- ================= MOBILE LAYOUT ================= -->
+  <!-- ================= МОБИЛЬНАЯ ВЕРСИЯ ================= -->
   <div class="mobile-kd" (click)="closeMobileOverlays()">
 
     <div class="segmented segmented-3">
-      <button type="button" [class.active]="activeTab === 'players'" (click)="setActiveTab('players'); $event.stopPropagation()">Map K/D</button>
-      <button type="button" [class.active]="activeTab === 'map'" (click)="setActiveTab('map'); $event.stopPropagation()">Detailed K/D</button>
+      <button type="button" [class.active]="activeTab === 'players'" (click)="setActiveTab('players'); $event.stopPropagation()">K/D карты</button>
+      <button type="button" [class.active]="activeTab === 'map'" (click)="setActiveTab('map'); $event.stopPropagation()">Подробный K/D</button>
       @if (canViewRealKd) {
-        <button type="button" [class.active]="activeTab === 'real'" (click)="setActiveTab('real'); $event.stopPropagation()">Real K/D</button>
+        <button type="button" [class.active]="activeTab === 'real'" (click)="setActiveTab('real'); $event.stopPropagation()">Реальный K/D</button>
       }
     </div>
 
     @if (activeTab === 'players') {
       @if (playersKd.length === 0) {
         <div class="empty-state">
-          No player statistics available.
+          Статистика игроков недоступна.
         </div>
       }
       @else {
         <div class="mobile-controls">
           @if (!isAnonymousGame) {
             <button class="fetch-btn" (click)="fetchAlliances(); $event.stopPropagation()" [disabled]="allianceLoading">
-              {{ allianceLoading ? 'Fetching...' : (allianceFetched ? 'Refresh Alliance' : 'Fetch Alliance') }}
+              {{ allianceLoading ? 'Загрузка...' : (allianceFetched ? 'Обновить кланы' : 'Загрузить кланы') }}
             </button>
           }
-          <button type="button" class="sort-btn" (click)="toggleSortPanel(); $event.stopPropagation()">Sort</button>
+          <button type="button" class="sort-btn" (click)="toggleSortPanel(); $event.stopPropagation()">Сортировка</button>
         </div>
 
         @if (sortPanelOpen) {
           <div class="sort-panel" (click)="$event.stopPropagation()">
             <div class="sort-option" [class.selected]="playersSortColumn === 'kills'" (click)="sortPlayersBy('kills'); closeMobileOverlays()">
-              <span>Kills{{ sortArrow('players', 'kills') }}</span><span class="dot"></span>
+              <span>Убийства{{ sortArrow('players', 'kills') }}</span><span class="dot"></span>
             </div>
             <div class="sort-option" [class.selected]="playersSortColumn === 'deaths'" (click)="sortPlayersBy('deaths'); closeMobileOverlays()">
-              <span>Deaths{{ sortArrow('players', 'deaths') }}</span><span class="dot"></span>
+              <span>Потери{{ sortArrow('players', 'deaths') }}</span><span class="dot"></span>
             </div>
             <div class="sort-option" [class.selected]="playersSortColumn === 'ratio'" (click)="sortPlayersBy('ratio'); closeMobileOverlays()">
-              <span>K/D{{ sortArrow('players', 'ratio') }}</span><span class="dot"></span>
+              <span>К/Д{{ sortArrow('players', 'ratio') }}</span><span class="dot"></span>
             </div>
             <div class="sort-option" [class.selected]="playersSortColumn === 'alliance'" (click)="sortPlayersBy('alliance'); closeMobileOverlays()">
-              <span>Alliance{{ sortArrow('players', 'alliance') }}</span><span class="dot"></span>
+              <span>Клан{{ sortArrow('players', 'alliance') }}</span><span class="dot"></span>
             </div>
           </div>
         }
@@ -317,9 +270,9 @@
                 </div>
               </div>
               <div class="kd-stats">
-                <div class="kd-stat"><span class="stat-val kills">{{ row.kills | number }}</span><span class="stat-lbl">K</span></div>
-                <div class="kd-stat"><span class="stat-val deaths">{{ row.deaths | number }}</span><span class="stat-lbl">D</span></div>
-                <div class="kd-stat"><span class="stat-val ratio">{{ formatRatio(row.kills, row.deaths) }}</span><span class="stat-lbl">Ratio</span></div>
+                <div class="kd-stat"><span class="stat-val kills">{{ row.kills | number }}</span><span class="stat-lbl">Уб</span></div>
+                <div class="kd-stat"><span class="stat-val deaths">{{ row.deaths | number }}</span><span class="stat-lbl">Поте</span></div>
+                <div class="kd-stat"><span class="stat-val ratio">{{ formatRatio(row.kills, row.deaths) }}</span><span class="stat-lbl">К/Д</span></div>
               </div>
             </div>
           }
@@ -329,7 +282,7 @@
     @else if (activeTab === 'map') {
       <div class="mobile-controls">
         <button class="fetch-btn" (click)="fetchAllWars(); $event.stopPropagation()" [disabled]="isLoading">
-          {{ isLoading ? loadingProgress : (hasFetched ? 'Refresh' : 'Fetch All Wars') }}
+          {{ isLoading ? loadingProgress : (hasFetched ? 'Обновить' : 'Загрузить все войны') }}
         </button>
       </div>
 
@@ -338,57 +291,57 @@
           [options]="countryOptions"
           [value]="selectedCountryId"
           (valueChange)="onCountryChange($event)"
-          placeholder="Select a Nation..."
+          placeholder="Выберите страну..."
           [disabled]="isLoading || countryOptions.length === 0">
         </app-searchable-select>
       </div>
 
       @if (isLoading) {
         <div class="loading-state">
-          <p>Combing through the newspaper archives...</p>
+          <p>Изучаем архивы газет...</p>
           <p>{{ loadingProgress }}</p>
         </div>
       }
       @else if (!hasFetched || countryOptions.length === 0) {
         <div class="empty-state">
-          No war casualty reports found in the newspaper yet.
+          В газете пока не найдены отчеты о боевых потерях.
         </div>
       }
       @else if (!selectedCountryId) {
         <div class="empty-state">
-          Select a nation above to view its Kill/Death record.
+          Выберите страну выше, чтобы посмотреть ее статистику убийств/потерь.
         </div>
       }
       @else {
         <div class="summary-bar">
           <div class="summary-item kills">
-            <span class="summary-label">Kills</span>
+            <span class="summary-label">Убийства</span>
             <span class="summary-value">{{ totalKills | number }}</span>
           </div>
           <div class="summary-item deaths">
-            <span class="summary-label">Deaths</span>
+            <span class="summary-label">Потери</span>
             <span class="summary-value">{{ totalDeaths | number }}</span>
           </div>
           <div class="summary-item ratio">
-            <span class="summary-label">K/D</span>
+            <span class="summary-label">К/Д</span>
             <span class="summary-value">{{ overallRatio }}</span>
           </div>
         </div>
 
         <div class="mobile-controls">
-          <button type="button" class="sort-btn" (click)="toggleSortPanel(); $event.stopPropagation()">Sort</button>
+          <button type="button" class="sort-btn" (click)="toggleSortPanel(); $event.stopPropagation()">Сортировка</button>
         </div>
 
         @if (sortPanelOpen) {
           <div class="sort-panel" (click)="$event.stopPropagation()">
             <div class="sort-option" [class.selected]="mapSortColumn === 'kills'" (click)="sortMapBy('kills'); closeMobileOverlays()">
-              <span>Kills{{ sortArrow('map', 'kills') }}</span><span class="dot"></span>
+              <span>Убийства{{ sortArrow('map', 'kills') }}</span><span class="dot"></span>
             </div>
             <div class="sort-option" [class.selected]="mapSortColumn === 'deaths'" (click)="sortMapBy('deaths'); closeMobileOverlays()">
-              <span>Deaths{{ sortArrow('map', 'deaths') }}</span><span class="dot"></span>
+              <span>Потери{{ sortArrow('map', 'deaths') }}</span><span class="dot"></span>
             </div>
             <div class="sort-option" [class.selected]="mapSortColumn === 'ratio'" (click)="sortMapBy('ratio'); closeMobileOverlays()">
-              <span>K/D{{ sortArrow('map', 'ratio') }}</span><span class="dot"></span>
+              <span>К/Д{{ sortArrow('map', 'ratio') }}</span><span class="dot"></span>
             </div>
           </div>
         }
@@ -401,9 +354,9 @@
                 <div class="kd-name">{{ o.opponentName }}</div>
               </div>
               <div class="kd-stats">
-                <div class="kd-stat"><span class="stat-val kills">{{ o.kills | number }}</span><span class="stat-lbl">K</span></div>
-                <div class="kd-stat"><span class="stat-val deaths">{{ o.deaths | number }}</span><span class="stat-lbl">D</span></div>
-                <div class="kd-stat"><span class="stat-val ratio">{{ formatRatio(o.kills, o.deaths) }}</span><span class="stat-lbl">Ratio</span></div>
+                <div class="kd-stat"><span class="stat-val kills">{{ o.kills | number }}</span><span class="stat-lbl">Уб</span></div>
+                <div class="kd-stat"><span class="stat-val deaths">{{ o.deaths | number }}</span><span class="stat-lbl">Поте</span></div>
+                <div class="kd-stat"><span class="stat-val ratio">{{ formatRatio(o.kills, o.deaths) }}</span><span class="stat-lbl">К/Д</span></div>
               </div>
             </div>
           }
@@ -413,15 +366,15 @@
     @else if (activeTab === 'real' && canViewRealKd) {
       <div class="mobile-controls">
         <button class="fetch-btn" (click)="fetchRealKd(); $event.stopPropagation()" [disabled]="realKdLoading">
-          {{ realKdLoading ? (realKdProgress || 'Fetching...') : (realKdHasFetched ? 'Refresh' : 'Fetch Real K/D') }}
+          {{ realKdLoading ? (realKdProgress || 'Загрузка...') : (realKdHasFetched ? 'Обновить' : 'Найти реальные ники') }}
         </button>
-        <button type="button" class="sort-btn" (click)="toggleSortPanel(); $event.stopPropagation()">Sort</button>
+        <button type="button" class="sort-btn" (click)="toggleSortPanel(); $event.stopPropagation()">Сортировка</button>
       </div>
 
       <div class="search-row" (click)="$event.stopPropagation()">
         <input
           type="text"
-          placeholder="Search player or nation..."
+          placeholder="Поиск игрока или страны..."
           [(ngModel)]="realKdSearch"
           (ngModelChange)="applyRealKdFilter()"
           [disabled]="!realKdHasFetched || realKdLoading"
@@ -431,34 +384,34 @@
       @if (sortPanelOpen) {
         <div class="sort-panel" (click)="$event.stopPropagation()">
           <div class="sort-option" [class.selected]="realSortColumn === 'kills'" (click)="sortRealBy('kills'); closeMobileOverlays()">
-            <span>Kills{{ sortArrow('real', 'kills') }}</span><span class="dot"></span>
+            <span>Убийства{{ sortArrow('real', 'kills') }}</span><span class="dot"></span>
           </div>
           <div class="sort-option" [class.selected]="realSortColumn === 'deaths'" (click)="sortRealBy('deaths'); closeMobileOverlays()">
-            <span>Deaths{{ sortArrow('real', 'deaths') }}</span><span class="dot"></span>
+            <span>Потери{{ sortArrow('real', 'deaths') }}</span><span class="dot"></span>
           </div>
           <div class="sort-option" [class.selected]="realSortColumn === 'ratio'" (click)="sortRealBy('ratio'); closeMobileOverlays()">
-            <span>K/D{{ sortArrow('real', 'ratio') }}</span><span class="dot"></span>
+            <span>К/Д{{ sortArrow('real', 'ratio') }}</span><span class="dot"></span>
           </div>
           <div class="sort-option" [class.selected]="realSortColumn === 'alliance'" (click)="sortRealBy('alliance'); closeMobileOverlays()">
-            <span>Alliance{{ sortArrow('real', 'alliance') }}</span><span class="dot"></span>
+            <span>Клан{{ sortArrow('real', 'alliance') }}</span><span class="dot"></span>
           </div>
         </div>
       }
 
       @if (realKdLoading) {
         <div class="loading-state">
-          <p>Fetching lifetime combat stats from the site API...</p>
+          <p>Получение реальной боевой статистики из API сайта...</p>
           <p>{{ realKdProgress }}</p>
         </div>
       }
       @else if (!realKdHasFetched) {
         <div class="empty-state">
-          Tap "Fetch Real K/D" to load lifetime combat stats for every player on the map.
+          Нажмите «Найти реальные ники», чтобы загрузить статистику игроков.
         </div>
       }
       @else if (realKdDisplayed.length === 0) {
         <div class="empty-state">
-          No players match the current search.
+          Нет игроков, соответствующих текущему поиску.
         </div>
       }
       @else {
@@ -477,9 +430,9 @@
                 </div>
               </div>
               <div class="kd-stats">
-                <div class="kd-stat"><span class="stat-val kills">{{ row.kills | number }}</span><span class="stat-lbl">K</span></div>
-                <div class="kd-stat"><span class="stat-val deaths">{{ row.deaths | number }}</span><span class="stat-lbl">D</span></div>
-                <div class="kd-stat"><span class="stat-val ratio">{{ formatRatio(row.kills, row.deaths) }}</span><span class="stat-lbl">Ratio</span></div>
+                <div class="kd-stat"><span class="stat-val kills">{{ row.kills | number }}</span><span class="stat-lbl">Уб</span></div>
+                <div class="kd-stat"><span class="stat-val deaths">{{ row.deaths | number }}</span><span class="stat-lbl">Поте</span></div>
+                <div class="kd-stat"><span class="stat-val ratio">{{ formatRatio(row.kills, row.deaths) }}</span><span class="stat-lbl">К/Д</span></div>
               </div>
             </div>
           }
