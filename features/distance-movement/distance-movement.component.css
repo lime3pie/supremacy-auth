@@ -1,0 +1,71 @@
+.distance-movement-container {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-group label {
+  min-width: 120px;
+}
+
+.input-group input[type="number"],
+.input-group select {
+  flex-grow: 1;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: var(--supremacy-input-background-color, #333);
+  color: var(--supremacy-text-color, #eee);
+}
+
+.distance-display {
+  margin-top: 10px;
+  font-weight: bold;
+  color: var(--supremacy-highlight-color, #4CAF50);
+}
+
+.command-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.command-item {
+  padding: 10px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: var(--supremacy-panel-background-color, #252525);
+}
+
+.command-header {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.button-group button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: var(--supremacy-button-background-color, #555);
+  color: var(--supremacy-button-text-color, #fff);
+}
+
+.button-group button:hover {
+  background-color: var(--supremacy-button-hover-color, #777);
+}

@@ -1,0 +1,48 @@
+:host {
+  display: contents;
+}
+
+.reputation-badge {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 4px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.reputation-badge.tier-good {
+  background: #1e3a2a;
+  border: 1px solid #4ade80;
+  color: #4ade80;
+}
+
+.reputation-badge.tier-neutral {
+  background: #3a3520;
+  border: 1px solid #cfa665;
+  color: #cfa665;
+}
+
+.reputation-badge.tier-bad {
+  background: #3a1e1e;
+  border: 1px solid #ff6b6b;
+  color: #ff6b6b;
+}
+
+.reputation-badge-empty {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.reputation-badge-empty:hover {
+  color: #cfa665;
+}

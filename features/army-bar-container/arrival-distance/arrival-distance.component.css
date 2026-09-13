@@ -1,0 +1,36 @@
+/* File: /scripts/components/army-bar-container/arrival-distance/arrival-distance.component.css */
+
+:host {
+  position: absolute;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 8px; /* Spacing between this and the time text */
+  left: 23px;
+  bottom: 0px;
+}
+
+.arrival-dist-container {
+  padding: 1px 6px;
+  background-color: rgba(30, 30, 30, 0.9);
+  border: 1px solid #cfa665; /* S1914 Gold color */
+  border-radius: 4px;
+  color: #00ffff; /* Cyan for visibility */
+  font-size: 11px;
+  font-family: "Segoe UI", sans-serif;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  line-height: 1;
+  cursor: help;
+  min-width: 40px;
+  height: 18px;
+  justify-content: center;
+}
+
+.label {
+  color: #bbb;
+  margin-right: 4px;
+  font-size: 9px;
+  text-transform: uppercase;
+}

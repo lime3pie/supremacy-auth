@@ -1,0 +1,441 @@
+/* File: /scripts/components/distance-calculator/distance-calculator.component.css */
+
+.dist-container {
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: "Segoe UI", sans-serif;
+  color: #e0e0e0;
+}
+
+/* ... Existing CSS ... */
+
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+
+.label-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.label-row label { 
+    font-weight: bold; 
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.default-star {
+    font-size: 0.9rem;
+    cursor: help;
+    filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.5));
+}
+
+.top-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* Small Buttons */
+.small-btn { 
+    font-size: 0.7rem; 
+    padding: 2px 6px; 
+    background: #333; 
+    border: 1px solid #555; 
+    color: #ccc; 
+    cursor: pointer; 
+    border-radius: 3px; 
+}
+.small-btn:hover { background: #444; color: #fff; }
+
+.icon-btn {
+    font-size: 0.7rem;
+    padding: 2px 5px;
+    background: #2b3536;
+    border: 1px solid #4a6fa5;
+    color: #a5d6a7;
+    cursor: pointer;
+    border-radius: 3px;
+}
+.icon-btn:hover { background: #324759; }
+
+.icon-btn.danger {
+    border-color: #a54a4a;
+    background: #362b2b;
+    color: #ffcccc;
+}
+.icon-btn.danger:hover { background: #593232; }
+
+/* Header minimize button - sits next to app-dialog's own close (x) button */
+.minimize-btn {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  font-size: 16px;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.minimize-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+
+/* Main Calc Button */
+.calc-btn {
+  background: #cfa665;
+  color: #000;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+.calc-btn:hover { background: #e0b776; }
+
+/* Results */
+.result-box {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  padding: 16px;
+  border-radius: 6px;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 4px;
+}
+.result-row:last-child { border-bottom: none; }
+
+.res-label {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.res-value {
+    font-weight: bold;
+    font-size: 1.2rem;
+    font-family: monospace;
+}
+
+.res-value.time { color: #4caf50; }
+.res-value.dist { color: #4dabff; }
+
+.result-empty { font-style: italic; color: #666; text-align: center; }
+
+.actions { display: flex; gap: 10px; }
+.jump-btn { flex: 1; background: #333; color: #ccc; border: 1px solid #444; padding: 6px; border-radius: 4px; cursor: pointer; }
+.jump-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.jump-btn:hover:not(:disabled) { background: #444; color: #fff; }
+
+/* map-speed UI removed; detection uses in-game timeScale */
+
+/* --- MINIMIZED VIEW STYLES --- */
+.mini-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.mini-data {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-family: monospace;
+  font-size: 1.1rem;
+}
+
+.mini-val.time { color: #4caf50; }
+.mini-val.dist { color: #4dabff; }
+.mini-div { color: #555; }
+
+.mini-msg {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+}
+
+.mini-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.mini-btn {
+  flex: 1;
+  border: 1px solid #555;
+  background: #2a2a2a;
+  color: #ccc;
+  font-size: 0.8rem;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.mini-btn.expand:hover { background: #333; color: #fff; border-color: #777; }
+.mini-btn.close:hover { background: #3d2020; color: #ffcccc; border-color: #a54a4a; }
+
+/* --- DETAIL TOGGLE --- */
+.detail-toggle-btn {
+  width: 100%;
+  margin-top: 10px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #aaa;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  text-align: center;
+}
+.detail-toggle-btn:hover { background: #333; color: #ddd; }
+
+/* --- DETAIL TABLE SECTION --- */
+.detail-section {
+  overflow-x: hidden;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  background: #111;
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+  font-family: monospace;
+  table-layout: fixed;
+}
+
+.detail-table th {
+  background: #1e1e1e;
+  color: #777;
+  font-weight: normal;
+  padding: 4px 5px;
+  text-align: left;
+  border-bottom: 1px solid #2a2a2a;
+  white-space: nowrap;
+}
+
+.detail-table th:first-child { width: 40%; }
+.detail-table th:nth-child(2) { width: 16%; }
+.detail-table th:nth-child(3) { width: 16%; }
+.detail-table th:nth-child(4) { width: 14%; }
+.detail-table th:last-child  { width: 14%; text-align: right; }
+
+.detail-table td {
+  padding: 4px 5px;
+  border-bottom: 1px solid #1e1e1e;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seg-row td:last-child { text-align: right; }
+
+/* Territory type row accent */
+.seg-row.seg-own    { border-left: 3px solid #4caf50; }
+.seg-row.seg-friendly { border-left: 3px solid #4dabff; }
+.seg-row.seg-enemy  { border-left: 3px solid #ef5350; }
+.seg-row.seg-sea    { border-left: 3px solid #1565c0; }
+
+.seg-row.seg-own    .seg-type { color: #4caf50; }
+.seg-row.seg-friendly .seg-type { color: #4dabff; }
+.seg-row.seg-enemy  .seg-type { color: #ef5350; }
+.seg-row.seg-sea    .seg-type { color: #5c9ff5; }
+
+.seg-route { display: flex; gap: 2px; align-items: center; min-width: 0; }
+.seg-from, .seg-to { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 42%; color: #ccc; }
+.seg-arrow { color: #555; flex-shrink: 0; }
+.seg-speed { color: #ffd54f; }
+.seg-dist  { color: #4dabff; }
+.seg-time  { color: #4caf50; }
+
+/* Penalty / railroad sub-rows */
+.penalty-row td, .railroad-row td {
+  padding: 2px 5px 2px 14px;
+  font-size: 0.68rem;
+  border-bottom: 1px solid #1e1e1e;
+  background: #0e0e0e;
+}
+.penalty-label { color: #a97; font-style: italic; }
+.penalty-time  { color: #ef9a9a; text-align: right; }
+.railroad-label { color: #c8a97e; font-style: italic; }
+
+/* ============================================================
+   MOBILE (isMobileClient) - app-dialog already docks as a
+   full-width bottom sheet; the rest here makes the fixed 350px
+   desktop width fluid and enlarges touch targets/buttons.
+   ============================================================ */
+.dist-container.mobile {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* Top-action buttons collapse from icon+label to icon-only 36px pills so all four
+   (Save/Clear/Use Map/Pick) fit one row without crowding a phone-width field. */
+.dist-container.mobile .btn-label { display: none; }
+.dist-container.mobile .top-actions { gap: 6px; }
+.dist-container.mobile .small-btn,
+.dist-container.mobile .icon-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 15px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.minimize-btn.mobile { width: 40px; height: 40px; font-size: 18px; }
+
+.dist-container.mobile .calc-btn {
+  min-height: 48px;
+  font-size: 0.95rem;
+}
+
+.dist-container.mobile .res-value {
+  font-size: 1.35rem;
+}
+
+.dist-container.mobile .jump-btn {
+  min-height: 46px;
+}
+
+.dist-container.mobile .detail-toggle-btn {
+  min-height: 40px;
+}
+
+/* Detail table -> stacked cards. Same <table> markup, just reflowed: hide the header
+   row, let each <tr> become a bordered card, and prefix the numeric cells with their
+   column name (via ::before) since the header that used to label them is gone. */
+.dist-container.mobile .detail-table,
+.dist-container.mobile .detail-table tbody,
+.dist-container.mobile .detail-table tr,
+.dist-container.mobile .detail-table td {
+  display: block;
+  width: auto;
+}
+.dist-container.mobile .detail-table thead { display: none; }
+
+.dist-container.mobile .seg-row {
+  margin-bottom: 8px;
+  border-radius: 9px;
+  padding: 10px 11px 8px;
+  background: #141414;
+  /* Only top/right/bottom + left width/style here - border-left-color stays owned by
+     the .seg-row.seg-own/friendly/enemy/sea rules above so the type accent survives. */
+  border-top: 1px solid #2a2a2a;
+  border-right: 1px solid #2a2a2a;
+  border-bottom: 1px solid #2a2a2a;
+  border-left-width: 3px;
+  border-left-style: solid;
+}
+.dist-container.mobile .seg-row td {
+  border-bottom: none;
+  padding: 3px 0;
+  white-space: normal;
+  text-align: left;
+}
+.dist-container.mobile .seg-route { margin-bottom: 4px; font-size: 13.5px; }
+.dist-container.mobile .seg-type,
+.dist-container.mobile .seg-speed,
+.dist-container.mobile .seg-dist,
+.dist-container.mobile .seg-time {
+  display: inline-block;
+  margin-right: 14px;
+  font-size: 0.78rem;
+}
+.dist-container.mobile .seg-type::before,
+.dist-container.mobile .seg-speed::before,
+.dist-container.mobile .seg-dist::before,
+.dist-container.mobile .seg-time::before {
+  font-family: "Segoe UI", sans-serif;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b6b6b;
+  margin-right: 3px;
+}
+.dist-container.mobile .seg-type::before  { content: "Type "; }
+.dist-container.mobile .seg-speed::before { content: "Speed "; }
+.dist-container.mobile .seg-dist::before  { content: "Dist "; }
+.dist-container.mobile .seg-time::before  { content: "Time "; }
+
+.dist-container.mobile .penalty-row td,
+.dist-container.mobile .railroad-row td {
+  padding: 6px 0 0;
+  border-top: 1px dashed #2a2a2a;
+  margin-top: 4px;
+  background: transparent;
+  text-align: left;
+}
+
+/* --- Minimized bar --- */
+.mini-content.mobile { width: 100%; }
+.mini-content.mobile .mini-data { font-size: 1.3rem; }
+.mini-content.mobile .mini-btn {
+  min-height: 44px;
+  font-size: 0.85rem;
+}
+
+.mini-pick-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+.mini-pick-msg {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.85rem;
+  color: #e3c9a8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pick-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cfa665;
+  flex-shrink: 0;
+  animation: distcalc-pulse 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pick-dot { animation: none; }
+}
+@keyframes distcalc-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(207, 166, 101, 0.5); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(207, 166, 101, 0); }
+}
+.mini-btn.cancel {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 16px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #e3c9a8;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}

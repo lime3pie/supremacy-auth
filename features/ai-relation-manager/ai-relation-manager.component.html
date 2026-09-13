@@ -1,0 +1,57 @@
+<app-dialog 
+  [show]="showDialog" 
+  title="Управление отношениями с ИИ" 
+  (close)="close()"
+>
+  <div class="ai-container" *ngIf="showDialog">
+    <p class="description">
+      Этот инструмент обновляет ваши дипломатические отношения со всеми <b>нациями под управлением ИИ</b> одновременно.
+    </p>
+
+    <div class="stats-row">
+      <span>Обнаружено наций ИИ: <b>{{ aiPlayers().length }}</b></span>
+    </div>
+
+    <div class="relation-grid">
+      <button class="rel-btn war" [disabled]="processing" (click)="setAllAiRelation(RelationType.War)">
+        <span class="icon">⚔️</span>
+        Объявить войну
+        <span class="count-badge">{{ getRelationCount(RelationType.War) }}</span>
+      </button>
+
+      <button class="rel-btn embargo" [disabled]="processing" (click)="setAllAiRelation(RelationType.TradeEmbargo)">
+        <span class="icon">🚫</span>
+        Ввести эмбарго
+        <span class="count-badge">{{ getRelationCount(RelationType.TradeEmbargo) }}</span>
+      </button>
+
+      <button class="rel-btn peace" [disabled]="processing" (click)="setAllAiRelation(RelationType.Peace)">
+        <span class="icon">🏳️</span>
+        Установить мир
+        <span class="count-badge">{{ getRelationCount(RelationType.Peace) }}</span>
+      </button>
+
+      <button class="rel-btn row" [disabled]="processing" (click)="setAllAiRelation(RelationType.RightOfWay)">
+        <span class="icon">🚶</span>
+        Право прохода
+        <span class="count-badge">{{ getRelationCount(RelationType.RightOfWay) }}</span>
+      </button>
+
+      <button class="rel-btn map" [disabled]="processing" (click)="setAllAiRelation(RelationType.ShareMap)">
+        <span class="icon">🤝</span>
+        Общий обзор карты
+        <span class="count-badge">{{ getRelationCount(RelationType.ShareMap) }}</span>
+      </button>
+
+      <button class="rel-btn intel" [disabled]="processing || !isPremium" [title]="!isPremium ? 'Требуется премиум-аккаунт' : ''" (click)="setAllAiRelation(RelationType.ShareIntelligence)">
+        <span class="icon">🕵️</span>
+        Общая разведка
+        <span class="count-badge">{{ getRelationCount(RelationType.ShareIntelligence) }}</span>
+      </button>
+    </div>
+
+    @if (processing) {
+      <div class="status-msg">Отправка запроса на игровой сервер...</div>
+    }
+  </div>
+</app-dialog>

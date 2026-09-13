@@ -1,0 +1,177 @@
+<!-- File: /scripts/components/distance-calculator/distance-calculator.component.html -->
+
+<app-dialog
+  [show]="showDialog"
+  [minimized]="isMinimized"
+  [showBackdrop]="false"
+  [draggable]="true"
+  title="Distance & Time"
+  (close)="close()">
+
+  <button header-actions *ngIf="!isMinimized" class="minimize-btn" [class.mobile]="isMobile" title="Minimize" (click)="isMinimized = true">➖</button>
+
+  <!-- NORMAL EXPANDED CONTENT -->
+  <div class="dist-container" [class.mobile]="isMobile">
+
+    <!-- Start Position Group -->
+    <div class="input-group">
+      <div class="label-row">
+        <label>
+          Start Position
+          <span *ngIf="isCurrentStartDefault" class="default-star" title="Default Start">⭐</span>
+        </label>
+
+        <div class="top-actions">
+          <button *ngIf="startProvId && !isCurrentStartDefault"
+                  class="icon-btn" title="Set as default" (click)="setAsDefaultStart()">💾<span class="btn-label"> Save</span></button>
+          <button *ngIf="savedDefaultStartId"
+                  class="icon-btn danger" title="Clear default" (click)="clearDefaultStart()">🗑️</button>
+          <button class="small-btn" title="Select a stack or province on the map" [class.active]="mapSelectMode==='start'" (click)="toggleMapSelect('start')">📍<span class="btn-label"> Use Map</span></button>
+          <button class="small-btn" title="Pick on map" [class.active]="pickMode==='start'" (click)="startPickPoint('start')">🎯<span class="btn-label"> Pick</span></button>
+        </div>
+      </div>
+
+      <app-searchable-select
+        [options]="provinceOptions"
+        [(value)]="startProvId"
+        [mobile]="isMobile"
+        (valueChange)="resetCalc()"
+        placeholder="Type to search start...">
+      </app-searchable-select>
+    </div>
+
+    <!-- End Position Group -->
+    <div class="input-group">
+      <div class="label-row">
+        <label>
+          End Position
+          <span *ngIf="isCurrentEndDefault" class="default-star" title="Default End">⭐</span>
+        </label>
+
+        <div class="top-actions">
+          <button *ngIf="endProvId && !isCurrentEndDefault"
+                  class="icon-btn" title="Set as default" (click)="setAsDefaultEnd()">💾<span class="btn-label"> Save</span></button>
+          <button *ngIf="savedDefaultEndId"
+                  class="icon-btn danger" title="Clear default" (click)="clearDefaultEnd()">🗑️</button>
+          <button class="small-btn" title="Select a stack or province on the map" [class.active]="mapSelectMode==='end'" (click)="toggleMapSelect('end')">📍<span class="btn-label"> Use Map</span></button>
+          <button class="small-btn" title="Pick on map" [class.active]="pickMode==='end'" (click)="startPickPoint('end')">🎯<span class="btn-label"> Pick</span></button>
+        </div>
+      </div>
+
+      <app-searchable-select
+        [options]="provinceOptions"
+        [(value)]="endProvId"
+        [mobile]="isMobile"
+        (valueChange)="resetCalc()"
+        placeholder="Type to search end...">
+      </app-searchable-select>
+    </div>
+
+    <button class="calc-btn" (click)="calculate()">Calculate</button>
+
+    
+
+    <!-- Result Area -->
+    <div class="result-box">
+      @if (result) {
+        <div class="result-row">
+            <span class="res-label">Travel Time:</span>
+            <span class="res-value time">{{ formatDuration(result.time) }}</span>
+        </div>
+        <div class="result-row">
+            <span class="res-label">Distance:</span>
+            <span class="res-value dist">{{ result.distance | number:'1.0-1' }} km</span>
+        </div>
+        @if (result.detailedSegments.length > 0) {
+          <button class="detail-toggle-btn" (click)="showDetails = !showDetails">
+            {{ showDetails ? '▲ Hide Details' : '▼ Show Details' }}
+          </button>
+        }
+      } @else {
+        <div class="result-empty">{{ statusMessage || 'Select locations to begin.' }}</div>
+      }
+    </div>
+
+    <!-- Detailed Segment Breakdown -->
+    @if (result && showDetails && result.detailedSegments.length > 0) {
+      <div class="detail-section">
+        <table class="detail-table">
+          <thead>
+            <tr>
+              <th>Route</th>
+              <th>Type</th>
+              <th>Speed</th>
+              <th>Dist</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (seg of result.detailedSegments; track $index) {
+              <tr [class]="'seg-row seg-' + seg.type.toLowerCase()">
+                <td class="seg-route">
+                  <span class="seg-from">{{ seg.fromName }}</span>
+                  <span class="seg-arrow">→</span>
+                  <span class="seg-to">{{ seg.toName }}</span>
+                </td>
+                <td class="seg-type">{{ seg.type }}</td>
+                <td class="seg-speed">{{ seg.speedKmh | number:'1.0-1' }}</td>
+                <td class="seg-dist">{{ seg.distanceKm | number:'1.1-1' }}</td>
+                <td class="seg-time">{{ formatDuration(seg.travelTimeSeconds + seg.penaltySeconds) }}</td>
+              </tr>
+              @if (seg.penaltySeconds > 0) {
+                <tr class="penalty-row">
+                  <td colspan="4" class="penalty-label">⚓ Embark / Disembark penalty</td>
+                  <td class="seg-time penalty-time">{{ formatDuration(seg.penaltySeconds) }}</td>
+                </tr>
+              }
+              @if (seg.hasRailroad) {
+                <tr class="railroad-row">
+                  <td colspan="5" class="railroad-label">🚂 Railroad (×2.5 speed)</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <div class="actions">
+        <button class="jump-btn" [disabled]="!startProvId || isCoord(startProvId)" (click)="showProvince(startProvId)">Show Start</button>
+        <button class="jump-btn" [disabled]="!endProvId || isCoord(endProvId)" (click)="showProvince(endProvId)">Show End</button>
+    </div>
+
+  </div>
+
+  <!-- MINIMIZED CONTENT (PROJECTED INTO DIALOG) -->
+  <div minimized-content class="mini-content" [class.mobile]="isMobile">
+    @if (pickMode !== 'none') {
+      <!-- While picking an exact point, offer a way back out without having to tap the map. -->
+      <div class="mini-pick-row">
+        <span class="mini-pick-msg"><span class="pick-dot"></span>Tap the map for {{ pickMode === 'start' ? 'Start' : 'End' }}…</span>
+        <button class="mini-btn cancel" (click)="stopPicking()">Cancel</button>
+      </div>
+    } @else if (mapSelectMode !== 'none') {
+      <!-- While waiting for a stack/province selection, same escape hatch. -->
+      <div class="mini-pick-row">
+        <span class="mini-pick-msg"><span class="pick-dot"></span>Select a stack or province for {{ mapSelectMode === 'start' ? 'Start' : 'End' }}…</span>
+        <button class="mini-btn cancel" (click)="cancelMapSelect()">Cancel</button>
+      </div>
+    } @else {
+      @if (result) {
+        <div class="mini-data">
+          <span class="mini-val time">{{ formatDuration(result.time) }}</span>
+          <span class="mini-div">|</span>
+          <span class="mini-val dist">{{ result.distance | number:'1.0-0' }} km</span>
+        </div>
+      } @else {
+        <div class="mini-msg">Ready</div>
+      }
+
+      <div class="mini-actions">
+        <button class="mini-btn expand" (click)="isMinimized = false">Expand</button>
+        <button class="mini-btn close" (click)="close()">Close</button>
+      </div>
+    }
+  </div>
+
+</app-dialog>

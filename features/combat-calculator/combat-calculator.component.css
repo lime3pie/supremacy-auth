@@ -1,0 +1,451 @@
+/* START OF FILE combat-calculator.component.css */
+
+:host {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Flush edge-to-edge sections below already carry their own internal padding, so drop
+     app-dialog's default outer padding rather than double up. */
+  --dialog-padding: 0;
+  --dialog-header-padding: 16px 28px;
+}
+
+.combat-container {
+  width: 900px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+}
+
+.minimized-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.header-action-btn {
+  width: 36px;
+  height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s, background-color 0.2s;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-action-btn:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.header-action-btn svg {
+  stroke: #ccc;
+  stroke-width: 2;
+  width: 20px;
+  height: 20px;
+}
+
+.minimized-actions .add-btn {
+  padding: 4px 10px;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.minimized-actions.picking {
+  align-items: center;
+  gap: 10px;
+}
+
+.picking-msg {
+  font-size: 0.85rem;
+  color: #ffb74d;
+  white-space: nowrap;
+}
+
+.minimized-actions .cancel-btn {
+  background: #f44336;
+}
+
+.minimized-actions .cancel-btn:hover {
+  background: #E53935;
+}
+
+.teams-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 0 28px 12px;
+  border-bottom: 1px solid #444;
+}
+
+.team-header-col {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.team-header-col.right {
+  justify-content: flex-end;
+}
+
+.col-title {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #5ca8ff;
+}
+
+.vs-text {
+  font-weight: bold;
+  font-size: 2rem;
+  color: #f55;
+}
+
+.dialog-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+  overflow-y: auto;
+  min-height: 0;
+  background: #252526;
+  padding: 18px 28px;
+}
+
+.dialog-content:empty {
+  padding: 0;
+}
+
+.dialog-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dialog-content::-webkit-scrollbar-track {
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 4px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb:hover {
+  background-color: #777;
+}
+
+summary {
+  cursor: pointer;
+  color: #aaa;
+}
+
+summary:hover {
+  color: #ddd;
+}
+
+.dialog-footer {
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #444;
+  background: #323232;
+}
+
+.result {
+  text-align: center;
+  font-weight: bold;
+  flex-grow: 1;
+}
+
+.result.success {
+  color: #00d26a;
+}
+
+.result.error {
+  color: #ff4d4d;
+}
+
+.action-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.2s;
+}
+
+.add-btn {
+  background: #007bff;
+  border: none;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.add-btn:hover {
+  background: #0069d9;
+}
+
+.simulate-btn {
+  background: #6f42c1;
+}
+
+.simulate-btn:hover {
+  background: #5e35b1;
+}
+
+.validate-btn {
+  background: #007bff;
+}
+
+.validate-btn:hover {
+  background: #0069d9;
+}
+
+.close-btn {
+  background: #555;
+}
+
+.close-btn:hover {
+  background: #666;
+}
+
+/* --- Styles for Combine buttons --- */
+
+.combine-btn, .ok-btn, .cancel-btn, .select-all-btn {
+  padding: 6px 14px;
+  font-size: 0.9rem;
+}
+
+.combine-btn {
+  background-color: #ff9800; /* Orange */
+}
+
+.combine-btn:hover:not(:disabled) {
+  background-color: #f57c00;
+}
+
+.ok-btn {
+  background-color: #4CAF50; /* Green */
+}
+
+.ok-btn:hover:not(:disabled) {
+  background-color: #43A047;
+}
+
+.cancel-btn {
+  background-color: #f44336; /* Red */
+}
+
+.cancel-btn:hover {
+  background-color: #E53935;
+}
+
+.select-all-btn {
+  background-color: #03a9f4; /* Light Blue */
+}
+
+.select-all-btn:hover:not(:disabled) {
+  background-color: #039be5;
+}
+
+
+.action-btn:disabled, .combine-btn:disabled, .ok-btn:disabled {
+  background-color: #555;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   Mobile layout (settings.hup.config.isMobileClient)
+   ============================================================ */
+
+.combat-container.mobile {
+  width: 100%;
+  max-width: 100%;
+}
+
+.team-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #444;
+}
+
+.team-tab {
+  border: 1px solid #444;
+  background: #2a2a2a;
+  border-radius: 10px;
+  padding: 8px 4px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.team-tab .lbl {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.team-tab .count {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #bbb;
+}
+
+.team-tab[data-team="A"].is-active {
+  border-color: #5ca8ff;
+  background: rgba(92, 168, 255, 0.14);
+}
+
+.team-tab[data-team="A"].is-active .lbl {
+  color: #5ca8ff;
+}
+
+.team-tab[data-team="B"].is-active {
+  border-color: #f55;
+  background: rgba(255, 85, 85, 0.14);
+}
+
+.team-tab[data-team="B"].is-active .lbl {
+  color: #f55;
+}
+
+.team-tab.is-active .count {
+  color: #f0f0f0;
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.chip {
+  flex-shrink: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  border-radius: 100px;
+  padding: 9px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  background-clip: padding-box;
+}
+
+.chip.add {
+  background: #007bff;
+}
+
+.chip.sim {
+  background: #6f42c1;
+}
+
+.chip.combine {
+  background: #ff9800;
+}
+
+.chip:disabled {
+  background: #555;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.selection-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(255, 152, 0, 0.12);
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.selection-bar .count-txt {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ff9800;
+  flex: 1;
+}
+
+.selection-bar button {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.selection-bar .sel-all {
+  background: #444;
+  color: #ddd;
+}
+
+.selection-bar .sel-cancel {
+  background: #444;
+  color: #ff6b6b;
+}
+
+.selection-bar .sel-ok {
+  background: #4CAF50;
+  color: #062015;
+}
+
+.selection-bar .sel-ok:disabled {
+  background: #555;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.dialog-content.mobile {
+  display: block;
+  padding: 14px 16px 20px;
+}
+
+.dialog-content.mobile .army-column {
+  gap: 10px;
+}
+
+.combat-container.mobile .dialog-footer {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 12px 16px 16px;
+}
+
+.combat-container.mobile .dialog-footer .result {
+  order: -1;
+}
+
+.combat-container.mobile .dialog-footer .action-btn {
+  width: 100%;
+  padding: 13px;
+}
+
+.combat-container.mobile .dialog-footer .validate-btn + .validate-btn {
+  background: #3a3a3a;
+}
+
+.combat-container.mobile .dialog-footer .close-btn {
+  background: transparent;
+  color: #999;
+  padding: 6px;
+}

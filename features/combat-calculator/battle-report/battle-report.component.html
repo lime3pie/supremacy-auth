@@ -1,0 +1,85 @@
+<div class="overlay" (click)="close()">
+  <div class="dialog" [class.mobile]="isMobile" (click)="$event.stopPropagation()">
+
+    <div class="dialog-header">
+      <h1>Battle Report</h1>
+    </div>
+
+    <div class="grid" [class.mobile]="isMobile">
+      @for (id of getArmyIds(); track id; let isLast = $last) {
+        <div class="army">
+          <h2>Team {{ id }}</h2>
+
+          <!-- Loop for stacks -->
+          @for (stackEntry of report.armies[id].stacks | keyvalue; track stackEntry.key) {
+            @let stack = stackEntry.value;
+            @let totalHp = getStackTotalHp(stack);
+            <div class="stack">
+              <div class="stack-row stack-header">
+                <span class="title">Stack {{ stackEntry.key }}</span>
+                <span class="details">{{ stack.details.terrain }} ({{ stack.details.trench_level }} trench)</span>
+              </div>
+              <div class="stack-row">
+                <span>Target: {{ stack.details.target.replace("Stack ", "") }}</span>
+                <span>Position: {{ stack.details.position_km }} km</span>
+              </div>
+              @if (stack.hero) {
+                <div class="stack-row">
+                  <span class="unit-info"><strong>Hero:</strong> {{ stack.hero.name }} (Lv {{ stack.hero.level }})</span>
+                  <span class="hp-info">HP: {{ round(stack.hero.hp, 1) }} → <span class="hp-remain">{{ round(stack.hero.hp - stack.hero.result.hp_lost, 1) }}</span></span>
+                </div>
+              }
+              @for (u of stack.units; track u.type) {
+                <div class="stack-row">
+                  <span class="unit-info">{{ u.type }} ×{{ u.count }} — <span class="status">{{ u.result.status }}</span>
+                    @if (u.result.units_died > 0) {
+                      <span class="dead">({{ u.result.units_died }} died)</span>
+                    }
+                  </span>
+                  <span class="hp-info">HP: {{ round(u.hp, 1) }} → <span class="hp-remain">{{ round(u.hp - u.result.hp_lost, 1) }}</span></span>
+                </div>
+              }
+              <div class="stack-row stack-total">
+                <span>Stack Total HP:</span>
+                <span class="hp-info">{{ totalHp.before }} → <span class="hp-remain">{{ totalHp.remain }}</span></span>
+              </div>
+            </div>
+          }
+
+          <!-- ARMY SUMMARY -->
+          <div class="army-summary">
+            <h4>Summary</h4>
+            <div class="summary-line">
+              <span>HP Lost:</span>
+              <span>{{ report.armies[id].summary.hp_lost }} ({{ report.armies[id].summary.percent_lost }}%)</span>
+            </div>
+            <div class="summary-line">
+              <span>Resources Lost:</span>
+              <span>Food {{ report.armies[id].summary.resources_lost?.food || 0 }}, Iron {{ report.armies[id].summary.resources_lost?.iron || 0 }}, Oil {{ report.armies[id].summary.resources_lost?.oil || 0 }}</span>
+            </div>
+            <div class="summary-line">
+              <span>Cash Lost:</span>
+              <span>${{ report.armies[id].summary.cash_lost }}</span>
+            </div>
+            <div class="summary-line">
+              <span>Hours Lost:</span>
+              <span>{{ report.armies[id].summary.hours_lost }}</span>
+            </div>
+          </div>
+        </div>
+
+        @if (!isLast) {
+          <div class="vs">VS</div>
+        }
+      }
+    </div>
+
+    <div class="dialog-footer" [class.mobile]="isMobile">
+      <div class="battle-outcome">
+        {{ report.battle_outcome }}
+      </div>
+      <button class="close-btn" (click)="close()">Close</button>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,13 @@
+@if (hasReputation) {
+  <span
+    class="reputation-badge tier-{{ tier }}"
+    [attr.data-simple-tooltip-text]="'Reputation: ' + (averageScore | number:'1.1-1') + '/5 (' + ratingCount + ' rating' + (ratingCount === 1 ? '' : 's') + ')'">
+    ★ {{ averageScore | number:'1.1-1' }}
+  </span>
+} @else {
+  <span
+    class="reputation-badge-empty"
+    data-simple-tooltip-text="No ratings yet - click to rate this player">
+    ☆
+  </span>
+}

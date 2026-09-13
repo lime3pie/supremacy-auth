@@ -1,0 +1,77 @@
+<app-dialog
+  title="Health Development"
+  [show]="showDialog"
+  [draggable]="true"
+  [resizable]="true"
+  (close)="close()">
+
+  <div class="health-development-content">
+    <div class="result-section">
+      <label>Selected Stack:</label>
+      <div class="text-input readonly-display">{{ selectedLabel }}</div>
+    </div>
+
+    @if (errorMessage) {
+      <p class="hint error-hint">Error: {{ errorMessage }}</p>
+    } @else if (!healthDevelopment) {
+      <p class="hint">No army selected.</p>
+    } @else {
+      <div class="health-summary">
+        <span class="health-summary-badge" [class]="'territory-' + healthDevelopment.territoryContext.toLowerCase()">
+          {{ healthDevelopment.territoryContext }}
+        </span>
+        <span>Province: {{ healthDevelopment.provinceName }}</span>
+        <span>Province morale: {{ healthDevelopment.provinceMoralePercent | number:'1.0-1' }}%</span>
+        <span>At airfield: {{ healthDevelopment.atAirfield ? 'Yes' : 'No' }}</span>
+        <span>In flight: {{ healthDevelopment.isInFlight ? 'Yes' : 'No' }}</span>
+      </div>
+
+      <div class="scores-table-wrapper">
+        <table class="scores-table">
+          <thead>
+            <tr>
+              <th>Unit</th>
+              <th>Category</th>
+              <th>Count</th>
+              <th>Current HP</th>
+              <th>Projected HP</th>
+              <th>Change</th>
+              <th>Why</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of healthDevelopment.rows; track row.unitTypeID) {
+              <tr>
+                <td>
+                  <img [src]="row.icon" class="unit-icon" />
+                  {{ row.name }}
+                </td>
+                <td>{{ row.category }}</td>
+                <td>{{ row.count }}</td>
+                <td>{{ row.currentHp | number:'1.0-1' }} <span class="dim">({{ row.currentHpPercent | number:'1.0-1' }}%)</span></td>
+                <td>{{ row.projectedHp | number:'1.0-1' }} <span class="dim">({{ row.projectedHpPercent | number:'1.0-1' }}%)</span></td>
+                <td [class.health-up]="row.direction === 'up'" [class.health-down]="row.direction === 'down'">
+                  @if (row.direction === 'up') { ▲ }
+                  @if (row.direction === 'down') { ▼ }
+                  {{ row.hpChange | number:'1.0-1' }}
+                </td>
+                <td class="dim">{{ row.reason }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3"><strong>Total</strong></td>
+              <td>{{ healthDevelopment.totalCurrentHp | number:'1.0-1' }}</td>
+              <td>{{ healthDevelopment.totalProjectedHp | number:'1.0-1' }}</td>
+              <td [class.health-up]="healthDevelopment.totalHpChange > 0" [class.health-down]="healthDevelopment.totalHpChange < 0">
+                {{ healthDevelopment.totalHpChange | number:'1.0-1' }}
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    }
+  </div>
+</app-dialog>

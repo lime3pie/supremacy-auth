@@ -1,0 +1,68 @@
+/* :host refers to the component tag inserted by Angular */
+:host {
+  display: block;
+  float: left;
+}
+
+/* The Button Container - Recreating the 'button_stop.png' look via CSS */
+.gui-button_update {
+  /* 1. Reset standard properties */
+  text-indent: 0 !important;
+  line-height: 1 !important;
+  
+  /* 2. Match Native Background Color (Dark Grey/Greenish tint) */
+  background-color: #23282b; 
+  
+  /* 3. Match Native Border (The Lighter Grey Ring) */
+  border: 2px solid #576065; 
+  border-radius: 50%;
+  
+  /* 4. Dimensions (Standard S1914 Button Size) */
+  width: 44px;
+  height: 44px;
+  box-sizing: border-box;
+  
+  /* 5. Layout & Position */
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* 6. Inner shadow to match the depth of the PNG buttons */
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.6);
+  
+  transition: all 0.15s ease-in-out;
+}
+
+/* SVG Icon Styling */
+.gui-button_update svg {
+  fill: #e0e0e0; /* Off-white standard icon color */
+  width: 26px;
+  height: 26px;
+  /* Slight shadow to make the icon stand out from the dark background */
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.8));
+}
+
+/* HOVER State - Matches game behavior (Gold Border) */
+.gui-button_update:hover {
+  background-color: #2a3033; /* Slightly lighter background */
+  border-color: #cfa665;     /* Supremacy Gold Border */
+  box-shadow: 0 0 8px rgba(207, 166, 101, 0.3), inset 0 0 2px rgba(0,0,0,0.5);
+}
+
+.gui-button_update:hover svg {
+  fill: #ffffff; /* Bright white */
+}
+
+/* ACTIVE (Click) State */
+.gui-button_update:active {
+  transform: scale(0.96);
+  background-color: #15181a;
+  border-color: #666;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.8);
+}
+
+.gui-button_update:active svg {
+  fill: #888;
+}

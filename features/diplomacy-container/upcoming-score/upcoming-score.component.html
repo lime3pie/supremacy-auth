@@ -1,0 +1,14 @@
+@if (isHeader) {
+  <div>{{ headerText }}</div>
+} @else {
+  <div class="upcoming-score-value">
+    @if (trend === 'up') {
+      <span class="trend-arrow trend-up">▲</span>
+    } @else if (trend === 'down') {
+      <span class="trend-arrow trend-down">▼</span>
+    } @else if (trend === 'same') {
+      <span class="trend-arrow trend-same">-</span>
+    }
+    <span>{{ value !== null ? value : '-' }}</span>
+  </div>
+}

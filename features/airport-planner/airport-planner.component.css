@@ -1,0 +1,260 @@
+/* File: /scripts/features/airport-planner/airport-planner.component.css */
+
+.planner-container {
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-family: "Segoe UI", sans-serif;
+  color: #e0e0e0;
+}
+
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label-row label {
+  font-weight: bold;
+  color: #aaa;
+}
+
+.top-actions { display: flex; gap: 6px; align-items: center; }
+
+.small-btn {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  background: #333;
+  border: 1px solid #555;
+  color: #ccc;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.small-btn:hover { background: #444; color: #fff; }
+.small-btn.active { background: #cfa665; color: #000; border-color: #cfa665; }
+
+.unit-select {
+  width: 100%;
+  background: #1a1a1a;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 6px;
+}
+
+.range-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.range-label { color: #888; font-size: 0.85rem; }
+.range-input {
+  width: 80px;
+  background: #1a1a1a;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+.mode-toggle {
+  display: flex;
+  gap: 6px;
+}
+.mode-btn {
+  flex: 1;
+  background: #1a1a1a;
+  color: #ccc;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 6px 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.mode-btn:hover { background: #262626; color: #fff; }
+.mode-btn.active { background: #cfa665; color: #000; border-color: #cfa665; font-weight: bold; }
+
+.mode-hint {
+  color: #777;
+  font-size: 0.72rem;
+  font-style: italic;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ccc;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.tolerance-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tolerance-row .range-label {
+  color: #888;
+  font-size: 0.78rem;
+}
+.tolerance-value {
+  color: #cfa665;
+  font-weight: bold;
+  font-family: monospace;
+}
+.tolerance-slider {
+  width: 100%;
+  accent-color: #cfa665;
+  cursor: pointer;
+}
+
+.calc-btn {
+  background: #cfa665;
+  color: #000;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.calc-btn:hover { background: #e0b776; }
+
+.result-box {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  padding: 12px;
+  border-radius: 6px;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.result-status {
+  font-size: 0.8rem;
+  color: #cfa665;
+  text-align: center;
+}
+
+.result-summary {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+.res-label { color: #888; }
+.res-value.dist { color: #4dabff; font-weight: bold; font-family: monospace; }
+.res-value.time { color: #cfa665; font-weight: bold; font-family: monospace; }
+
+.result-empty { font-style: italic; color: #666; text-align: center; }
+
+.select-missing-btn {
+  background: #2a2410;
+  color: #ffcc00;
+  border: 1px solid #ffcc00;
+  padding: 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.select-missing-btn:hover { background: #3a3316; }
+
+.airport-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.airport-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #111;
+  border-left: 3px solid #ffcc00;
+  border-radius: 3px;
+  padding: 6px 8px;
+}
+.airport-row.is-start { border-left-color: #00ffcc; }
+.airport-row:not(.needs-build):not(.is-start):not(.is-friendly) { border-left-color: #4caf50; }
+.airport-row.is-friendly { border-left-color: #4dabff; }
+.airport-row.target-row { border-left-color: #ff4d4d; }
+
+.friendly-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  background: rgba(77, 171, 255, 0.15);
+  color: #4dabff;
+  border: 1px solid #4dabff;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.airport-index {
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+  font-weight: bold;
+  color: #cfa665;
+}
+
+.airport-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.airport-name { color: #eee; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.airport-status { color: #999; font-size: 0.75rem; }
+.airport-dist { color: #4dabff; margin-left: 4px; }
+
+.jump-btn.small {
+  flex-shrink: 0;
+  background: #333;
+  color: #ccc;
+  border: 1px solid #444;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+.jump-btn.small:hover { background: #444; color: #fff; }
+
+/* --- MINIMIZED VIEW --- */
+.mini-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 140px;
+}
+.mini-data {
+  display: flex;
+  justify-content: center;
+  font-family: monospace;
+  font-size: 1rem;
+  color: #ffcc00;
+}
+.mini-msg { text-align: center; color: #888; font-style: italic; }
+.mini-actions { display: flex; gap: 6px; }
+.mini-btn {
+  flex: 1;
+  border: 1px solid #555;
+  background: #2a2a2a;
+  color: #ccc;
+  font-size: 0.8rem;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.mini-btn.expand:hover { background: #333; color: #fff; border-color: #777; }
+.mini-btn.close:hover { background: #3d2020; color: #ffcccc; border-color: #a54a4a; }
