@@ -2,23 +2,23 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-// База данных и роли в памяти
+// База данных пользователей (логин: пароль)
 let usersDB = {
-    "admin": "admin_secret",
+    "admin": "admin_secret", // Можете поменять пароль на свой здесь
     "user1": "pass123",
     "user2": "qwerty"
 };
 
-// Хранилище ролей (по умолчанию все, кроме admin — это 'user')
+// Хранилище ролей пользователей
 let userRoles = {
     "user1": "user",
     "user2": "user"
 };
 
-// 1. Эндпоинт для входа (авторизации)
+// 1. Авторизация пользователя
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
 
@@ -26,7 +26,7 @@ app.post('/api/login', (req, res) => {
         return res.status(401).json({ success: false, message: "Неверный логин или пароль" });
     }
 
-    // Определяем роль (если в базе админ или прописано в userRoles)
+    // Определяем роль (главный admin или из словаря ролей)
     const role = (username === 'admin' || userRoles[username] === 'admin') ? 'admin' : 'user';
 
     res.json({ 
@@ -36,10 +36,10 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// 2. Эндпоинт для получения списка всех пользователей (только для админа)
+// 2. Получение списка всех пользователей (для админ-панели)
 app.get('/api/users', (req, res) => {
     const userList = Object.keys(usersDB)
-        .filter(u => u !== 'admin')
+        .filter(u => u !== 'admin') // Главного админа можно не показывать в списке управления
         .map(u => ({
             username: u,
             role: userRoles[u] || 'user'
@@ -47,7 +47,7 @@ app.get('/api/users', (req, res) => {
     res.json({ success: true, users: userList });
 });
 
-// 3. Эндпоинт для добавления нового пользователя (только для админа)
+// 3. Добавление нового пользователя
 app.post('/api/users/add', (req, res) => {
     const { newUsername, newPassword } = req.body;
 
@@ -60,10 +60,12 @@ app.post('/api/users/add', (req, res) => {
     }
 
     usersDB[newUsername] = newPassword;
-    res.json({ success: true, message: `Пользователь ${newUsername} добавлен` });
+    userRoles[newUsername] = 'user'; // По умолчанию новый юзер — обычный
+
+    res.json({ success: true, message: "Пользователь успешно добавлен" });
 });
 
-// 4. Эндпоинт для удаления пользователя (мгновенное закрытие доступа)
+// 4. Удаление пользователя
 app.post('/api/users/delete', (req, res) => {
     const { usernameToDelete } = req.body;
 
@@ -73,17 +75,14 @@ app.post('/api/users/delete', (req, res) => {
 
     if (usersDB[usernameToDelete]) {
         delete usersDB[usernameToDelete];
-        return res.json({ success: true, message: `Доступ для ${usernameToDelete} закрыт` });
+        delete userRoles[usernameToDelete];
+        return res.json({ success: true, message: "Пользователь удален" });
     }
 
     res.status(404).json({ success: false, message: "Пользователь не найден" });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Сервер запущен на порту ${PORT}`);
-});
-// Эндпоинт для изменения роли пользователя (например, сделать админом)
+// 5. Изменение роли пользователя (выдача / снятие админки)
 app.post('/api/users/role', (req, res) => {
     const { usernameToUpdate, newRole } = req.body;
 
@@ -96,11 +95,26 @@ app.post('/api/users/role', (req, res) => {
     }
 
     if (usersDB[usernameToUpdate]) {
-        // Мы можем хранить роли в отдельном объекте или прямо в логике. 
-        // Давайте сделаем простой объект ролей на сервере рядом с usersDB:
         userRoles[usernameToUpdate] = newRole;
-        return res.json({ success: true, message: `Роль пользователя ${usernameToUpdate} изменена на ${newRole}` });
+        return res.json({ success: true, message: `Роль изменена на ${newRole}` });
     }
 
     res.status(404).json({ success: false, message: "Пользователь не найден" });
+});
+
+// 6. Проверка активности сессии (Heartbeat / Верификация для мода)
+app.post('/api/verify', (req, res) => {
+    const { username } = req.body;
+    
+    if (username && usersDB[username]) {
+        return res.json({ success: true, active: true });
+    }
+    
+    // Если пользователя удалили или заблокировали
+    res.json({ success: true, active: false });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
