@@ -5,11 +5,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// База данных в памяти (тестовые аккаунты + ваш админ)
+// База данных и роли в памяти
 let usersDB = {
-    "admin": "admin_secret", // Админский аккаунт для управления
+    "admin": "admin_secret",
     "user1": "pass123",
     "user2": "qwerty"
+};
+
+// Хранилище ролей (по умолчанию все, кроме admin — это 'user')
+let userRoles = {
+    "user1": "user",
+    "user2": "user"
 };
 
 // 1. Эндпоинт для входа (авторизации)
@@ -72,4 +78,25 @@ app.post('/api/users/delete', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
+});
+// Эндпоинт для изменения роли пользователя (например, сделать админом)
+app.post('/api/users/role', (req, res) => {
+    const { usernameToUpdate, newRole } = req.body;
+
+    if (!usernameToUpdate || usernameToUpdate === 'admin') {
+        return res.status(400).json({ success: false, message: "Нельзя изменить роль этого пользователя" });
+    }
+
+    if (!['user', 'admin'].includes(newRole)) {
+        return res.status(400).json({ success: false, message: "Некорректная роль" });
+    }
+
+    if (usersDB[usernameToUpdate]) {
+        // Мы можем хранить роли в отдельном объекте или прямо в логике. 
+        // Давайте сделаем простой объект ролей на сервере рядом с usersDB:
+        userRoles[usernameToUpdate] = newRole;
+        return res.json({ success: true, message: `Роль пользователя ${usernameToUpdate} изменена на ${newRole}` });
+    }
+
+    res.status(404).json({ success: false, message: "Пользователь не найден" });
 });
