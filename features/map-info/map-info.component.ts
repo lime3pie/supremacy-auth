@@ -13,38 +13,31 @@ export class MapInfoComponent implements OnInit {
 
   @Output() closeDialog = new EventEmitter<void>();
 
+  // Вкладки: 'players' (это Map K/D) или 'map' (это Detailed K/D)
   activeTab: string = 'players';
 
-  // Остальные списки
+  // --- Списки и состояния ---
   playersKd: any[] = [];
   countryOptions: any[] = [];
   selectedCountryId: any = null;
+  
   isLoading: boolean = false;
   hasFetched: boolean = false;
   loadingProgress: string = '';
+  
   totalKills: number = 0;
   totalDeaths: number = 0;
   overallRatio: string = '0.00';
   opponents: any[] = [];
+
   allianceLoading: boolean = false;
   allianceFetched: boolean = false;
 
-  // Сортировки
+  // --- Сортировки ---
   playersSortColumn: string = 'kills';
   playersSortDirection: 'asc' | 'desc' = 'desc';
   mapSortColumn: string = 'kills';
   mapSortDirection: 'asc' | 'desc' = 'desc';
-
-  // Переменные для «Реального K/D»
-  realKdLoading: boolean = false;
-  realKdHasFetched: boolean = false;
-  realKdProgress: string = '';
-  realKdSearch: string = '';
-  realSortColumn: string = 'kills';
-  realSortDirection: 'asc' | 'desc' = 'desc';
-  
-  realKdDisplayed: any[] = [];
-  private allRealKdRows: any[] = [];
 
   sortPanelOpen: boolean = false;
 
@@ -56,6 +49,7 @@ export class MapInfoComponent implements OnInit {
     this.closeDialog.emit();
   }
 
+  // Переключение между вкладками «Map K/D» и «Detailed K/D»
   setActiveTab(tab: string): void {
     this.activeTab = tab;
     this.sortPanelOpen = false;
@@ -82,89 +76,68 @@ export class MapInfoComponent implements OnInit {
     let activeCol = '';
     let dir = 'desc';
 
-    if (tab === 'players') { activeCol = this.playersSortColumn; dir = this.playersSortDirection; }
-    else if (tab === 'map') { activeCol = this.mapSortColumn; dir = this.mapSortDirection; }
-    else if (tab === 'real') { activeCol = this.realSortColumn; dir = this.realSortDirection; }
+    if (tab === 'players') { 
+      activeCol = this.playersSortColumn; 
+      dir = this.playersSortDirection; 
+    } else if (tab === 'map') { 
+      activeCol = this.mapSortColumn; 
+      dir = this.mapSortDirection; 
+    }
 
     if (activeCol !== column) return '';
     return dir === 'asc' ? ' ▲' : ' ▼';
   }
 
-  fetchAlliances(): void {}
-  fetchAllWars(): void {}
-  onCountryChange(countryId: any): void { this.selectedCountryId = countryId; }
-  sortPlayersBy(column: string): void {}
-  sortMapBy(column: string): void {}
-
-  // ==========================================
-  // ЭТО ЛОГИКА ДЛЯ «РЕАЛЬНОГО КД»
-  // ==========================================
-
-  fetchRealKd(): void {
-    this.realKdLoading = true;
-    this.realKdProgress = 'Загрузка игроков...';
-
-    // СЮДА ПОЗЖЕ НУЖНО БУДЕТ ПОДКЛЮЧИТЬ ВАШ СЕРВИС С ДАННЫМИ С САЙТА.
-    // Пока что здесь тестовые данные, чтобы проверить, работает ли таблица:
+  fetchAlliances(): void {
+    this.allianceLoading = true;
     setTimeout(() => {
-      this.allRealKdRows = [
-        {
-          siteUserId: 1,
-          name: 'Игрок Тест 1',
-          nation: 'Россия',
-          alliance: 'Clan A',
-          coalition: 'Коалиция 1',
-          level: 25,
-          kills: 500,
-          deaths: 100,
-          power: '1000',
-          powerClass: 'high',
-          flagUrl: '',
-          isEnemy: false,
-          isAlly: true
-        }
-      ];
-
-      this.applyRealKdFilter();
-      this.realKdLoading = false;
-      this.realKdHasFetched = true;
-      this.realKdProgress = '';
+      this.allianceLoading = false;
+      this.allianceFetched = true;
     }, 1000);
   }
 
-  applyRealKdFilter(): void {
-    if (!this.realKdSearch.trim()) {
-      this.realKdDisplayed = [...this.allRealKdRows];
+  // Кнопка «Refresh» во второй вкладке (Detailed K/D)
+  fetchAllWars(): void {
+    this.isLoading = true;
+    this.loadingProgress = 'Загрузка отчетов о боевых действиях...';
+
+    // ⚠️ Сюда подключается ваш сервис для получения детальной статистики
+    // Сейчас здесь стоит тестовый пример, чтобы таблица заполнилась:
+    setTimeout(() => {
+      this.opponents = [
+        {
+          name: 'Тестовый Оппонент',
+          nation: 'Франция',
+          kills: 120,
+          deaths: 50,
+          kd: '2.40'
+        }
+      ];
+      this.isLoading = false;
+      this.hasFetched = true;
+      this.loadingProgress = '';
+    }, 1000);
+  }
+
+  onCountryChange(countryId: any): void {
+    this.selectedCountryId = countryId;
+  }
+
+  sortPlayersBy(column: string): void {
+    if (this.playersSortColumn === column) {
+      this.playersSortDirection = this.playersSortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-      const query = this.realKdSearch.toLowerCase().trim();
-      this.realKdDisplayed = this.allRealKdRows.filter(row =>
-        (row.name && row.name.toLowerCase().includes(query)) ||
-        (row.nation && row.nation.toLowerCase().includes(query)) ||
-        (row.alliance && row.alliance.toLowerCase().includes(query))
-      );
+      this.playersSortColumn = column;
+      this.playersSortDirection = 'desc';
     }
   }
 
-  sortRealBy(column: string): void {
-    if (this.realSortColumn === column) {
-      this.realSortDirection = this.realSortDirection === 'asc' ? 'desc' : 'asc';
+  sortMapBy(column: string): void {
+    if (this.mapSortColumn === column) {
+      this.mapSortDirection = this.mapSortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-      this.realSortColumn = column;
-      this.realSortDirection = 'desc';
+      this.mapSortColumn = column;
+      this.mapSortDirection = 'desc';
     }
-
-    this.realKdDisplayed.sort((a, b) => {
-      let valA = a[column] ?? '';
-      let valB = b[column] ?? '';
-
-      if (typeof valA === 'string') {
-        valA = valA.toLowerCase();
-        valB = valB.toLowerCase();
-      }
-
-      if (valA < valB) return this.realSortDirection === 'asc' ? -1 : 1;
-      if (valA > valB) return this.realSortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
   }
 }
